@@ -1,26 +1,60 @@
+#!/usr/bin/env python2
+'''
+Internals and API functions for vira
+'''
+
 # File: py/vira.vim {{{1
 # Description: Internals and API functions for vira
 # Authors:
 #   n0v1c3 (Travis Gall) <https://github.com/n0v1c3>
 # Version: 0.0.1
 
-from jira import JIRA
-import json
-import datetime
-import calendar
-import time
-import getpass
+# dev: let b:startapp = "pipenv run python "
+# dev: let b:startargs = "--help"
 
-myserv='https://jira.boiko.online'
-myuser='travis.gall'
-mypass=getpass.getpass(prompt='Password: ', stream=None)
+# Imports {{{1
+
+from jira import JIRA
+import argparse
+import calendar
+import datetime
+import getpass
+import json
+import time
+
+# Arguments {{{1
+
+# Parse arguments and show __doc__ and defaults in --help
+
+parser = argparse.ArgumentParser(
+    description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+parser.add_argument(
+    '-u',
+    '--user',
+    action='store',
+    default='travis.gall',
+    help='Jira username'
+)
+
+parser.add_argument(
+    '-p',
+    '--password',
+    action='store',
+    help='Jira password'
+)
+
+parser.add_argument(
+    '-s',
+    '--server',
+    action='store',
+    default='https://jira.boiko.online',
+    help='URL of jira server'
+)
 
 # Connect {{{1
 def vira_connect(server, user, pw):
-    return JIRA(options={'server':server},auth=(user,mypass))
-
-# Establish connection to JIRA
-jira = vira_connect(myserv,myuser,mypass)
+    return JIRA(options={'server':server},auth=(user,pw))
 
 # Issues {{{1
 # My Issues {{{2
@@ -65,23 +99,44 @@ def vira_set_status(issue, status):
     jira.transition_issue(issue, status)
 
 # Testing {{{1
-print('')
-print('Active Issues')
-print('=============')
-vira_my_issues()
-print('')
-issue = vira_get_issue('AC-186')
-print('Issue: ' + issue.key)
-print(vira_get_comments(issue))
 
-print('')
-issue = vira_get_issue('AC-159')
-print('Issue: ' + issue.key)
-print(vira_get_comments(issue))
+def main():  # {{{2
+    '''
+    Main script entry point
+    '''
 
-# print(vira_add_comment(issue, 'I need another comment for testing'))
-# vira_set_status(issue, 'Selected for Development')
-# vira_add_worklog(issue, 600, 'Comment goes here:\n-List of file touched\n-Another file touched')
+    global jira
+
+    # Get pw if not passed with --password
+    mypass = args.password if args.password else getpass.getpass(prompt='Password: ', stream=None)
+
+    # Establish connection to JIRA
+    jira = vira_connect(args.server, args.user, mypass)
+
+    print('')
+    print('Active Issues')
+    print('=============')
+    vira_my_issues()
+    print('')
+    issue = vira_get_issue('AC-186')
+    print('Issue: ' + issue.key)
+    print(vira_get_comments(issue))
+
+    print('')
+    issue = vira_get_issue('AC-159')
+    print('Issue: ' + issue.key)
+    print(vira_get_comments(issue))
+
+    # print(vira_add_comment(issue, 'I need another comment for testing'))
+    # vira_set_status(issue, 'Selected for Development')
+    # vira_add_worklog(issue, 600, 'Comment goes here:\n-List of file touched\n-Another file touched')
+
+# Main {{{1
+
+# Run script if this file is executed directly
+if __name__ == '__main__':
+    args = parser.parse_args()
+    main()
 
 # Garbage {{{1
 # print(vira_add_comment(issue, 'First test comment to this issue'))
