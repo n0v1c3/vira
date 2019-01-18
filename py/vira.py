@@ -23,8 +23,7 @@ import getpass
 # Parse arguments and show __doc__ and defaults in --help
 # Parser {{{2
 parser = argparse.ArgumentParser(
-    description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 # User {{{2
 parser.add_argument(
@@ -40,7 +39,6 @@ parser.add_argument(
     default='https://jira.boiko.online',
     help='URL of jira server')
 
-
 # Connect {{{1
 def vira_connect(server, user, pw):
     '''
@@ -48,7 +46,6 @@ def vira_connect(server, user, pw):
     '''
 
     return JIRA(options={'server': server}, auth=(user, pw))
-
 
 # Issues {{{1
 # My Issues {{{2
@@ -61,15 +58,14 @@ def vira_my_issues():
         'project = AC AND resolution = Unresolved AND assignee in (currentUser()) ORDER BY priority DESC, updated DESC',
         fields='summary,comment',
         json_result='True')
-    
+
     match = []
     for issue in issues["issues"]:
         print(issue['key'] + ' | ' + issue['fields']['summary'])
-        match.append("{\"abbr\": \"%s\", \"menu\": \"%s\"}" %
-            (str(issue["key"]), issue["fields"]["summary"].replace("\"", "\\\"")))
+        match.append("{\"abbr\": \"%s\", \"menu\": \"%s\"}" % (str(
+            issue["key"]), issue["fields"]["summary"].replace("\"", "\\\"")))
 
     return ','.join(match)
-
 
 # Issue {{{2
 def vira_get_issue(issue):
@@ -79,7 +75,6 @@ def vira_get_issue(issue):
 
     return jira.issue(issue)
 
-
 # Comments {{{1
 def vira_add_comment(issue, comment):
     '''
@@ -87,7 +82,6 @@ def vira_add_comment(issue, comment):
     '''
 
     jira.add_comment(issue, comment)
-
 
 def vira_get_comments(issue):
     '''
@@ -106,7 +100,6 @@ def vira_get_comments(issue):
 
     return comments
 
-
 # Worklog {{{1
 def vira_add_worklog(issue, timeSpentSeconds, comment):
     '''
@@ -118,7 +111,6 @@ def vira_add_worklog(issue, timeSpentSeconds, comment):
     jira.add_worklog(
         issue=issue, timeSpentSeconds=timeSpentSeconds, comment=comment, started=earlier)
 
-
 # Status {{{1
 def vira_set_status(issue, status):
     '''
@@ -128,7 +120,6 @@ def vira_set_status(issue, status):
     '''
 
     jira.transition_issue(issue, status)
-
 
 # Main {{{1
 def main():
@@ -158,7 +149,6 @@ def main():
     issue = vira_get_issue('AC-159')
     print('Issue: ' + issue.key)
     print(vira_get_comments(issue))
-
 
 # Run script if this file is executed directly
 if __name__ == '__main__':
