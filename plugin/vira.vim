@@ -8,4 +8,9 @@ let g:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 let g:virapy_path = g:vira_root_dir . '/py/vira.py'
 let g:vira_active_issue = ''
 
-nnoremap <leader>vc :call vira#_dropdown()<CR>
+nnoremap <leader>vi :call vira#_dropdown()<CR>
+nnoremap <leader>vc :call vira#_insert_comment()<CR>
+
+function! ViraActiveIssue()
+  return vira#_get_active_issue()
+endfunction
