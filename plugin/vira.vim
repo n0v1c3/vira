@@ -43,7 +43,7 @@ endfunction
 
 function! vira#_init_python() "{{{1
   " Path to the file location
-  let virapy_path = s:plugin_root_path . '/py/vira.py'
+  let virapy_path = s:path . '/py/vira.py'
   " let virapy_path = '/home/travis/Documents/development/n0v1c3/vira' . '/py/vira.py'
 
   let vira_serv = 'https://jira.boiko.online'
@@ -52,7 +52,7 @@ function! vira#_init_python() "{{{1
 
   " Load `py/vira.py`
   python import sys
-  exe 'python sys.path = ["' . s:plugin_root_path . '"] + sys.path'
+  exe 'python sys.path = ["' . s:path . '"] + sys.path'
   " exe 'python sys.path = ["' . '/home/travis/Documents/development/n0v1c3/vira' . '"] + sys.path'
   exe 'pyfile ' . virapy_path
 endfunction
