@@ -14,6 +14,7 @@ Internals and API functions for vira
 # dev: let b:startargs = "--help"
 
 # Imports {{{1
+import vim
 from jira import JIRA
 import argparse
 import datetime
@@ -47,6 +48,17 @@ def vira_connect(server, user, pw):
 
     return JIRA(options={'server': server}, auth=(user, pw))
 
+def my_vira_connect():
+    '''
+    Connect to Jira server with supplied auth details
+    '''
+
+    server = getpass.getpass(prompt='Server: ', stream=None)
+    user = getpass.getpass(prompt='User: ', stream=None)
+    pw = getpass.getpass(prompt='Password: ', stream=None)
+
+    return JIRA(options={'server': server}, auth=(user, pw))
+
 # Issues {{{1
 # My Issues {{{2
 def vira_my_issues():
@@ -58,12 +70,14 @@ def vira_my_issues():
         'project = AC AND resolution = Unresolved AND assignee in (currentUser()) ORDER BY priority DESC, updated DESC',
         fields='summary,comment',
         json_result='True')
-
     match = []
     for issue in issues["issues"]:
-        print(issue['key'] + ' | ' + issue['fields']['summary'])
+        #  print(issue['key'] + ' | ' + issue['fields']['summary'])
         match.append("{\"abbr\": \"%s\", \"menu\": \"%s\"}" % (str(
             issue["key"]), issue["fields"]["summary"].replace("\"", "\\\"")))
+
+        # Rebuild the menu
+        vim.command('amenu&Vira.&' + issue["key"] + '<Tab>:e  i' + issue["key"])
 
     return ','.join(match)
 
@@ -121,20 +135,23 @@ def vira_set_status(issue, status):
 
     jira.transition_issue(issue, status)
 
+global jira
+#  jira = my_vira_connect()
+jira = vira_connect(vim.eval("vira_serv"), vim.eval("vira_user"), vim.eval("vira_pass"))
+
+'''
 # Main {{{1
 def main():
-    '''
-    Main script entry point
-    '''
+'''
+#  Main script entry point
+'''
 
-    global jira
 
     # Get pw if not passed with --password
     mypass = args.password if args.password else getpass.getpass(
         prompt='Password: ', stream=None)
 
     # Establish connection to JIRA
-    jira = vira_connect(args.server, args.user, mypass)
 
     print('')
     print('Active Issues')
@@ -151,6 +168,8 @@ def main():
     print(vira_get_comments(issue))
 
 # Run script if this file is executed directly
-if __name__ == '__main__':
-    args = parser.parse_args()
-    main()
+#  if __name__ == '__main__':
+    #  args = parser.parse_args()
+    #  main()
+
+'''
