@@ -59,6 +59,7 @@ def vira_my_issues():
         fields='summary,comment',
         json_result='True')
     #  match = []
+    vim.command('amenu&Vira.&' + vim.eval('g:vira_null_issue').replace(" ", "\\ ") + '<tab>:e :call vira#_set_active_issue("' + vim.eval('g:vira_null_issue').replace(" ", "\\ ") + '")<cr>')
     for issue in issues["issues"]:
         #  print(issue['key'] + ' | ' + issue['fields']['summary'])
         #  match.append("{\"abbr\": \"%s\", \"menu\": \"%s\"}" % (str(
