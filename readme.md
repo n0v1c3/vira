@@ -23,20 +23,23 @@ you to keep your password out of your awesome publicly available
 
 #### ViraGetActiveIssue
 `ViraGetActiveIssue()` - Get the currently selected active issue.  
-**Examples:**  
+
+##### Examples:
 `statusline+=%{ViraGetActiveIssue()}` - Display the active issue
 onto the status line.  
 
 #### ViraSetActiveIssue
 `ViraSetActiveIssue()` - Select active issue from a dropdown
 menu.  
-**Examples:**  
+
+##### Examples:
 `nnoremap <silent> <leader>vi :call ViraSetActiveIssue()<cr>` -
 select active issue in normal mode.  
 
 #### ViraInsertComment
 `ViraInsertComment()` - Insert comment into **JIRA** and **Code**
 for your active issue.  
-**Examples:**  
+
+##### Examples:
 `nnoremap <silent> <leader>vc :call ViraInsertComment()<cr>` -
 Select active issue in normal mode.  
