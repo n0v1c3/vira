@@ -18,7 +18,6 @@ import vim
 from jira import JIRA
 import argparse
 import datetime
-import getpass
 
 # Arguments {{{1
 # Parse arguments and show __doc__ and defaults in --help
@@ -48,17 +47,6 @@ def vira_connect(server, user, pw):
 
     return JIRA(options={'server': server}, auth=(user, pw))
 
-def my_vira_connect():
-    '''
-    Connect to Jira server with supplied auth details
-    '''
-
-    server = getpass.getpass(prompt='Server: ', stream=None)
-    user = getpass.getpass(prompt='User: ', stream=None)
-    pw = getpass.getpass(prompt='Password: ', stream=None)
-
-    return JIRA(options={'server': server}, auth=(user, pw))
-
 # Issues {{{1
 # My Issues {{{2
 def vira_my_issues():
@@ -70,16 +58,16 @@ def vira_my_issues():
         'project = AC AND resolution = Unresolved AND assignee in (currentUser()) ORDER BY priority DESC, updated DESC',
         fields='summary,comment',
         json_result='True')
-    match = []
+    #  match = []
     for issue in issues["issues"]:
         #  print(issue['key'] + ' | ' + issue['fields']['summary'])
-        match.append("{\"abbr\": \"%s\", \"menu\": \"%s\"}" % (str(
-            issue["key"]), issue["fields"]["summary"].replace("\"", "\\\"")))
+        #  match.append("{\"abbr\": \"%s\", \"menu\": \"%s\"}" % (str(
+            #  issue["key"]), issue["fields"]["summary"].replace("\"", "\\\"")))
 
         # Rebuild the menu
-        vim.command('amenu&Vira.&' + issue["key"] + '<Tab>:e  i' + issue["key"])
+        vim.command('amenu&Vira.&' + issue["key"] + "\ -\ " + issue["fields"]["summary"].replace(" ", "\\ ") + '<tab>:e :let g:vira_active_issue = "' + issue["key"] + '"<cr>')
 
-    return ','.join(match)
+    #  return ','.join(match)
 
 # Issue {{{2
 def vira_get_issue(issue):
@@ -135,18 +123,17 @@ def vira_set_status(issue, status):
 
     jira.transition_issue(issue, status)
 
-global jira
-#  jira = my_vira_connect()
-jira = vira_connect(vim.eval("vira_serv"), vim.eval("vira_user"), vim.eval("vira_pass"))
-
-'''
+# Create a connection {{{1
 # Main {{{1
 def main():
-'''
-#  Main script entry point
-'''
+    '''
+      Main script entry point
+    '''
 
+    global jira
+    jira = vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("g:vira_pass"))
 
+    '''
     # Get pw if not passed with --password
     mypass = args.password if args.password else getpass.getpass(
         prompt='Password: ', stream=None)
@@ -166,10 +153,9 @@ def main():
     issue = vira_get_issue('AC-159')
     print('Issue: ' + issue.key)
     print(vira_get_comments(issue))
+    '''
 
 # Run script if this file is executed directly
-#  if __name__ == '__main__':
-    #  args = parser.parse_args()
-    #  main()
-
-'''
+if __name__ == '__main__':
+    args = parser.parse_args()
+    main()
