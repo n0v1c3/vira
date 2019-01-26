@@ -8,7 +8,6 @@
 " Globals {{{2
 let g:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 let g:virapy_path = g:vira_root_dir . '/py/vira.py'
-let g:vira_active_issue = ''
 
 " Null issue text {{{3
 if !exists('g:vira_null_issue')
@@ -20,16 +19,20 @@ if !exists('g:vira_active_issue')
   let g:vira_active_issue = g:vira_null_issue
 endif
 
-nnoremap <leader>vi :call vira#_dropdown()<CR>
-nnoremap <leader>vc :call vira#_insert_comment()<CR>
-
 " Functions {{{1
 function! ViraSetActiveIssue() "{{{2
   call vira#_dropdown()
 endfunction
+
 function! ViraGetActiveIssue() "{{{2
   return vira#_get_active_issue()
 endfunction
+
+function! ViraGetActiveIssueFull() "{{{2
+  " TODO-TJG [190126] - This is not done yet
+  return vira#_get_active_issue() . vira_get_active_issue_desc()
+endfunction
+
 function ViraInsertComment() "{{{2
   call vira#_insert_comment()
 endfunction

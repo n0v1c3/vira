@@ -20,6 +20,11 @@ function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
 endfunction
 
+function! vira#_get_active_issue_desc() "{{{2
+  " TODO-TJG [190126] - Python function required for active issue description
+  return g:vira_active_issue
+endfunction
+
 function! vira#_set_active_issue(issue) "{{{2
   let g:vira_active_issue = a:issue
   " execuge "normal! mmO" . vira#_get_active_issue() . "\<esc>`m"
@@ -34,12 +39,22 @@ function! vira#_dropdown() "{{{2
 endfunction
 
 function! vira#_insert_comment() "{{{2
-  let comment = input(vira#_get_active_issue() . ": ")
-  execute "normal mmO" . vira#_get_active_issue() . " - " . comment . "\<esc>mn"
-  call NERDComment(0, "Toggle")
-  normal `m
-  python vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
-  popup &Vira
+  " Confirm an issue has been selected
+  if (vira#_get_active_issue()=~g:vira_null_issue)
+    " User can select an issue now
+    call vira#_dropdown()
+  endif
+  
+  " Final chance to have a selected issue
+  if !(vira#_get_active_issue()=~g:vira_null_issue)
+    let comment = input(vira#_get_active_issue() . ": ")
+    if !(comment=~"")
+      execute "normal mmO" . vira#_get_active_issue() . " - " . comment . "\<esc>mn"
+      call NERDComment(0, "Toggle")
+      normal `m
+      python vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
+    endif
+  endif
 endfunction
 
 function! vira#_init_python() "{{{2
