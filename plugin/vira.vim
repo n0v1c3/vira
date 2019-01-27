@@ -21,16 +21,11 @@ endif
 
 " Functions {{{1
 function! ViraSetActiveIssue() "{{{2
-  call vira#_dropdown()
+ call vira#_dropdown()
 endfunction
 
 function! ViraGetActiveIssue() "{{{2
   return vira#_get_active_issue()
-endfunction
-
-function! ViraGetActiveIssueFull() "{{{2
-  " TODO-TJG [190126] - This is not done yet
-  return vira#_get_active_issue() . vira_get_active_issue_desc()
 endfunction
 
 function! ViraInsertComment() "{{{2

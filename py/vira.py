@@ -55,7 +55,8 @@ def vira_my_issues():
     '''
 
     issues = jira.search_issues(
-        'project = AC AND resolution = Unresolved AND assignee in (currentUser()) ORDER BY priority DESC, updated DESC',
+        # 'project = AC AND resolution = Unresolved AND assignee in (currentUser()) ORDER BY priority DESC, updated DESC',
+        'resolution = Unresolved AND assignee in (currentUser()) ORDER BY priority DESC, updated DESC',
         fields='summary,comment',
         json_result='True')
     #  match = []
@@ -101,7 +102,8 @@ def vira_get_comments(issue):
 
     issues = jira.search_issues(
         'issue = "' + issue.key +
-        '" AND project = AC AND resolution = Unresolved ORDER BY priority DESC, updated DESC',
+        # '" AND project = AC AND resolution = Unresolved ORDER BY priority DESC, updated DESC',
+        '" AND resolution = Unresolved ORDER BY priority DESC, updated DESC',
         fields='summary,comment',
         json_result='True')
     comments = ''
@@ -131,6 +133,16 @@ def vira_set_status(issue, status):
     '''
 
     jira.transition_issue(issue, status)
+
+# Time {{{1
+def vira_timestamp():
+    '''
+    Selected for Development
+    In Progress
+    Done
+    '''
+
+    return str(datetime.datetime.now())
 
 # Create a connection {{{1
 # Main {{{1
