@@ -33,6 +33,9 @@ function! ViraGetActiveIssueFull() "{{{2
   return vira#_get_active_issue() . vira_get_active_issue_desc()
 endfunction
 
-function ViraInsertComment() "{{{2
+function! ViraInsertComment() "{{{2
   call vira#_insert_comment()
+endfunction
+function! ViraStatusLine() "{{{2
+  return vira#_get_statusline()
 endfunction

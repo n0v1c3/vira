@@ -78,6 +78,14 @@ def vira_get_issue(issue):
 
     return jira.issue(issue)
 
+def vira_statusline():
+    '''
+    Get single issue by isuue id
+    '''
+
+    #  return vim.eval('ViraGetActiveIssue()')
+    return "Test"
+
 # Comments {{{1
 def vira_add_comment(issue, comment):
     '''

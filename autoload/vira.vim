@@ -6,6 +6,9 @@
 
 " Variables {{{1
 let s:vira_version = '0.0.1' "{{{2
+if !exists('s:vira_statusline')
+  let s:vira_statusline = g:vira_null_issue "{{{2
+endif
 if !exists('s:vira_is_init')
   " Clear the init flag
   let s:vira_is_init = 0  "{{{2
@@ -70,3 +73,8 @@ function! vira#_init_python() "{{{2
   " Set the init flag
   let s:vira_is_init = 1
 endfunction
+function! vira#_get_statusline() "{{{2
+  return g:vira_active_issue
+  python vim.exec("let s:vira_statusline = " . vira_statusline())
+endfunction
+
