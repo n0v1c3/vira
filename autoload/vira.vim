@@ -32,6 +32,13 @@ function! vira#_get_active_issue_desc() "{{{2
   return g:vira_active_issue
 endfunction
 
+function! vira#_get_active_issue_report() "{{{2
+  " TODO-TJG [190126] - Python function required for active issue description
+
+  echo "Test"
+  echo vira#_get_active_issue()
+endfunction
+
 function! vira#_get_statusline() "{{{2
   return g:vira_active_issue
   python vim.exec("let s:vira_statusline = " . vira_statusline())
