@@ -24,14 +24,17 @@ for your active issue.
 `ViraSetActiveIssue()` - Select active issue from a dropdown
 menu.  
 `ViraStatusline()` - Quick statusline drop-in
+`ViraReport()` - Get a report for the active issue
 
 ### Examples:
 `statusline+=%{ViraStatusline()}` - Display the active issue
 onto the status line.  
 `nnoremap <silent> <leader>vi :call ViraSetActiveIssue()<cr>` -
-select active issue in normal mode.  
-`nnoremap <silent> <leader>vc :call ViraInsertComment()<cr>` -
 Select active issue in normal mode.  
+`nnoremap <silent> <leader>vc :call ViraInsertComment()<cr>` -
+Insert comment to active issue in normal mode.  
+`nnoremap <silent> <leader>vr :call ViraInsertComment()<cr>` -
+Call report from normal mode  
 
 ### Plugin Support:
 #### airline
