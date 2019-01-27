@@ -35,7 +35,6 @@ endfunction
 function! vira#_get_active_issue_report() "{{{2
   " TODO-TJG [190126] - Python function required for active issue description
 
-  echo "Test"
   echo vira#_get_active_issue()
 endfunction
 
@@ -82,6 +81,31 @@ endfunction
 
 function! vira#_timestamp() "{{{2
   python vira_timestamp()
+endfunction
+
+function! vira#_report_buffer_toggle()
+  " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
+
+  " Update user
+  echo 'Issue: ' . vira#_get_active_issue() . ' report being updated.'
+
+  " Create a new buffer
+  silent! let winnr = bufwinnr('^' . ViraGetActiveIssue() . '$')
+  silent! execute  winnr < 0 ? 'botright vnew ' . fnameescape(ViraGetActiveIssue()) : winnr . 'wincmd w'
+  silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
+  silent! redraw
+  silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
+
+  " Write report output into the new buffer
+  silent! redir @">|silent call vira#_get_active_issue_report()|redir END|put
+  " Clean-up
+  silent! execute 'normal gg2dd0'
+
+  " Local key mappings
+  silent! execute 'nnoremap <silent> <buffer> q :q<CR>'
+
+  " Update user
+  echo 'Issue: ' . vira#_get_active_issue() . ' report!'
 endfunction
 
 function! vira#_dropdown() "{{{2

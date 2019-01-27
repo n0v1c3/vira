@@ -20,16 +20,13 @@ if !exists('g:vira_active_issue')
 endif
 
 " Functions {{{1
+" TODO-TJG [190127] - Most of these functions should be commands
 function! ViraSetActiveIssue() "{{{2
  call vira#_dropdown()
 endfunction
 
 function! ViraGetActiveIssue() "{{{2
   return vira#_get_active_issue()
-endfunction
-
-function! ViraGetActiveIssueReport() "{{{2
-  redir @">|silent call vira#_get_active_issue_report()|redir END|vnew|put
 endfunction
 
 function! ViraInsertComment() "{{{2
@@ -39,21 +36,6 @@ function! ViraStatusLine() "{{{2
   return vira#_get_statusline()
 endfunction
 
-" Thanks: epsilonhalbe
-" https://stackoverflow.com/questions/10493452/vim-open-a-temporary-buffer-displaying-executables-output
-function! ViraGetActiveIssueReport() " {{{
-    let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
-    let winnr = bufwinnr('^' . command . '$')
-    silent! execute  winnr < 0 ? 'botright vnew ' . fnameescape(command) : winnr . 'wincmd w'
-    setlocal buftype=nowrite bufhidden=wipe nobuflisted noswapfile nowrap nonumber
-    echo 'Execute ' . command . '...'
-    silent! execute 'silent %!'. command
-    silent! redraw
-    silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
-    silent! execute 'nnoremap <silent> <buffer> <LocalLeader>r :call <SID>ExecuteInShell(''' . command . ''')<CR>:AnsiEsc<CR>'
-    silent! execute 'nnoremap <silent> <buffer> q :q<CR>'
-    silent! execute 'AnsiEsc'
-    echo 'Shell command ' . command . ' executed.'
-endfunction " }}}
-command! -complete=shellcmd -nargs=+ Shell call s:ExecuteInShell(<q-args>)
-nnoremap <leader>! :Shell
+function! ViraReport() " {{{2
+  call vira#_report_buffer_toggle()
+endfunction
