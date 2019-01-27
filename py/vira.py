@@ -127,9 +127,7 @@ def vira_add_worklog(issue, timeSpentSeconds, comment):
 # Status {{{1
 def vira_set_status(issue, status):
     '''
-    Selected for Development
-    In Progress
-    Done
+    Set the status of the given issue
     '''
 
     jira.transition_issue(issue, status)
@@ -138,43 +136,47 @@ def vira_set_status(issue, status):
 def vira_timestamp():
     '''
     Selected for Development
-    In Progress
-    Done
     '''
 
     return str(datetime.datetime.now())
 
-# Create a connection {{{1
+def vira_report(issue):
+    '''
+    Print a report for the given issue
+    '''
+
+    issues = jira.search_issues(
+        'issue = "' + issue +
+        # '" AND project = AC AND resolution = Unresolved ORDER BY priority DESC, updated DESC',
+        '" AND resolution = Unresolved ORDER BY priority DESC, updated DESC',
+        fields='summary,comment,description',
+        json_result='True')
+
+    print("Issue:\n" + issue + ' | ' + issues["issues"][0]["fields"]["summary"])
+    print("\nDetails:\n")
+    print("\nDescription:\n" + issues["issues"][0]["fields"]["description"])
+    print("\nComments:")
+
+    for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
+        print("\n" + comment['author']['displayName'] + ' | ' + comment['updated'][
+            0:10] + ' @ ' + comment['updated'][11:16])
+        print(comment['body'] + '\n')
+
 # Main {{{1
 def main():
     '''
-      Main script entry point
+    Main script entry point
     '''
-
-    global jira
-    jira = vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("g:vira_pass"))
 
     '''
     # Get pw if not passed with --password
     mypass = args.password if args.password else getpass.getpass(
         prompt='Password: ', stream=None)
-
-    # Establish connection to JIRA
-
-    print('')
-    print('Active Issues')
-    print('=============')
-    vira_my_issues()
-    print('')
-    issue = vira_get_issue('AC-186')
-    print('Issue: ' + issue.key)
-    print(vira_get_comments(issue))
-
-    print('')
-    issue = vira_get_issue('AC-159')
-    print('Issue: ' + issue.key)
-    print(vira_get_comments(issue))
     '''
+
+    # Create a connection
+    global jira
+    jira = vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("g:vira_pass"))
 
 # Run script if this file is executed directly
 if __name__ == '__main__':
