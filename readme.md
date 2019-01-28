@@ -23,7 +23,7 @@ you to keep your password out of your awesome publicly available
 for your active issue.  
 `ViraSetActiveIssue()` - Select active issue from a dropdown
 menu.  
-`ViraStatusline()` - Quick statusline drop-in
+`ViraStatusline()` - Quick statusline drop-in.  
 `ViraReport()` - Get a report for the active issue
 
 ### Examples:
