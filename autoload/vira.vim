@@ -68,11 +68,12 @@ function! vira#_insert_comment() "{{{2
   " Final chance to have a selected issue
   if !(vira#_get_active_issue()=~g:vira_null_issue)
     let comment = input(vira#_get_active_issue() . ": ")
-    if !(comment=~"")
+    if !(comment == "")
       execute "normal mmO" . vira#_get_active_issue() . " - " . comment . "\<esc>mn"
       call NERDComment(0, "Toggle")
       normal `m
       python vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
+      echo comment
     endif
   endif
 endfunction
