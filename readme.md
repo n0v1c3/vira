@@ -3,19 +3,24 @@ Vim JIRA interface plugin
 
 ## Installation
 Add `n0v1c3/vira` to your favorite VIM package manager  
+
+## Configuration
 Add the following lines to your `.vimrc`  
 ```
 let g:vira_serv = "https://jira.website.com"
 let g:vira_user = "username"
-let g:vira_pass = "password"
+```  
+You will be propted for your password only **once for each vim session**
+on the first usage.  
+
+### External Password Management
+The `system` command can be used to get your password from external
+sources. Below is an example using the `lpass` function, **please
+note the `[:-2]` being used to remove the endline character.**  
 ```
-
-### Important
-Omit `let g:vira_pass` and you will be prompted for your password
-only **once for each vim session** on the first usage. This will allow
-you to keep your password out of your awesome publicly available
-`dotfiles`.  
-
+let g:vira_user = system('lpass show --username account')[:-2]
+let g:vira_pass = system('lpass show --password account')[:-2]
+```  
 ## Usage
 ### Functions
 `ViraGetActiveIssue()` - Get the currently selected active issue.  
