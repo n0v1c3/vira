@@ -87,7 +87,7 @@ function! vira#_report_buffer_toggle() "{{{2
 
   " Get the current winnr of the 'vira_report' buffer
   silent! let winnr = bufwinnr('^' . 'vira_report' . '$')
-  
+
   " Toggle/create the report buffer
   if (winnr < 0)
     " Update user
@@ -109,10 +109,18 @@ function! vira#_report_buffer_toggle() "{{{2
     silent! execute '%s/\^M//g'
     silent! execute 'normal gg2dd0'
 
+    " TODO-TJG [190128] - Move this to a vimscript for the buffer {{{
     " Local key mappings
     silent! execute 'nnoremap <silent> <buffer> q :q<CR>'
+    silent! execute 'nnoremap <silent> <buffer> j gj'
+    silent! execute 'nnoremap <silent> <buffer> k gk'
+    silent! execute 'vnoremap <silent> <buffer> j gj'
+    silent! execute 'vnoremap <silent> <buffer> k gk'
+
+    " Ensure wrap and linebreak are enabled
     silent! execute 'set wrap'
     silent! execute 'set linebreak'
+    " }}}
 
     " Update user
     echo 'Issue: ' . vira#_get_active_issue() . ' report!'
