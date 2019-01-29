@@ -2,7 +2,12 @@
 Vim JIRA interface plugin
 
 ## Installation
-Add `n0v1c3/vira` to your favorite VIM package manager  
+Add `n0v1c3/vira` to your favorite VIM package manager and finaly
+install JIRA into Python.  
+```
+sudo python2 -m pip install jira
+sudo python3 -m pip install jira
+```  
 
 ## Configuration
 Add the following lines to your `.vimrc`  
