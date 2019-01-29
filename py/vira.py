@@ -160,8 +160,8 @@ def vira_report(issue):
     print("\nComments:")
     print("----------")
     for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
-        print(comment['author']['displayName'] + ' | ' + comment['updated'][
-            0:10] + ' @ ' + comment['updated'][11:16])
+        print(comment['author']['displayName'] + ' @ ' + comment['updated'][
+            0:10] + ' ' + comment['updated'][11:16])
         print(comment['body'])
         print("----------")
 
