@@ -111,7 +111,7 @@ def vira_get_comments(issue):
         comments += comment['author']['displayName'] + ' | ' + comment['updated'][
             0:10] + ' @ ' + comment['updated'][11:16] + ' | ' + comment['body'] + '\n'
 
-    return comments
+        return comments
 
 # Worklog {{{1
 def vira_add_worklog(issue, timeSpentSeconds, comment):
@@ -124,7 +124,7 @@ def vira_add_worklog(issue, timeSpentSeconds, comment):
     jira.add_worklog(
         issue=issue, timeSpentSeconds=timeSpentSeconds, comment=comment, started=earlier)
 
-# Status {{{1
+    # Status {{{1
 def vira_set_status(issue, status):
     '''
     Set the status of the given issue
@@ -152,15 +152,18 @@ def vira_report(issue):
         fields='summary,comment,description',
         json_result='True')
 
-    print("Issue:\n" + issue + ' | ' + issues["issues"][0]["fields"]["summary"])
-    print("\nDetails:\n")
-    print("\nDescription:\n" + issues["issues"][0]["fields"]["description"])
+    # print("Issue:\n" + issue + ' | ' + issues["issues"][0]["fields"]["summary"])
+    print(issue + ' | ' + issues["issues"][0]["fields"]["summary"])
+    # print("Details:")
+    print('\nDescription:\n' + issues["issues"][0]["fields"]["description"])
 
     print("\nComments:")
+    print("----------")
     for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
-        print("\n" + comment['author']['displayName'] + ' | ' + comment['updated'][
+        print(comment['author']['displayName'] + ' | ' + comment['updated'][
             0:10] + ' @ ' + comment['updated'][11:16])
-        print(comment['body'] + '\n')
+        print(comment['body'])
+        print("----------")
 
 # Main {{{1
 def main():
