@@ -82,28 +82,33 @@ function! vira#_timestamp() "{{{2
   python vira_timestamp()
 endfunction
 
-function! vira#_report_buffer_toggle()
+function! vira#_report_buffer_toggle() "{{{2
   " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
 
-  " Update user
+  " Update user starting
   echo 'Issue: ' . vira#_get_active_issue() . ' report being updated.'
 
   " Create a new buffer
-  silent! let winnr = bufwinnr('^' . ViraGetActiveIssue() . '$')
-  silent! execute  winnr < 0 ? 'botright vnew ' . fnameescape(ViraGetActiveIssue()) : winnr . 'wincmd w'
+  " Common buffer for any report
+  silent! let winnr = bufwinnr('^' . 'vira_report' . '$')
+  silent! execute  winnr < 0 ? 'botright vnew ' . fnameescape('^vira_report$') : winnr . 'wincmd w'
   silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
   silent! redraw
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
 
+  " Clean-up existing report
+  silent! normal ggVGd
+
   " Write report output into the new buffer
-  silent! redir @">|silent call vira#_get_active_issue_report()|redir END|put
-  " Clean-up
+  silent! redir @">|silent! call vira#_get_active_issue_report()|silent! redir END|silent! put
+
+  " Clean-up extra output lines
   silent! execute 'normal gg2dd0'
 
   " Local key mappings
   silent! execute 'nnoremap <silent> <buffer> q :q<CR>'
 
-  " Update user
+  " Update user report completed
   echo 'Issue: ' . vira#_get_active_issue() . ' report!'
 endfunction
 
