@@ -92,6 +92,13 @@ function! vira#_report_buffer_toggle() "{{{2
   " Common buffer for any report
   silent! let winnr = bufwinnr('^' . 'vira_report' . '$')
   silent! execute  winnr < 0 ? 'botright vnew ' . fnameescape('vira_report') : winnr . 'wincmd w'
+
+  " if (winnr < 0)
+    " silent! botright vnew fnameescape('vira_report')
+  " else
+    " silent! execute winnr .'wincmd w'
+  " endif
+
   silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
   silent! redraw
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
