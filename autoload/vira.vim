@@ -85,38 +85,41 @@ endfunction
 function! vira#_report_buffer_toggle() "{{{2
   " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
 
-  " Update user starting
-  echo 'Issue: ' . vira#_get_active_issue() . ' report being updated.'
-
-  " Create a new buffer
-  " Common buffer for any report
+  " Get the current winnr of the 'vira_report' buffer
   silent! let winnr = bufwinnr('^' . 'vira_report' . '$')
-  silent! execute  winnr < 0 ? 'botright vnew ' . fnameescape('vira_report') : winnr . 'wincmd w'
+  
+  " Toggle/create the report buffer
+  if (winnr < 0)
+    " Update user
+    echo 'Issue: ' . vira#_get_active_issue() . ' report being updated.'
 
-  " if (winnr < 0)
-    " silent! botright vnew fnameescape('vira_report')
-  " else
+    " Open buffer into a window
+    silent! execute 'botright vnew ' . fnameescape('vira_report')
+    silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
+    silent! redraw
+    silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
+
+    " Clean-up existing report buffer
+    silent! normal ggVGd
+
+    " Write report output into buffer
+    silent! redir @">|silent! call vira#_get_active_issue_report()|silent! redir END|silent! put
+
+    " Clean-up extra output
+    silent! execute '%s/\^M//g'
+    silent! execute 'normal gg2dd0'
+
+    " Local key mappings
+    silent! execute 'nnoremap <silent> <buffer> q :q<CR>'
+    silent! execute 'set wrap'
+    silent! execute 'set linebreak'
+
+    " Update user
+    echo 'Issue: ' . vira#_get_active_issue() . ' report!'
+  else
     " silent! execute winnr .'wincmd w'
-  " endif
-
-  silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
-  silent! redraw
-  silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
-
-  " Clean-up existing report
-  silent! normal ggVGd
-
-  " Write report output into the new buffer
-  silent! redir @">|silent! call vira#_get_active_issue_report()|silent! redir END|silent! put
-
-  " Clean-up extra output lines
-  silent! execute 'normal gg2dd0'
-
-  " Local key mappings
-  silent! execute 'nnoremap <silent> <buffer> q :q<CR>'
-
-  " Update user report completed
-  echo 'Issue: ' . vira#_get_active_issue() . ' report!'
+    silent! execute winnr .'wincmd q'
+  endif
 endfunction
 
 function! vira#_dropdown() "{{{2
