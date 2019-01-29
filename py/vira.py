@@ -45,7 +45,7 @@ def vira_connect(server, user, pw):
     Connect to Jira server with supplied auth details
     '''
 
-    return JIRA(options={'server': server}, auth=(user, pw))
+    return JIRA(options={'server': server}, auth=(user, pw), timeout=5)
 
 # Issues {{{1
 # My Issues {{{2
