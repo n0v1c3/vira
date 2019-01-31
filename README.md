@@ -40,7 +40,7 @@ for your active issue.
 `ViraSetActiveIssue()` - Select active issue from a dropdown
 menu.  
 `ViraStatusline()` - Quick statusline drop-in.  
-`ViraReport()` - Get a report for the active issue
+`ViraReport()` - Get a report for the active issue  
 `ViraServer()` - Change your active JIRA server
 
 ### Examples:
