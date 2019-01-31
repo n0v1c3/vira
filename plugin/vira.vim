@@ -8,7 +8,6 @@
 " Globals {{{2
 let g:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 let g:virapy_path = g:vira_root_dir . '/py/vira.py'
-
 " Null issue text {{{3
 if !exists('g:vira_null_issue')
   let g:vira_null_issue = 'No Issue Selected'
@@ -17,6 +16,16 @@ endif
 " Active issue text {{{3
 if !exists('g:vira_active_issue')
   let g:vira_active_issue = g:vira_null_issue
+endif
+
+" Active issue text {{{3
+if !exists('g:vira_active_issue')
+  let g:vira_active_issue = g:vira_null_issue
+endif
+
+" Server selected {{{3
+if !exists('g:vira_serv')
+  let g:vira_serv = ''
 endif
 
 " Functions {{{1
@@ -38,4 +47,8 @@ endfunction
 
 function! ViraReport() " {{{2
   call vira#_report_buffer_toggle()
+endfunction
+
+function! ViraServer() " {{{2
+  call vira#_set_server()
 endfunction

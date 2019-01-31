@@ -45,18 +45,39 @@ function! vira#_get_version() "{{{2
   return s:vira_version
 endfunction
 
+function! vira#_set_server() "{{{2
+  " Confirm server list is set by user
+  if exists('g:vira_srvs')
+    " Build and display the menu
+    amenu&Vira.&<tab>:e <cr>
+    aunmenu &Vira
+    for serv in g:vira_srvs
+      execute('amenu&Vira.&' . escape(serv, '\\/.*$^~[]') . '<tab>:e :let g:vira_serv = ' . '"' . serv . '"' . '<cr>')
+    endfor
+    silent! popup &Vira
+  else
+    echo 'g:vira_srvs has not been set'
+  endif
+endfunction
+
 function! vira#_init_python() "{{{2
-  if (g:vira_pass=~"")
-    let g:vira_pass = inputsecret('Enter password: ')
+  if (g:vira_serv == '')
+    call vira#_set_server()
   endif
 
-  " Load `py/vira.py`
-  python import sys
-  exe 'python sys.path = ["' . g:vira_root_dir . '"] + sys.path'
-  exe 'pyfile ' . g:virapy_path
+  if (g:vira_serv != '')
+    if (g:vira_pass=~"")
+      let g:vira_pass = inputsecret('Enter password: ')
+    endif
 
-  " Set the init flag
-  let s:vira_is_init = 1
+    " Load `py/vira.py`
+    python import sys
+    exe 'python sys.path = ["' . g:vira_root_dir . '"] + sys.path'
+    exe 'pyfile ' . g:virapy_path
+
+    " Set the init flag
+    let s:vira_is_init = 1
+  endif
 endfunction
 function! vira#_insert_comment() "{{{2
   " Confirm an issue has been selected
@@ -76,6 +97,15 @@ function! vira#_insert_comment() "{{{2
       echo comment
     endif
   endif
+endfunction
+
+function! vira#_dropdown() "{{{2
+  if !s:vira_is_init
+    call vira#_init_python()
+  endif
+  python vira_my_issues()
+  popup &Vira
+  call vira#_timestamp()
 endfunction
 
 function! vira#_timestamp() "{{{2
@@ -128,14 +158,5 @@ function! vira#_report_buffer_toggle() "{{{2
     " silent! execute winnr .'wincmd w'
     silent! execute winnr .'wincmd q'
   endif
-endfunction
-
-function! vira#_dropdown() "{{{2
-  if !s:vira_is_init
-    call vira#_init_python()
-  endif
-  python vira_my_issues()
-  popup &Vira
-  call vira#_timestamp()
 endfunction
 

@@ -59,15 +59,22 @@ def vira_my_issues():
         'resolution = Unresolved AND assignee in (currentUser()) ORDER BY priority DESC, updated DESC',
         fields='summary,comment',
         json_result='True')
-    #  match = []
-    vim.command('amenu&Vira.&' + vim.eval('g:vira_null_issue').replace(" ", "\\ ") + '<tab>:e :call vira#_set_active_issue("' + vim.eval('g:vira_null_issue').replace(" ", "\\ ") + '")<cr>')
-    for issue in issues["issues"]:
-        #  print(issue['key'] + ' | ' + issue['fields']['summary'])
-        #  match.append("{\"abbr\": \"%s\", \"menu\": \"%s\"}" % (str(
-            #  issue["key"]), issue["fields"]["summary"].replace("\"", "\\\"")))
 
-        # Rebuild the menu
-        vim.command('amenu&Vira.&' + issue["key"] + "\ -\ " + issue["fields"]["summary"].replace(" ", "\\ ") + '<tab>:e :let g:vira_active_issue = "' + issue["key"] + '"<cr>')
+    # Rebuild the menu
+    vim.command('redraw')
+    vim.command('amenu&Vira.&<tab>:e :<cr>')
+    vim.command('aunmenu &Vira')
+    vim.command('amenu&Vira.&' +
+                vim.eval('g:vira_null_issue').replace(" ", "\\ ") +
+                '<tab>:e :call vira#_set_active_issue("' +
+                vim.eval('g:vira_null_issue').replace(" ", "\\ ") +
+                '")<cr>')
+    for issue in issues["issues"]:
+        vim.command("amenu&Vira.&" +
+                    issue["key"] + "\ -\ " +
+                    issue["fields"]["summary"].replace(" ", "\\ ") +
+                    '<tab>:e :let g:vira_active_issue = "' +
+                    issue["key"] + '"<cr>')
 
     #  return ','.join(match)
 
