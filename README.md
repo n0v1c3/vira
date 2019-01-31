@@ -26,6 +26,12 @@ note the `[:-2]` being used to remove the endline character.**
 let g:vira_user = system('lpass show --username account')[:-2]
 let g:vira_pass = system('lpass show --password account')[:-2]
 ```  
+### Multiple JIRA Servers
+By omitting the above `g:vira_serv` and instead using the below configuration
+you will be able to quickly hop between diferent JIRA servers.  
+```
+let g:vira_srvs = ['https://jira.website.com', 'https://jira.othersite.com']
+```  
 ## Usage
 ### Functions
 `ViraGetActiveIssue()` - Get the currently selected active issue.  
@@ -35,6 +41,7 @@ for your active issue.
 menu.  
 `ViraStatusline()` - Quick statusline drop-in.  
 `ViraReport()` - Get a report for the active issue
+`ViraServer()` - Change your active JIRA server
 
 ### Examples:
 `statusline+=%{ViraStatusline()}` - Display the active issue
@@ -45,6 +52,8 @@ Select active issue in normal mode.
 Insert comment to active issue in normal mode.  
 `nnoremap <silent> <leader>vr :call ViraInsertComment()<cr>` -
 Call report from normal mode  
+`nnoremap <silent> <leader>vs :call ViraServer()<cr>` -
+Change your active JIRA server  
 
 ### Plugin Support:
 #### airline
