@@ -66,7 +66,7 @@ function! vira#_init_python() "{{{2
   endif
 
   if (g:vira_serv != '')
-    if (g:vira_pass=~"")
+    if (g:vira_pass == "")
       let g:vira_pass = inputsecret('Enter password: ')
     endif
 
@@ -81,13 +81,13 @@ function! vira#_init_python() "{{{2
 endfunction
 function! vira#_insert_comment() "{{{2
   " Confirm an issue has been selected
-  if (vira#_get_active_issue()=~g:vira_null_issue)
+  if (vira#_get_active_issue() == g:vira_null_issue)
     " User can select an issue now
     call vira#_dropdown()
   endif
 
   " Final chance to have a selected issue
-  if !(vira#_get_active_issue()=~g:vira_null_issue)
+  if !(vira#_get_active_issue() == g:vira_null_issue)
     let comment = input(vira#_get_active_issue() . ": ")
     if !(comment == "")
       execute "normal mmO" . vira#_get_active_issue() . " - " . comment . "\<esc>mn"
