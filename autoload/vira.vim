@@ -61,15 +61,16 @@ function! vira#_set_server() "{{{2
 endfunction
 
 function! vira#_init_python() "{{{2
+  " VIRA-19 - Added `exist` checks into the `_init_python` function
   silent! let vira_serv_config = 1
-  if (g:vira_serv == '')
+  if (!exists('g:vira_serv') || (exists('g:vira_serv') && g:vira_serv == ''))
     silent! let vira_serv_config = 0
     call vira#_set_server()
   endif
 
-  if (g:vira_serv != '')
+  if (exists('g:vira_serv') && g:vira_serv != '')
     silent! let vira_pass_config = 1
-    if (g:vira_pass == "")
+    if (!exists('g:vira_pass') || (exists('g:vira_pass') && g:vira_pass == ''))
       silent! let vira_pass_config = 0
       let g:vira_pass = inputsecret('Enter password: ')
     endif
