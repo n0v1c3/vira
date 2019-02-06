@@ -52,7 +52,7 @@ function! vira#_set_server() "{{{2
     amenu&Vira.&<tab>:e <cr>
     aunmenu &Vira
     for serv in g:vira_srvs
-      execute('amenu&Vira.&' . escape(serv, '\\/.*$^~[]') . '<tab>:e :let g:vira_serv = ' . '"' . serv . '"' . '<cr>')
+      execute('amenu&Vira.&' . escape(serv, '\\/.*$^~[]') . '<tab>:silent! e :let g:vira_serv = ' . '"' . serv . '"' . '<cr>')
     endfor
     silent! popup &Vira
   else
@@ -61,24 +61,39 @@ function! vira#_set_server() "{{{2
 endfunction
 
 function! vira#_init_python() "{{{2
+  silent! let vira_serv_config = 1
   if (g:vira_serv == '')
+    silent! let vira_serv_config = 0
     call vira#_set_server()
   endif
 
   if (g:vira_serv != '')
+    silent! let vira_pass_config = 1
     if (g:vira_pass == "")
+      silent! let vira_pass_config = 0
       let g:vira_pass = inputsecret('Enter password: ')
     endif
 
     " Load `py/vira.py`
-    python import sys
-    exe 'python sys.path = ["' . g:vira_root_dir . '"] + sys.path'
-    exe 'pyfile ' . g:virapy_path
+    silent! python import sys
+    silent! exe 'python sys.path = ["' . g:vira_root_dir . '"] + sys.path'
+    silent! exe 'pyfile ' . g:virapy_path
+    
+    silent! python vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("g:vira_pass"))
 
-    " Set the init flag
-    let s:vira_is_init = 1
+    if (s:vira_is_init != 1)
+      echo "\nNot logged in! Check configuration and CAPTCHA"
+      " Reset the none commented variables
+      if (vira_serv_config == 0)
+        let g:vira_serv = ""
+      endif
+      if (vira_pass_config == 0)
+        let g:vira_pass = ""
+      endif
+    endif
   endif
 endfunction
+
 function! vira#_insert_comment() "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
@@ -100,12 +115,15 @@ function! vira#_insert_comment() "{{{2
 endfunction
 
 function! vira#_dropdown() "{{{2
-  if !s:vira_is_init
+  if (s:vira_is_init == 0)
     call vira#_init_python()
   endif
-  python vira_my_issues()
-  popup &Vira
-  call vira#_timestamp()
+
+  if (s:vira_is_init == 1)
+    silent! python vira_my_issues()
+    popup &Vira
+  endif
+
 endfunction
 
 function! vira#_timestamp() "{{{2

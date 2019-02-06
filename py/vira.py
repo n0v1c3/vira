@@ -44,8 +44,12 @@ def vira_connect(server, user, pw):
     '''
     Connect to Jira server with supplied auth details
     '''
-
-    return JIRA(options={'server': server}, auth=(user, pw), timeout=5)
+    global jira
+    try:
+        jira = JIRA(options={'server': server}, auth=(user, pw), timeout=5)
+        vim.command("let s:vira_is_init = 1")
+    except:
+        vim.command("let s:vira_is_init = 0")
 
 # Issues {{{1
 # My Issues {{{2
@@ -185,8 +189,8 @@ def main():
     '''
 
     # Create a connection
-    global jira
-    jira = vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("g:vira_pass"))
+    #  jira = vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("g:vira_pass"))
+    #  vim.command("let s:vira_is_init = 0")
 
 # Run script if this file is executed directly
 if __name__ == '__main__':
