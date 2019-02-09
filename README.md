@@ -37,6 +37,8 @@ properly by I will.
 ## Usage
 ### Functions
 `ViraGetActiveIssue()` - Get the currently selected active issue.  
+`ViraComment()` - Insert a comment into JIRA for your active
+issue.  
 `ViraInsertComment()` - Insert comment into **JIRA** and **Code**
 for your active issue.  
 `ViraDropdown()` - Select active issue from a dropdown
