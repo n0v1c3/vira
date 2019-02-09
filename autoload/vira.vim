@@ -134,7 +134,7 @@ function! vira#_timestamp() "{{{2
   python vira_timestamp()
 endfunction
 
-function! vira#_report_buffer_toggle() "{{{2
+function! vira#_report() "{{{2
   " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
 
   " Get the current winnr of the 'vira_report' buffer
@@ -155,7 +155,7 @@ function! vira#_report_buffer_toggle() "{{{2
     silent! normal ggVGd
 
     " Write report output into buffer
-    silent! redir @">|silent! call vira#_get_active_issue_report()|silent! redir END|silent! put
+    silent! redir @">|silent! python vira_report(vim.eval("vira#_get_active_issue()"))|silent! redir END|silent! put
 
     " Clean-up extra output
     silent! execute '%s/\^M//g'

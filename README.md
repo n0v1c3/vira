@@ -39,7 +39,7 @@ properly by I will.
 `ViraGetActiveIssue()` - Get the currently selected active issue.  
 `ViraInsertComment()` - Insert comment into **JIRA** and **Code**
 for your active issue.  
-`ViraSetActiveIssue()` - Select active issue from a dropdown
+`ViraDropdown()` - Select active issue from a dropdown
 menu.  
 `ViraStatusline()` - Quick statusline drop-in.  
 `ViraReport()` - Get a report for the active issue  
