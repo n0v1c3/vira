@@ -155,7 +155,7 @@ function! vira#_report() "{{{2
     silent! normal ggVGd
 
     " Write report output into buffer
-    silent! redir @">|silent! python vira_report(vim.eval("vira#_get_active_issue()"))|silent! redir END|silent! put
+    silent! redir @">|silent! call vira#_get_active_issue_report()|silent! redir END|silent! put
 
     " Clean-up extra output
     silent! execute '%s/\^M//g'
