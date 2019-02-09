@@ -48,13 +48,13 @@ menu.
 ### Examples:
 `statusline+=%{ViraStatusline()}` - Display the active issue
 onto the status line.  
-`nnoremap <silent> <leader>vi :call ViraSetActiveIssue()<cr>` -
+`nnoremap <silent> <leader>vi :ViraSetActiveIssue()<cr>` -
 Select active issue in normal mode.  
-`nnoremap <silent> <leader>vc :call ViraInsertComment()<cr>` -
+`nnoremap <silent> <leader>vc :ViraInsertComment()<cr>` -
 Insert comment to active issue in normal mode.  
-`nnoremap <silent> <leader>vr :call ViraInsertComment()<cr>` -
+`nnoremap <silent> <leader>vr :ViraReport()<cr>` -
 Call report from normal mode  
-`nnoremap <silent> <leader>vs :call ViraServer()<cr>` -
+`nnoremap <silent> <leader>vs :ViraServer()<cr>` -
 Change your active JIRA server  
 
 ### Plugin Support:
