@@ -51,8 +51,11 @@ function! vira#_set_server() "{{{2
     " Build and display the menu
     amenu&Vira.&<tab>:e <cr>
     aunmenu &Vira
+    " VIRA-14 - Update the server name and the user name commands
+    let i = 0
     for serv in g:vira_srvs
-      execute('amenu&Vira.&' . escape(serv, '\\/.*$^~[]') . '<tab>:silent! e :let g:vira_serv = ' . '"' . serv . '"' . '<cr>')
+      execute('amenu&Vira.&' . escape(serv, '\\/.*$^~[]') . '<tab>:silent! e :let g:vira_serv = ' . '"' . serv . '"' . '<cr>:let g:vira_user = "' . g:vira_usrs[i] . '"<cr>')
+      let i = i + 1
     endfor
     silent! popup &Vira
   else

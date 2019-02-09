@@ -12,26 +12,28 @@ sudo python3 -m pip install jira
 ## Configuration
 Add the following lines to your `.vimrc`  
 ```
-let g:vira_serv = "https://jira.website.com"
-let g:vira_user = "username"
+let g:vira_srvs = ['https://jira.website.com', 'https://jira.othersite.com']
+let g:vira_usrs = ['username_website', 'username_othersite']
 ```  
+These lists should be of equal length with at least **one** entry each
+and represent the address of the JIRA site along with the user
+names being used to log in.  
+
 You will be propted for your password only **once for each vim session**
 on the first usage.  
 
 ### External Password Management
 The `system` command can be used to get your password from external
 sources. Below is an example using the `lpass` function, **please
-note the `[:-2]` being used to remove the endline character.**  
+note the `[:-2]` being used to remove an endline character.**  
 ```
 let g:vira_user = system('lpass show --username account')[:-2]
 let g:vira_pass = system('lpass show --password account')[:-2]
 ```  
-### Multiple JIRA Servers
-By omitting the above `g:vira_serv` and instead using the below configuration
-you will be able to quickly hop between diferent JIRA servers.  
-```
-let g:vira_srvs = ['https://jira.website.com', 'https://jira.othersite.com']
-```  
+#### Development Note
+I have not yet completed how to make this work with multiple accounts
+properly by I will.  
+
 ## Usage
 ### Functions
 `ViraGetActiveIssue()` - Get the currently selected active issue.  
