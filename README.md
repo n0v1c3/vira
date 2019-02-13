@@ -43,7 +43,7 @@ to be used to help configure Vira to work for you.
 `ViraInsertComment` - Insert comment into **JIRA** and **Code** for your active issue.  
 `ViraSetIssue` - Select active **issue** from a dropdown menu.  
 `ViraSetProject` - Select active **project** from a dropdown menu.  
-`ViraReport` - Get a report for the active issue  
+`ViraGetReport` - Get a report fr the active issue  
 `ViraSetServer` - Change your active JIRA server  
 
 ### Functions
