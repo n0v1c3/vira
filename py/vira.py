@@ -52,7 +52,31 @@ def vira_connect(server, user, pw):
         vim.command("let s:vira_is_init = 0")
 
 # Issues {{{1
-def vira_set_issue(): # {{{2
+def vira_add_issue(issue): # {{{2
+    '''
+    Get single issue by isuue id
+    '''
+
+    return jira.issue(issue)
+
+def vira_statusline():
+    '''
+    Get single issue by isuue id
+    '''
+
+    #  return vim.eval('ViraGetActiveIssue()')
+    return "Test"
+
+def vira_get_issue(issue): # {{{2
+    '''
+    Get single issue by isuue id
+    '''
+
+    return jira.issue(issue)
+
+# Function {{{1
+# Issues {{{2
+def vira_set_issue(): # {{{3
     '''
     Get my issues with JQL
     '''
@@ -81,38 +105,15 @@ def vira_set_issue(): # {{{2
                 '")<cr>')
     for issue in issues["issues"]:
         vim.command("amenu&Vira.&" +
-                    issue["key"] + "\ -\ " +
+                    issue["key"] + " - ".replace(" ", "\\ ") +
                     issue["fields"]["summary"].replace(" ", "\\ ") +
                     '<tab>:e :let g:vira_active_issue = "' +
                     issue["key"] + '"<cr>')
 
     #  return ','.join(match)
 
-def vira_add_issue(issue): # {{{2
-    '''
-    Get single issue by isuue id
-    '''
-
-    return jira.issue(issue)
-
-def vira_statusline():
-    '''
-    Get single issue by isuue id
-    '''
-
-    #  return vim.eval('ViraGetActiveIssue()')
-    return "Test"
-
-def vira_get_issue(issue): # {{{2
-    '''
-    Get single issue by isuue id
-    '''
-
-    return jira.issue(issue)
-
-# Function {{{1
 # Projects {{{2
-def vira_get_projects():
+def vira_get_projects(): # {{{3
     '''
     Build a vim popup menu for a list of projects
     '''
