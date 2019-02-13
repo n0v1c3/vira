@@ -157,7 +157,7 @@ function! vira#_timestamp() "{{{2
   python vira_timestamp()
 endfunction
 
-function! vira#_report() "{{{2
+function! vira#_get_report() "{{{2
   " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
 
   " Get the current winnr of the 'vira_report' buffer
