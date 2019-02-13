@@ -10,7 +10,12 @@ let g:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 let g:virapy_path = g:vira_root_dir . '/py/vira.py'
 " Null issue text {{{3
 if !exists('g:vira_null_issue')
-  let g:vira_null_issue = 'No Issue Selected'
+  let g:vira_null_issue = 'None'
+endif
+
+" Null project text {{{3
+if !exists('g:vira_null_project')
+  let g:vira_null_project = 'None'
 endif
 
 " Active issue text {{{3
@@ -31,19 +36,16 @@ endif
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into
 " commands
-command! -nargs=0 -bang ViraDropdown call vira#_dropdown()
 command! -nargs=0 -bang ViraComment call vira#_comment()
 command! -nargs=0 -bang ViraCommentInsert call vira#_insert_comment()
-command! -nargs=0 -bang ViraReport call vira#_report()
-command! -nargs=0 -bang ViraServer call vira#_set_server()
+command! -nargs=0 -bang ViraGetReport call vira#_get_report()
+command! -nargs=0 -bang ViraSetIssue call vira#_set_issue()
+command! -nargs=0 -bang ViraSetProject call vira#_set_project()
+command! -nargs=0 -bang ViraSetServer call vira#_set_server()
 
 " Functions {{{1
-function! ViraDropdown() "{{{2
- call vira#_dropdown()
-endfunction
-
-" Return the actuve issue key
 function! ViraGetActiveIssue() "{{{2
+  " Return the actuve issue key
   return vira#_get_active_issue()
 endfunction
 

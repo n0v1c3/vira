@@ -35,31 +35,44 @@ I have not yet completed how to make this work with multiple accounts
 properly by I will.  
 
 ## Usage
+A list of the important commands, functions and global variables
+to be used to help configure Vira to work for you.
+
+### Commands
+`ViraComment` - Insert a comment into JIRA for your active issue.  
+`ViraInsertComment` - Insert comment into **JIRA** and **Code** for your active issue.  
+`ViraSetIssue` - Select active **issue** from a dropdown menu.  
+`ViraSetProject` - Select active **project** from a dropdown menu.  
+`ViraReport` - Get a report for the active issue  
+`ViraSetServer` - Change your active JIRA server  
+
 ### Functions
 `ViraGetActiveIssue()` - Get the currently selected active issue.  
-`ViraComment()` - Insert a comment into JIRA for your active
-issue.  
-`ViraInsertComment()` - Insert comment into **JIRA** and **Code**
-for your active issue.  
-`ViraDropdown()` - Select active issue from a dropdown
-menu.  
 `ViraStatusline()` - Quick statusline drop-in.  
-`ViraReport()` - Get a report for the active issue  
-`ViraServer()` - Change your active JIRA server
+
+### Variables
+`g:vira_null_issue` - Text used when there is no issue.  
+`g:vira_null_project` - Text used when there is no project.  
 
 ### Examples:
+`nnoremap <silent> <leader>vi :ViraSetIssue<cr>` -
+Select active issue in normal mode.  
+`nnoremap <silent> <leader>vi :ViraSetProject<cr>` -
+Select active project in normal mode.  
+`nnoremap <silent> <leader>vs :ViraSetServer<cr>` -
+Change your active JIRA server  
+`nnoremap <silent> <leader>vc :ViraComment<cr>` -
+Insert comment to active issue in normal mode.  
+`nnoremap <silent> <leader>vC :ViraInsertComment<cr>` -
+Insert comment to active issue in normal mode.  
+`nnoremap <silent> <leader>vr :ViraReport<cr>` -
+Call report from normal mode  
 `statusline+=%{ViraStatusline()}` - Display the active issue
 onto the status line.  
-`nnoremap <silent> <leader>vi :ViraSetActiveIssue()<cr>` -
-Select active issue in normal mode.  
-`nnoremap <silent> <leader>vc :ViraInsertComment()<cr>` -
-Insert comment to active issue in normal mode.  
-`nnoremap <silent> <leader>vr :ViraReport()<cr>` -
-Call report from normal mode  
-`nnoremap <silent> <leader>vs :ViraServer()<cr>` -
-Change your active JIRA server  
 
 ### Plugin Support:
+Plugins used and supported.  
+
 #### airline
 *Full support planned*  
 I am currently using the z section of airline until I figure

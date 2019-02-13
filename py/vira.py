@@ -52,14 +52,21 @@ def vira_connect(server, user, pw):
         vim.command("let s:vira_is_init = 0")
 
 # Issues {{{1
-def vira_my_issues(): # {{{2
+def vira_set_issue(): # {{{2
     '''
     Get my issues with JQL
     '''
 
+    query = ''
+    try:
+        if (vim.eval('g:vira_project') != ''):
+            query += 'project = ' + vim.eval('g:vira_project') + ' AND '
+    except:
+        query += ''
+
     issues = jira.search_issues(
-        # 'project = AC AND resolution = Unresolved AND assignee in (currentUser()) ORDER BY priority DESC, updated DESC',
-        'resolution = Unresolved AND assignee in (currentUser()) ORDER BY priority DESC, updated DESC',
+        # 'project = AC AND resolution = Unresolved AND assignee in (currentUser()) ORDER BY updated DESC, priority DESC',
+        query + 'resolution = Unresolved AND assignee in (currentUser()) ORDER BY updated DESC',
         fields='summary,comment',
         json_result='True')
 
@@ -103,13 +110,26 @@ def vira_get_issue(issue): # {{{2
 
     return jira.issue(issue)
 
-def vira_statusline():
+# Function {{{1
+# Projects {{{2
+def vira_get_projects():
     '''
-    Get single issue by isuue id
+    Build a vim popup menu for a list of projects
     '''
 
-    #  return vim.eval('ViraGetActiveIssue()')
-    return "Test"
+    projects = jira.projects()
+    vim.command('redraw')
+    vim.command('amenu&Vira.&<tab>:e :<cr>')
+    vim.command('aunmenu &Vira')
+    vim.command('amenu&Vira.&' +
+                vim.eval('g:vira_null_project').replace(" ", "\\ ") +
+                '<tab>:e :call vira#_set_active_issue("' +
+                vim.eval('g:vira_null_project').replace(" ", "\\ ") +
+                '")<cr>')
+    for project in projects:
+        vim.command("amenu&Vira.&" + str(project) +
+                    '<tab>:e :silent! let g:vira_project="' +
+                    str(project) + '"<cr>')
 
 # Comments {{{1
 def vira_add_comment(issue, comment):
