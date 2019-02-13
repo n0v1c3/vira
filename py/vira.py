@@ -201,6 +201,8 @@ def vira_report(issue):
     print(issue + ' | ' + str(issues["issues"][0]["fields"]["summary"]))
     # print("Details:")
     print('\nDescription:\n' + str(issues["issues"][0]["fields"]["description"]))
+    print('\nDescription:')
+    print(issues["issues"][0]["fields"]["description"])
 
     print("\nComments:")
     print("----------")
