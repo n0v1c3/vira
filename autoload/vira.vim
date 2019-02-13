@@ -5,22 +5,12 @@
 " Version: 0.0.1
 
 " Variables {{{1
-let s:vira_version = '0.0.1' "{{{2
-if !exists('s:vira_statusline')
-  let s:vira_statusline = g:vira_null_issue "{{{2
-endif
-if !exists('s:vira_is_init')
-  " Clear the init flag
-  let s:vira_is_init = 0  "{{{2
-endif
+let s:vira_version = '0.0.1'
+let s:vira_is_init = 0
 
-if !exists('s:vira_issue_start_time')
-  let s:vira_start_time = 0  "{{{2
-endif
-
-if !exists('s:vira_issue_end_time')
-  let s:vira_end_time = 0  "{{{2
-endif
+let s:vira_statusline = g:vira_null_issue
+let s:vira_start_time = 0
+let s:vira_end_time = 0
 
 " Functions {{{1
 function! vira#_get_active_issue() "{{{2
@@ -66,14 +56,16 @@ endfunction
 function! vira#_init_python() "{{{2
   " VIRA-19 - Added `exist` checks into the `_init_python` function
   silent! let vira_serv_config = 1
-  if (!exists('g:vira_serv') || (exists('g:vira_serv') && g:vira_serv == ''))
+  if (!exists('g:vira_serv') || g:vira_serv == '')
     silent! let vira_serv_config = 0
     call vira#_set_server()
   endif
 
+  " Confirm server was entered
   if (exists('g:vira_serv') && g:vira_serv != '')
     silent! let vira_pass_config = 1
-    if (!exists('g:vira_pass') || (exists('g:vira_pass') && g:vira_pass == ''))
+    " 
+    if (!exists('g:vira_pass') || g:vira_pass == '')
       silent! let vira_pass_config = 0
       let g:vira_pass = inputsecret('Enter password: ')
     endif
@@ -82,7 +74,7 @@ function! vira#_init_python() "{{{2
     silent! python import sys
     silent! exe 'python sys.path = ["' . g:vira_root_dir . '"] + sys.path'
     silent! exe 'pyfile ' . g:virapy_path
-    
+
     silent! python vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("g:vira_pass"))
 
     if (s:vira_is_init != 1)
@@ -135,7 +127,7 @@ function! vira#_insert_comment() "{{{2
 endfunction
 
 function! vira#_dropdown() "{{{2
-  if (s:vira_is_init == 0)
+  if (s:vira_is_init != 1)
     call vira#_init_python()
   endif
 

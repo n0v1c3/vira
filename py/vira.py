@@ -52,8 +52,7 @@ def vira_connect(server, user, pw):
         vim.command("let s:vira_is_init = 0")
 
 # Issues {{{1
-# My Issues {{{2
-def vira_my_issues():
+def vira_my_issues(): # {{{2
     '''
     Get my issues with JQL
     '''
@@ -82,8 +81,22 @@ def vira_my_issues():
 
     #  return ','.join(match)
 
-# Issue {{{2
-def vira_get_issue(issue):
+def vira_add_issue(issue): # {{{2
+    '''
+    Get single issue by isuue id
+    '''
+
+    return jira.issue(issue)
+
+def vira_statusline():
+    '''
+    Get single issue by isuue id
+    '''
+
+    #  return vim.eval('ViraGetActiveIssue()')
+    return "Test"
+
+def vira_get_issue(issue): # {{{2
     '''
     Get single issue by isuue id
     '''
