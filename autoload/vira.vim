@@ -54,32 +54,33 @@ function! vira#_set_server() "{{{2
 endfunction
 
 function! vira#_init_python() "{{{2
-  " VIRA-19 - Added `exist` checks into the `_init_python` function
+  " Confirm a server has been selected, this can be done outside of this init
   silent! let vira_serv_config = 1
   if (!exists('g:vira_serv') || g:vira_serv == '')
     silent! let vira_serv_config = 0
     call vira#_set_server()
   endif
 
-  " Confirm server was entered
+  " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
+    
+    " Confirm password was set in configuration otherwise get from user
     silent! let vira_pass_config = 1
-    " 
     if (!exists('g:vira_pass') || g:vira_pass == '')
       silent! let vira_pass_config = 0
       let g:vira_pass = inputsecret('Enter password: ')
     endif
 
-    " Load `py/vira.py`
+    " Load `py/vira.py` and connect to server
     silent! python import sys
     silent! exe 'python sys.path = ["' . g:vira_root_dir . '"] + sys.path'
     silent! exe 'pyfile ' . g:virapy_path
-
     silent! python vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("g:vira_pass"))
 
+    " Check if Vira connected to the server
     if (s:vira_is_init != 1)
+      " Inform user with possible errors and reset unconfigured information
       echo "\nNot logged in! Check configuration and CAPTCHA"
-      " Reset the none commented variables
       if (vira_serv_config == 0)
         let g:vira_serv = ""
       endif
