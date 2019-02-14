@@ -59,14 +59,6 @@ def vira_add_issue(issue): # {{{2
 
     return jira.issue(issue)
 
-def vira_statusline():
-    '''
-    Get single issue by isuue id
-    '''
-
-    #  return vim.eval('ViraGetActiveIssue()')
-    return "Test"
-
 def vira_get_issue(issue): # {{{2
     '''
     Get single issue by isuue id
@@ -74,8 +66,24 @@ def vira_get_issue(issue): # {{{2
 
     return jira.issue(issue)
 
-# Function {{{1
+# Functions {{{1
 # Issues {{{2
+
+def vira_str(string): # {{{3
+    '''
+    Protect strings from JIRA for Python and Vim
+    '''
+    return string
+
+def vira_str_amenu(string):
+    '''
+    Protect strings from JIRA for Python and Vim
+    '''
+    string = string.replace("\\", "\\\\")
+    string = string.replace(".", "\.")
+    string = string.replace(" ", "\\ ")
+    return string
+
 def vira_set_issue(): # {{{3
     '''
     Get my issues with JQL
@@ -89,28 +97,24 @@ def vira_set_issue(): # {{{3
         query += ''
 
     issues = jira.search_issues(
-        # 'project = AC AND resolution = Unresolved AND assignee in (currentUser()) ORDER BY updated DESC, priority DESC',
         query + 'resolution = Unresolved AND assignee in (currentUser()) ORDER BY updated DESC',
         fields='summary,comment',
         json_result='True')
 
+    #  TODO-TJG [190213] - This is almost exactly the same as vira_get_projects() should be merged into a single function.
     # Rebuild the menu
+    vira_null_issue = vira_str_amenu(vim.eval('g:vira_null_issue'))
     vim.command('redraw')
     vim.command('amenu&Vira.&<tab>:e :<cr>')
     vim.command('aunmenu &Vira')
     vim.command('amenu&Vira.&' +
-                vim.eval('g:vira_null_issue').replace(" ", "\\ ") +
-                '<tab>:e :call vira#_set_active_issue("' +
-                vim.eval('g:vira_null_issue').replace(" ", "\\ ") +
-                '")<cr>')
+                vira_null_issue + '<tab>:e :call vira#_set_active_issue("' +
+                vira_null_issue + '")<cr>')
     for issue in issues["issues"]:
+        key = vira_str_amenu(issue["key"])
         vim.command("amenu&Vira.&" +
-                    issue["key"] + " - ".replace(" ", "\\ ") +
-                    issue["fields"]["summary"].replace(" ", "\\ ") +
-                    '<tab>:e :let g:vira_active_issue = "' +
-                    issue["key"] + '"<cr>')
-
-    #  return ','.join(match)
+                    vira_str_amenu(key + " " + issue["fields"]["summary"]) +
+                    '<tab>:e :let g:vira_active_issue = "' + key + '"<cr>')
 
 # Projects {{{2
 def vira_get_projects(): # {{{3
@@ -118,19 +122,22 @@ def vira_get_projects(): # {{{3
     Build a vim popup menu for a list of projects
     '''
 
+    # Get a list of project keys from Jira
     projects = jira.projects()
+
+    # Rebuild the menu
+    vira_null_project = vira_str_amenu(vim.eval('g:vira_null_project'))
     vim.command('redraw')
     vim.command('amenu&Vira.&<tab>:e :<cr>')
     vim.command('aunmenu &Vira')
-    vim.command('amenu&Vira.&' +
-                vim.eval('g:vira_null_project').replace(" ", "\\ ") +
+    vim.command('amenu&Vira.&' + vira_null_project +
                 '<tab>:e :call vira#_set_active_issue("' +
-                vim.eval('g:vira_null_project').replace(" ", "\\ ") +
-                '")<cr>')
+                vira_null_project + '")<cr>')
     for project in projects:
-        vim.command("amenu&Vira.&" + str(project) +
+        project = vira_str_amenu(str(project))
+        vim.command("amenu&Vira.&" + project +
                     '<tab>:e :silent! let g:vira_project="' +
-                    str(project) + '"<cr>')
+                    project + '"<cr>')
 
 # Comments {{{1
 def vira_add_comment(issue, comment):
@@ -145,18 +152,20 @@ def vira_get_comments(issue):
     Get all the comments for an issue
     '''
 
-    issues = jira.search_issues(
-        'issue = "' + issue.key +
-        # '" AND project = AC AND resolution = Unresolved ORDER BY priority DESC, updated DESC',
-        '" AND resolution = Unresolved ORDER BY priority DESC, updated DESC',
-        fields='summary,comment',
-        json_result='True')
+    # Get the issue requested
+    issues = jira.search_issues('issue = "' + issue.key + '"',
+                                fields='summary,comment',
+                                json_result='True')
+
+    # Loop through all of the comments
     comments = ''
     for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
-        comments += comment['author']['displayName'] + ' | ' + comment['updated'][
-            0:10] + ' @ ' + comment['updated'][11:16] + ' | ' + comment['body'] + '\n'
+        comments += (vira_str(comment['author']['displayName']) + ' | ',
+                     vira_str(comment['updated'][0:10]) + ' @ ',
+                     vira_str(comment['updated'][11:16]) + ' | ',
+                     vira_str(comment['body'] + '\n'))
 
-        return comments
+    return comments
 
 # Worklog {{{1
 def vira_add_worklog(issue, timeSpentSeconds, comment):
@@ -169,7 +178,7 @@ def vira_add_worklog(issue, timeSpentSeconds, comment):
     jira.add_worklog(
         issue=issue, timeSpentSeconds=timeSpentSeconds, comment=comment, started=earlier)
 
-    # Status {{{1
+# Status {{{1
 def vira_set_status(issue, status):
     '''
     Set the status of the given issue
@@ -185,30 +194,27 @@ def vira_timestamp():
 
     return str(datetime.datetime.now())
 
+# Print a report of the given issue key
 def vira_report(issue):
     '''
     Print a report for the given issue
     '''
 
-    issues = jira.search_issues(
-        'issue = "' + issue +
-        # '" AND project = AC AND resolution = Unresolved ORDER BY priority DESC, updated DESC',
-        '" AND resolution = Unresolved ORDER BY priority DESC, updated DESC',
-        fields='summary,comment,description',
-        json_result='True')
+    # Get passed issue content
+    issues = jira.search_issues('issue = "' + issue + '"',
+                                fields='summary,comment,description',
+                                json_result='True')
 
-    # print("Issue:\n" + issue + ' | ' + issues["issues"][0]["fields"]["summary"])
-    print(issue + ' | ' + str(issues["issues"][0]["fields"]["summary"]))
-    # print("Details:")
-    print('\nDescription:')
-    print(issues["issues"][0]["fields"]["description"])
-
+    # Print issue content
+    print(issue + ' | ' + vira_str(issues["issues"][0]["fields"]["summary"]))
+    print('Description: ' + vira_str(issues["issues"][0]["fields"]["description"]))
     print("\nComments:")
     print("----------")
     for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
-        print(comment['author']['displayName'] + ' @ ' + comment['updated'][
-            0:10] + ' ' + comment['updated'][11:16])
-        print(comment['body'])
+        print(vira_str(comment['author']['displayName']) + ' @ ' +
+              vira_str(comment['updated'][0:10]) + ' ' +
+              vira_str(comment['updated'][11:16]))
+        print(vira_str(comment['body']))
         print("----------")
 
 # Main {{{1
