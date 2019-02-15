@@ -94,6 +94,28 @@ function! vira#_init_python() "{{{2
   endif
 endfunction
 
+function! vira#_browse() "{{{2
+  " Confirm an issue has been selected
+  if (vira#_get_active_issue() == g:vira_null_issue)
+    " User can select an issue now
+    call vira#_set_issue()
+  endif
+
+  " Create url path from server and issue key
+  let l:url = g:vira_serv . '/browse/' . vira#_get_active_issue()
+
+  " Set browser - either user defined or firefox
+  if exists('g:vira_browser')
+    let l:browser = g:vira_browser
+  else
+    let l:browser = 'firefox'
+  endif
+
+  " Open current issue in browser
+  execute 'term ++close ' . l:browser . ' "' . l:url . '"'
+
+endfunction
+
 function! vira#_comment() "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
