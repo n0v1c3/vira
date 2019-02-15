@@ -66,7 +66,7 @@ function! vira#_init_python() "{{{2
 
   " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
-    
+
     " Confirm password was set in configuration otherwise get from user
     silent! let vira_pass_config = 1
     if (!exists('g:vira_pass') || g:vira_pass == '')
@@ -104,11 +104,17 @@ function! vira#_browse() "{{{2
   " Create url path from server and issue key
   let l:url = g:vira_serv . '/browse/' . vira#_get_active_issue()
 
-  " Set browser - either user defined or firefox
+  " Set browser - either user defined or $BROWSER
   if exists('g:vira_browser')
     let l:browser = g:vira_browser
   else
-    let l:browser = 'firefox'
+    let l:browser = $BROWSER
+  endif
+
+  " User needs to define a browser
+  if l:browser == ''
+    echoerr 'Please set $BROWSER environment variable or g:vira_browser vim variable before running :ViraBrowse'
+    return
   endif
 
   " Open current issue in browser

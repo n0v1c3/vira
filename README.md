@@ -37,7 +37,7 @@ properly but I will.
 
 ### Browser <!-- {{{3 -->
 
-The default browser used for :ViraBrowse if firefox. Set the following variable to change it.
+The default browser used for :ViraBrowse is the environment variable $BROWSER. Override this by setting g:vira_browser.
 ```
 let g:vira_browser = 'chromium'
 ```
