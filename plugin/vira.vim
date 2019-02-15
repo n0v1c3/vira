@@ -32,6 +32,7 @@ endif
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into
 " commands
+command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_comment()
 command! -nargs=0 -bang ViraCommentInsert call vira#_insert_comment()
 command! -nargs=0 -bang ViraGetReport call vira#_get_report()
