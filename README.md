@@ -1,7 +1,7 @@
 # vira <!-- {{{1 -->
 Vim JIRA interface plugin
 
-## Installation <!-- {{{2 -->
+### Installation <!-- {{{3 -->
 Add `n0v1c3/vira` to your favorite VIM package manager and finaly
 install JIRA into Python.
 ```
@@ -47,45 +47,45 @@ A list of the important commands, functions and global variables
 to be used to help configure Vira to work for you.
 
 ### Commands <!-- {{{3 -->
-`ViraBrowse` - View JIRA issue in web-browser.
-`ViraComment` - Insert a comment into JIRA for your active issue.
-`ViraInsertComment` - Insert comment into **JIRA** and **Code** for your active issue.
-`ViraSetIssue` - Select active **issue** from a dropdown menu.
-`ViraSetProject` - Select active **project** from a dropdown menu.
-`ViraGetReport` - Get a report fr the active issue
-`ViraSetServer` - Change your active JIRA server
+`ViraBrowse` - View JIRA issue in web-browser.  
+`ViraComment` - Insert a comment into JIRA for your active issue.  
+`ViraInsertComment` - Insert comment into **JIRA** and **Code** for your active issue.  
+`ViraSetIssue` - Select active **issue** from a dropdown menu.  
+`ViraSetProject` - Select active **project** from a dropdown menu.  
+`ViraGetReport` - Get a report fr the active issue  
+`ViraSetServer` - Change your active JIRA server  
 
 ### Functions <!-- {{{3 -->
-`ViraGetActiveIssue()` - Get the currently selected active issue.
-`ViraStatusline()` - Quick statusline drop-in.
+`ViraGetActiveIssue()` - Get the currently selected active issue.  
+`ViraStatusline()` - Quick statusline drop-in.  
 
 ### Variables <!-- {{{3 -->
-`g:vira_null_issue` - Text used when there is no issue.
-`g:vira_null_project` - Text used when there is no project.
+`g:vira_null_issue` - Text used when there is no issue.  
+`g:vira_null_project` - Text used when there is no project.  
 
 ### Examples: <!-- {{{3 -->
 `nnoremap <silent> <leader>vi :ViraSetIssue<cr>` -
-Select active issue in normal mode.
+Select active issue in normal mode.  
 `nnoremap <silent> <leader>vi :ViraSetProject<cr>` -
-Select active project in normal mode.
+Select active project in normal mode.  
 `nnoremap <silent> <leader>vs :ViraSetServer<cr>` -
-Change your active JIRA server
+Change your active JIRA server  
 `nnoremap <silent> <leader>vc :ViraComment<cr>` -
-Insert comment to active issue in normal mode.
+Insert comment to active issue in normal mode.  
 `nnoremap <silent> <leader>vC :ViraInsertComment<cr>` -
-Insert comment to active issue in normal mode.
+Insert comment to active issue in normal mode.  
 `nnoremap <silent> <leader>vr :ViraReport<cr>` -
-Call report from normal mode
+Call report from normal mode  
 `statusline+=%{ViraStatusline()}` - Display the active issue
-onto the status line.
+onto the status line.  
 
 ### Plugin Support: <!-- {{{3 -->
 Plugins used and supported.
 
 #### airline
-*Full support planned*
+*Full support planned*.
+
 I am currently using the z section of airline until I figure
 out the proper way to do it.
 ```
 let g:airline_section_z = '%{ViraStatusLine()}'
-```
