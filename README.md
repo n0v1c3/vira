@@ -1,7 +1,7 @@
 # vira <!-- {{{1 -->
 Vim JIRA interface plugin
 
-### Installation <!-- {{{3 -->
+## Installation <!-- {{{2 -->
 Add `n0v1c3/vira` to your favorite VIM package manager and finaly
 install JIRA into Python.
 ```
@@ -64,18 +64,18 @@ to be used to help configure Vira to work for you.
 `g:vira_null_project` - Text used when there is no project.  
 
 ### Examples: <!-- {{{3 -->
-`nnoremap <silent> <leader>vi :ViraSetIssue<cr>` -
-Select active issue in normal mode.  
-`nnoremap <silent> <leader>vi :ViraSetProject<cr>` -
-Select active project in normal mode.  
-`nnoremap <silent> <leader>vs :ViraSetServer<cr>` -
-Change your active JIRA server  
 `nnoremap <silent> <leader>vc :ViraComment<cr>` -
 Insert comment to active issue in normal mode.  
-`nnoremap <silent> <leader>vC :ViraInsertComment<cr>` -
+`nnoremap <silent> <leader>vC :ViraCommentInsert<cr>` -
 Insert comment to active issue in normal mode.  
+`nnoremap <silent> <leader>vi :ViraSetIssue<cr>` -
+Select active issue in normal mode.  
+`nnoremap <silent> <leader>vp :ViraSetProject<cr>` -
+Select active project in normal mode.  
 `nnoremap <silent> <leader>vr :ViraReport<cr>` -
 Call report from normal mode  
+`nnoremap <silent> <leader>vs :ViraSetServer<cr>` -
+Change your active JIRA server  
 `statusline+=%{ViraStatusline()}` - Display the active issue
 onto the status line.  
 
