@@ -23,7 +23,7 @@ names being used to log in.
 You will be propted for your password only **once for each vim session**
 on the first usage.
 
-### External Password Management <!-- {{{3 -->
+#### External Password Management <!-- {{{3 -->
 The `system` command can be used to get your password from external
 sources. Below is an example using the `lpass` function, **please
 note the `[:-2]` being used to remove an endline character.**
@@ -31,10 +31,23 @@ note the `[:-2]` being used to remove an endline character.**
 let g:vira_user = system('lpass show --username account')[:-2]
 let g:vira_pass = system('lpass show --password account')[:-2]
 ```
-#### Development Note
+##### Development Note
 I have not yet completed how to make this work with multiple accounts
 properly but I will.
 
+### .virarc
+The `.virarc` file(s) can be used to load the required settings for all
+projects. Currently there will be a `.virarc` file searched for in user's
+$HOME directory along with the current `git` directory `root`.
+
+These files are the recomended places for storing your custom
+configurations. The default setting that you require saved in your
+$HOME directory and any project specific modifications.
+
+Use a different filename:
+```
+let g:vira_virarc = '.virarc'
+```
 ### Browser <!-- {{{3 -->
 
 The default browser used for :ViraBrowse is the environment variable $BROWSER. Override this by setting g:vira_browser.
