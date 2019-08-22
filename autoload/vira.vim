@@ -62,11 +62,20 @@ function! vira#_init_python() "{{{2
   if (!exists('g:vira_serv') || g:vira_serv == '')
     silent! let vira_serv_config = 0
     call vira#_set_server()
+  
+  " User lookup
+  elseif (!exists('g:vira_user') || g:vira_user == '')
+    let i = 0
+    for serv in g:vira_srvs
+      if (serv == g:vira_serv)
+        let g:vira_user = g:vira_usrs[i]
+      endif
+      let i = i + 1
+    endfor
   endif
 
   " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
-
     " Confirm password was set in configuration otherwise get from user
     silent! let vira_pass_config = 1
     if (!exists('g:vira_pass') || g:vira_pass == '')
