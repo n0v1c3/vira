@@ -9,6 +9,22 @@
 let g:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 let g:virapy_path = g:vira_root_dir . '/py/vira.py'
 
+" virarc {{{3
+if !exists('g:vira_virarc')
+  let g:vira_virarc = '.virarc'
+endif
+
+" Home directory
+if filereadable(expand('~/' . g:vira_virarc))
+  exec 'source ~/' . g:vira_virarc
+endif
+
+" Git root directory
+let s:vira_gitroot = system("git rev-parse --show-toplevel | tr -d '\\n'") . '/' . g:vira_virarc
+if filereadable(expand(s:vira_gitroot))
+  exec 'source ' . s:vira_gitroot
+endif
+
 " Null issue text {{{3
 if !exists('g:vira_null_issue')
   let g:vira_null_issue = 'None'
@@ -27,23 +43,6 @@ endif
 " Server selected {{{3
 if !exists('g:vira_serv')
   let g:vira_serv = ''
-endif
-
-" virarc {{{3
-if !exists('g:vira_virarc')
-  let g:vira_virarc = '.virarc'
-endif
-" Will load all directories in the same order
-
-" Home directory
-if filereadable(expand('~/' . g:vira_virarc))
-  exec 'source ~/' . g:vira_virarc
-endif
-
-" Git root directory
-let s:vira_gitroot = system("git rev-parse --show-toplevel | tr -d '\\n'") . '/' . g:vira_virarc
-if filereadable(expand(s:vira_gitroot))
-  exec 'source ' . s:vira_gitroot
 endif
 
 " Commands {{{1
