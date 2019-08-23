@@ -62,29 +62,24 @@ function! vira#_init_python() "{{{2
   if (!exists('g:vira_serv') || g:vira_serv == '')
     silent! let vira_serv_config = 0
     call vira#_set_server()
-  
-  " User lookup
-  elseif (!exists('g:vira_user') || g:vira_user == '')
-    let i = 0
-    for serv in g:vira_srvs
-      if (serv == g:vira_serv)
-        let g:vira_user = g:vira_usrs[i]
-      endif
-      let i = i + 1
-    endfor
   endif
+  
+  " User/password lookup
+  let i = 0
+  for serv in g:vira_srvs
+    if (serv == g:vira_serv)
+      let g:vira_user = g:vira_usrs[i]
+      if (!exists('g:vira_pass'))
+        let s:vira_pass_input = inputsecret('Enter password: ')
+      else
+        let s:vira_pass_input = system(g:vira_pass[i])[:-2]
+      endif
+    endif
+    let i = i + 1
+  endfor
 
   " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
-    " Confirm password was set in configuration otherwise get from user
-    silent! let vira_pass_config = 1
-    if (!exists('g:vira_pass') || g:vira_pass == '')
-      silent! let vira_pass_config = 0
-      let s:vira_pass_input = inputsecret('Enter password: ')
-    else
-      let s:vira_pass_input = g:vira_pass
-    endif
-
     " Load `py/vira.py` and connect to server
     silent! python import sys
     silent! exe 'python sys.path = ["' . g:vira_root_dir . '"] + sys.path'
@@ -101,10 +96,7 @@ function! vira#_init_python() "{{{2
     endif
     
     " Clear password
-    if (vira_pass_config == 0)
-      let s:vira_pass_input = ""
-    endif
-
+    let s:vira_pass_input = ""
   endif
 endfunction
 
@@ -171,7 +163,6 @@ function! vira#_insert_comment() "{{{2
     endif
   endif
 endfunction
-
 
 function! vira#_check_init() "{{{2
   call vira#_update_virarc()
@@ -274,4 +265,3 @@ function! vira#_get_report() "{{{2
     silent! execute winnr .'wincmd q'
   endif
 endfunction
-

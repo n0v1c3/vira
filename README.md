@@ -8,32 +8,23 @@ install JIRA into Python.
 sudo python2 -m pip install jira
 sudo python3 -m pip install jira
 ```
-
 ## Configuration <!-- {{{2 -->
 ### Required <!-- {{{3 -->
 Add the following lines to your `.vimrc`
 ```
 let g:vira_srvs = ['https://jira.website.com', 'https://jira.othersite.com']
 let g:vira_usrs = ['username_website', 'username_othersite']
+let g:vira_pass = ['pass jira/website/n0v1c3', 'lpass show --password account']  
 ```
 These lists should be of equal length with at least **one** entry each
 and represent the address of the JIRA site along with the user
 names being used to log in.
 
+Passwords are calls to external commands such as `pass` and `lpass`. A simple
+`echo` chould be used but this would not be a safe way to save the passwords.
+
 You will be propted for your password only **once for each vim session**
 on the first usage.
-
-#### External Password Management <!-- {{{3 -->
-The `system` command can be used to get your password from external
-sources. Below is an example using the `lpass` function, **please
-note the `[:-2]` being used to remove an endline character.**
-```
-let g:vira_user = system('lpass show --username account')[:-2]
-let g:vira_pass = system('lpass show --password account')[:-2]
-```
-##### Development Note
-I have not yet completed how to make this work with multiple accounts
-properly but I will.
 
 ### .virarc
 The `.virarc` file(s) can be used to load the required settings for all
