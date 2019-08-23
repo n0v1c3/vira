@@ -80,14 +80,16 @@ function! vira#_init_python() "{{{2
     silent! let vira_pass_config = 1
     if (!exists('g:vira_pass') || g:vira_pass == '')
       silent! let vira_pass_config = 0
-      let g:vira_pass = inputsecret('Enter password: ')
+      let s:vira_pass_input = inputsecret('Enter password: ')
+    else
+      let s:vira_pass_input = g:vira_pass
     endif
 
     " Load `py/vira.py` and connect to server
     silent! python import sys
     silent! exe 'python sys.path = ["' . g:vira_root_dir . '"] + sys.path'
     silent! exe 'pyfile ' . g:virapy_path
-    silent! python vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("g:vira_pass"))
+    silent! python vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"))
 
     " Check if Vira connected to the server
     if (s:vira_is_init != 1)
@@ -96,10 +98,13 @@ function! vira#_init_python() "{{{2
       if (vira_serv_config == 0)
         let g:vira_serv = ""
       endif
-      if (vira_pass_config == 0)
-        let g:vira_pass = ""
-      endif
     endif
+    
+    " Clear password
+    if (vira_pass_config == 0)
+      let s:vira_pass_input = ""
+    endif
+
   endif
 endfunction
 
@@ -169,6 +174,7 @@ endfunction
 
 
 function! vira#_check_init() "{{{2
+  call vira#_update_virarc()
   if (s:vira_is_init != 1)
     call vira#_init_python()
   endif
@@ -180,6 +186,33 @@ function! vira#_set_issue() "{{{2
     python vira_set_issue()
     silent! python vira_set_issue()
     popup &Vira
+  endif
+endfunction
+
+function! vira#_update_virarc() "{{{2
+  let s:vira_is_init = 0
+  if !exists('g:vira_virarc')
+    let g:vira_virarc = '.virarc'
+  endif
+
+  " virarc home directory
+  if filereadable(expand('~/' . g:vira_virarc))
+    exec 'source ~/' . g:vira_virarc
+  endif
+
+  " Save current directory and switch to file direcotry
+  let s:current_dir = execute("pwd")
+  cd %:p:h
+
+  " Find git root directory
+  let s:vira_gitroot = system("git rev-parse --show-toplevel | tr -d '\\n'") . '/' . g:vira_virarc
+
+  " Return to current directory
+  cd `=s:current_dir`
+
+  " Source when found
+  if filereadable(expand(s:vira_gitroot))
+    exec 'source ' . s:vira_gitroot
   endif
 endfunction
 
