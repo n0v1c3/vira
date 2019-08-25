@@ -6,9 +6,6 @@
 
 " Variables {{{1
 " Globals {{{2
-let g:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
-let g:virapy_path = g:vira_root_dir . '/py/vira.py'
-
 " virarc {{{3
 " Null issue text {{{3
 if !exists('g:vira_null_issue')

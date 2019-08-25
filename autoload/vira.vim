@@ -12,6 +12,9 @@ let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
 let s:vira_end_time = 0
 
+let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
+let s:virapy_path = s:vira_root_dir . '/py/vira.py'
+
 " Filters
 let s:filter_project_key = "VIRA"
 
@@ -82,8 +85,8 @@ function! vira#_init_python() "{{{2
   if (exists('g:vira_serv') && g:vira_serv != '')
     " Load `py/vira.py` and connect to server
     silent! python import sys
-    silent! exe 'python sys.path = ["' . g:vira_root_dir . '"] + sys.path'
-    silent! exe 'pyfile ' . g:virapy_path
+    silent! exe 'python sys.path = ["' . s:vira_root_dir . '"] + sys.path'
+    silent! exe 'pyfile ' . s:virapy_path
     silent! python vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"))
 
     " Check if Vira connected to the server
