@@ -4,6 +4,13 @@
 "   n0v1c3 (Travis Gall) <https://github.com/n0v1c3>
 " Version: 0.0.1
 
+" Initialization {{{1
+
+if !has('python3')
+  echo 'vim has to be compiled with +python3 to run vira'
+  finish
+endif
+
 " Variables {{{1
 " Globals {{{2
 let g:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
