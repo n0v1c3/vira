@@ -18,6 +18,7 @@ import vim
 from jira import JIRA
 import argparse
 import datetime
+import urllib3
 
 # Arguments {{{1
 # Parse arguments and show __doc__ and defaults in --help
@@ -45,8 +46,12 @@ def vira_connect(server, user, pw):
     Connect to Jira server with supplied auth details
     '''
     global jira
+
+    # TODO: VIRA-49 [190911] - make this optional
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
     try:
-        jira = JIRA(options={'server': server}, auth=(user, pw), timeout=5)
+        jira = JIRA(options={'server': server, 'verify': False}, auth=(user, pw), timeout=5)
         vim.command("let s:vira_is_init = 1")
     except:
         vim.command("let s:vira_is_init = 0")
