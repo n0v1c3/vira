@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 '''
 Internals and API functions for vira
 '''
@@ -45,6 +45,7 @@ def vira_connect(server, user, pw):
     '''
     Connect to Jira server with supplied auth details
     '''
+
     global jira
 
     # TODO: VIRA-49 [190911] - make this optional
