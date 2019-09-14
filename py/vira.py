@@ -10,35 +10,12 @@ Internals and API functions for vira
 #   mike.boiko (Mike Boiko) <https://github.com/mikeboiko>
 # Version: 0.0.1
 
-# dev: let b:startapp = "pipenv run python "
-# dev: let b:startargs = "--help"
-
 # Imports {{{1
 import vim
 from jira import JIRA
 import argparse
 import datetime
 import urllib3
-
-# Arguments {{{1
-# Parse arguments and show __doc__ and defaults in --help
-# Parser {{{2
-parser = argparse.ArgumentParser(
-    description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-# User {{{2
-parser.add_argument(
-    '-u', '--user', action='store', default='travis.gall', help='Jira username')
-
-parser.add_argument('-p', '--password', action='store', help='Jira password')
-
-# Server {{{2
-parser.add_argument(
-    '-s',
-    '--server',
-    action='store',
-    default='https://jira.boiko.online',
-    help='URL of jira server')
 
 # Connect {{{1
 def vira_connect(server, user, pw):
@@ -227,12 +204,7 @@ def vira_report(issue):
 def main():
     '''
     Main script entry point
-    '''
-
-    '''
-    # Get pw if not passed with --password
-    mypass = args.password if args.password else getpass.getpass(
-        prompt='Password: ', stream=None)
+    Used for testing
     '''
 
     # Create a connection
@@ -241,5 +213,4 @@ def main():
 
 # Run script if this file is executed directly
 if __name__ == '__main__':
-    args = parser.parse_args()
     main()
