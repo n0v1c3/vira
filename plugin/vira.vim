@@ -39,7 +39,7 @@ endif
 
 " todo Header
 if !exists('g:vira_todo_header')
-  let g:vira_todo_header = 'TODO-'
+  let g:vira_todo_header = 'TODO:'
 endif
 
 " Commands {{{1
@@ -47,13 +47,12 @@ endif
 " commands
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_comment()
-" command! -nargs=0 -bang ViraCommentInsert call vira#_insert_comment()
 command! -nargs=0 -bang ViraGetReport call vira#_get_report()
-command! -nargs=0 -bang ViraGetTodo call vira#_get_todo()
+command! -nargs=0 -bang ViraGetTodos call vira#_get_todo()
 command! -nargs=0 -bang ViraSetIssue call vira#_set_issue()
 command! -nargs=0 -bang ViraSetProject call vira#_set_project()
 command! -nargs=0 -bang ViraSetServer call vira#_set_server()
-command! -nargs=0 -bang ViraSetTodo call vira#_set_todo()
+command! -nargs=0 -bang ViraTodo call vira#_todo()
 
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2

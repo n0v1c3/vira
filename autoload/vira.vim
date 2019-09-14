@@ -19,20 +19,6 @@ let s:virapy_path = s:vira_root_dir . '/py/vira.py'
 let s:filter_project_key = "VIRA"
 
 " Functions {{{1
-function vira#_get_todo() "{{{2
-  " Binary files that can be ignored
-  set wildignore+=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
-  " Seacrch the CWD to find all of your current TODOs
-  vimgrep /TODO.*\[\d\{6}]/ **/* **/.* | cw 5
-  " Un-ignore the binary files
-  set wildignore-=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
-endfunction
-
-function vira#_set_todo() "{{{2
-  execute "normal mmO" . vira#_get_active_issue() . " - " . comment . "\<esc>mn"
-  return 'TODO-' . a:initials .' [' . strftime('%y%m%d') . '] - ' . UserInput(g:setTodoHeader)
-endfunction
-
 function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
 endfunction
@@ -49,6 +35,15 @@ endfunction
 function! vira#_get_statusline() "{{{2
   return g:vira_active_issue
   python vim.exec("let s:vira_statusline = " . vira_statusline())
+endfunction
+
+function! vira#_get_todo() "{{{2
+  " Binary files that can be ignored
+  set wildignore+=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
+  " Seacrch the CWD to find all of your current TODOs
+  vimgrep /TODO.*\[\d\{6}]/ **/* **/.* | cw 5
+  " Un-ignore the binary files
+  set wildignore-=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
 endfunction
 
 function! vira#_get_version() "{{{2
@@ -161,7 +156,8 @@ function! vira#_comment() "{{{2
   endif
 endfunction
 
-function! vira#_set_todo() "{{{2
+" TODO: VIRA-50 [190914] - Basics are in time to blend with issue selectsion
+function! vira#_todo() "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
     " User can select an issue now
@@ -170,13 +166,12 @@ function! vira#_set_todo() "{{{2
 
   " Final chance to have a selected issue
   if !(vira#_get_active_issue() == g:vira_null_issue)
-    let todo_header = echo 'TODO: '
     let comment = input(vira#_get_active_issue() . ": ")
     if !(comment == "")
-      execute "normal mmO" . "TODO-" . vira#_get_active_issue() . " - " . comment . "\<esc>mn"
+      execute "normal mmO" . g:vira_todo_header . " " . vira#_get_active_issue() . " [" . strftime('%y%m%d') . "] - " . comment . "\<esc>mn"
       call NERDComment(0, "Toggle")
       normal `m
-      python vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
+      python vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('"*" . g:vira_todo_header . "* " . comment'))
       echo comment
     endif
   endif

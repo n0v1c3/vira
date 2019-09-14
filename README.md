@@ -80,6 +80,10 @@ Select active project in normal mode.
 Call report from normal mode  
 `nnoremap <silent> <leader>vs :ViraSetServer<cr>` -
 Change your active JIRA server  
+`nnoremap <silent> <leader>vt :ViraGetTodo<cr>` -
+Get the TODO notes  
+`nnoremap <silent> <leader>vT :ViraTodo<cr>` -
+Write a TODO note  
 `statusline+=%{ViraStatusline()}` - Display the active issue
 onto the status line.  
 
