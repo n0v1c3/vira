@@ -5,7 +5,6 @@ Vim JIRA interface plugin
 Add `n0v1c3/vira` to your favorite VIM package manager and finaly
 install JIRA into Python.
 ```
-sudo python2 -m pip install jira
 sudo python3 -m pip install jira
 ```
 ## Configuration <!-- {{{2 -->
@@ -53,11 +52,12 @@ to be used to help configure Vira to work for you.
 ### Commands <!-- {{{3 -->
 `ViraBrowse` - View JIRA issue in web-browser.  
 `ViraComment` - Insert a comment into JIRA for your active issue.  
-`ViraInsertComment` - Insert comment into **JIRA** and **Code** for your active issue.  
+`ViraGetReport` - Get a report fr the active issue.  
+`ViraGetTodo` - Get a list of the remaining TODOs.  
 `ViraSetIssue` - Select active **issue** from a dropdown menu.  
 `ViraSetProject` - Select active **project** from a dropdown menu.  
-`ViraGetReport` - Get a report fr the active issue  
-`ViraSetServer` - Change your active JIRA server  
+`ViraSetServer` - Change your active JIRA server.  
+`ViraTodo` - Make a TODO note for current issue.  
 
 ### Functions <!-- {{{3 -->
 `ViraGetActiveIssue()` - Get the currently selected active issue.  
@@ -68,24 +68,16 @@ to be used to help configure Vira to work for you.
 `g:vira_null_project` - Text used when there is no project.  
 
 ### Examples: <!-- {{{3 -->
-`nnoremap <silent> <leader>vc :ViraComment<cr>` -
-Insert comment to active issue in normal mode.  
-`nnoremap <silent> <leader>vC :ViraCommentInsert<cr>` -
-Insert comment to active issue in normal mode.  
-`nnoremap <silent> <leader>vi :ViraSetIssue<cr>` -
-Select active issue in normal mode.  
-`nnoremap <silent> <leader>vp :ViraSetProject<cr>` -
-Select active project in normal mode.  
-`nnoremap <silent> <leader>vr :ViraReport<cr>` -
-Call report from normal mode  
-`nnoremap <silent> <leader>vs :ViraSetServer<cr>` -
-Change your active JIRA server  
-`nnoremap <silent> <leader>vt :ViraGetTodo<cr>` -
-Get the TODO notes  
-`nnoremap <silent> <leader>vT :ViraTodo<cr>` -
-Write a TODO note  
-`statusline+=%{ViraStatusline()}` - Display the active issue
-onto the status line.  
+```
+nnoremap <silent> <leader>vc :ViraComment<cr>
+nnoremap <silent> <leader>vi :ViraSetIssue<cr>
+nnoremap <silent> <leader>vp :ViraSetProject<cr>
+nnoremap <silent> <leader>vr :ViraReport<cr>
+nnoremap <silent> <leader>vs :ViraSetServer<cr>
+nnoremap <silent> <leader>vt :ViraGetTodo<cr>
+nnoremap <silent> <leader>vT :ViraTodo<cr>
+statusline+=%{ViraStatusline()}
+```
 
 ### Plugin Support: <!-- {{{3 -->
 Plugins used and supported.
