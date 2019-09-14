@@ -240,12 +240,12 @@ function! vira#_todo() "{{{2
   " Final chance to have a selected issue
   if !(vira#_get_active_issue() == g:vira_null_issue)
     let comment = input(vira#_get_active_issue() . ": ")
+    let file_path = "{code}" . @% . "{code}"
     if !(comment == "")
       execute "normal mmO" . g:vira_todo_header . " " . vira#_get_active_issue() . " [" . strftime('%y%m%d') . "] - " . comment . "\<esc>mn"
       call NERDComment(0, "Toggle")
       normal `m
-      python vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('"*" . g:vira_todo_header . "* " . comment'))
-      echo comment
+      python vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . g:vira_todo_header . "* " . comment'))
     endif
   endif
 endfunction
