@@ -37,16 +37,23 @@ if !exists('g:vira_serv')
   let g:vira_serv = ''
 endif
 
+" todo Header
+if !exists('g:vira_todo_header')
+  let g:vira_todo_header = 'TODO-'
+endif
+
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into
 " commands
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_comment()
-command! -nargs=0 -bang ViraCommentInsert call vira#_insert_comment()
+" command! -nargs=0 -bang ViraCommentInsert call vira#_insert_comment()
 command! -nargs=0 -bang ViraGetReport call vira#_get_report()
+command! -nargs=0 -bang ViraGetTodo call vira#_get_todo()
 command! -nargs=0 -bang ViraSetIssue call vira#_set_issue()
 command! -nargs=0 -bang ViraSetProject call vira#_set_project()
 command! -nargs=0 -bang ViraSetServer call vira#_set_server()
+command! -nargs=0 -bang ViraSetTodo call vira#_set_todo()
 
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2
