@@ -66,7 +66,7 @@ function! vira#_comment() "{{{2
   if !(vira#_get_active_issue() == g:vira_null_issue)
     let comment = input(vira#_get_active_issue() . ": ")
     if !(comment == "")
-      python vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
+      python3 vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
     endif
   endif
 endfunction
@@ -82,7 +82,7 @@ function! vira#_get_active_issue_desc() "{{{2
 endfunction
 
 function! vira#_get_active_issue_report() "{{{2
-  python vira_report(vim.eval("vira#_get_active_issue()"))
+  python3 vira_report(vim.eval("vira#_get_active_issue()"))
 endfunction
 
 function! vira#_get_report() "{{{2
@@ -134,7 +134,7 @@ function! vira#_get_report() "{{{2
 endfunction
 function! vira#_get_statusline() "{{{2
   return g:vira_active_issue
-  python vim.exec("let s:vira_statusline = " . vira_statusline())
+  python3 vim.exec("let s:vira_statusline = " . vira_statusline())
 endfunction
 
 function! vira#_get_todo() "{{{2
@@ -175,10 +175,10 @@ function! vira#_init_python() "{{{2
   " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
     " Load `py/vira.py` and connect to server
-    silent! python import sys
-    silent! exe 'python sys.path = ["' . s:vira_root_dir . '"] + sys.path'
-    silent! exe 'pyfile ' . s:virapy_path
-    silent! python vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"))
+    silent! python3 import sys
+    silent! exe 'python3 sys.path = ["' . s:vira_root_dir . '"] + sys.path'
+    silent! exe 'py3file ' . s:virapy_path
+    silent! python3 vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"))
 
     " Check if Vira connected to the server
     if (s:vira_is_init != 1)
@@ -214,20 +214,20 @@ endfunction
 
 function! vira#_set_issue() "{{{2
   if (vira#_check_init())
-    silent! python vira_set_issue()
+    silent! python3 vira_set_issue()
     silent! popup &Vira
   endif
 endfunction
 
 function! vira#_set_project() "{{{2
   if (vira#_check_init())
-    silent! python vira_get_projects()
+    silent! python3 vira_get_projects()
     silent! popup &Vira
   endif
 endfunction
 
 function! vira#_timestamp() "{{{2
-  python vira_timestamp()
+  python3 vira_timestamp()
 endfunction
 
 function! vira#_todo() "{{{2
@@ -245,7 +245,7 @@ function! vira#_todo() "{{{2
       execute "normal mmO" . g:vira_todo_header . " " . vira#_get_active_issue() . " [" . strftime('%y%m%d') . "] - " . comment . "\<esc>mn"
       call NERDComment(0, "Toggle")
       normal `m
-      python vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . g:vira_todo_header . "* " . comment'))
+      python3 vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . g:vira_todo_header . "* " . comment'))
     endif
   endif
 endfunction

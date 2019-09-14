@@ -86,7 +86,7 @@ def vira_str_amenu(string):
     Protect strings from JIRA for Python and Vim
     '''
     string = string.replace("\\", "\\\\")
-    string = string.replace(".", "\.")
+    string = string.replace(".", r"\.")
     string = string.replace(" ", "\\ ")
     return string
 
