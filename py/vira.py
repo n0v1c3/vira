@@ -110,16 +110,16 @@ def vira_set_issue(): # {{{3
     # Rebuild the menu
     vira_null_issue = vira_str_amenu(vim.eval('g:vira_null_issue'))
     vim.command('redraw')
-    vim.command('amenu&Vira.&<tab>:e :<cr>')
+    vim.command('amenu&Vira.&<tab>:exec :<cr>')
     vim.command('aunmenu &Vira')
     vim.command('amenu&Vira.&' +
-                vira_null_issue + '<tab>:e :call vira#_set_active_issue("' +
+                vira_null_issue + '<tab>:exec :call vira#_set_active_issue("' +
                 vira_null_issue + '")<cr>')
     for issue in issues["issues"]:
         key = vira_str_amenu(issue["key"])
         vim.command("amenu&Vira.&" +
                     vira_str_amenu(key + " " + issue["fields"]["summary"]) +
-                    '<tab>:e :let g:vira_active_issue = "' + key + '"<cr>')
+                    '<tab>:exec :let g:vira_active_issue = "' + key + '"<cr>')
 
 # Projects {{{2
 def vira_get_projects(): # {{{3
@@ -133,15 +133,15 @@ def vira_get_projects(): # {{{3
     # Rebuild the menu
     vira_null_project = vira_str_amenu(vim.eval('g:vira_null_project'))
     vim.command('redraw')
-    vim.command('amenu&Vira.&<tab>:e :<cr>')
+    vim.command('amenu&Vira.&<tab>:exec :<cr>')
     vim.command('aunmenu &Vira')
     vim.command('amenu&Vira.&' + vira_null_project +
-                '<tab>:e :call vira#_set_active_issue("' +
+                '<tab>:exec :call vira#_set_active_issue("' +
                 vira_null_project + '")<cr>')
     for project in projects:
         project = vira_str_amenu(str(project))
         vim.command("amenu&Vira.&" + project +
-                    '<tab>:e :silent! let g:vira_project="' +
+                    '<tab>:exec :silent! let g:vira_project="' +
                     project + '"<cr>')
 
 # Comments {{{1
