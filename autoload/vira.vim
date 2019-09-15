@@ -73,6 +73,13 @@ function! vira#_comment() "{{{2
   endif
 endfunction
 
+function! vira#_add_issue() "{{{2
+  " TODO: VIRA-5 [190915] - Safety, NO Project, issuetype, empty summary
+  let summary = input(g:vira_project . " - Issue Summary: ")
+  let description = input(g:vira_project . " - Issue Description: ")
+  python vira_add_issue(vim.eval('g:vira_project'), vim.eval('summary'), vim.eval('description'), "Bug")
+endfunction
+
 function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
 endfunction

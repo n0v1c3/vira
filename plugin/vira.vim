@@ -42,6 +42,7 @@ endif
 " commands
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_comment()
+command! -nargs=0 -bang ViraAddIssue call vira#_add_issue()
 command! -nargs=0 -bang ViraGetReport call vira#_get_report()
 command! -nargs=0 -bang ViraGetTodos call vira#_get_todo()
 command! -nargs=0 -bang ViraSetIssue call vira#_set_issue()
