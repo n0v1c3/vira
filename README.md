@@ -57,6 +57,14 @@ The default browser used for :ViraBrowse is the environment variable \$BROWSER. 
 let g:vira_browser = 'chromium'
 ```
 
+### TLS Certificate Verification
+
+The following option can be set in order to connect to a sever that is using self-signed TLS certificates.
+
+```
+let g:vira_skip_cert_verify = 1
+```
+
 ## Usage
 
 A list of the important commands, functions and global variables
