@@ -37,11 +37,6 @@ if !exists('g:vira_serv')
   let g:vira_serv = ''
 endif
 
-" todo Header
-if !exists('g:vira_todo_header')
-  let g:vira_todo_header = 'TODO'
-endif
-
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into
 " commands
