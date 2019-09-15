@@ -39,7 +39,7 @@ endif
 
 " todo Header
 if !exists('g:vira_todo_header')
-  let g:vira_todo_header = 'TODO:'
+  let g:vira_todo_header = 'TODO'
 endif
 
 " Commands {{{1
