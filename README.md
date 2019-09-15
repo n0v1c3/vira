@@ -1,19 +1,19 @@
-# vira <!-- {{{1 -->
+# vira
 Vim JIRA interface plugin
 
-## Installation <!-- {{{2 -->
+## Installation
 Add `n0v1c3/vira` to your favorite VIM package manager and finaly
 install JIRA into Python.
 ```
 sudo python3 -m pip install jira
 ```
-## Configuration <!-- {{{2 -->
-### Required <!-- {{{3 -->
+## Configuration
+### Required
 Add the following lines to your `.vimrc`
 ```
 let g:vira_srvs = ['https://jira.website.com', 'https://jira.othersite.com']
 let g:vira_usrs = ['username_website', 'username_othersite']
-let g:vira_pass = ['pass jira/website/n0v1c3', 'lpass show --password account']  
+let g:vira_pass = ['pass jira/website/n0v1c3', 'lpass show --password account']
 ```
 These lists should be of equal length with at least **one** entry each
 and represent the address of the JIRA site along with the user
@@ -38,18 +38,18 @@ Use a different filename:
 ```
 let g:vira_virarc = '.virarc'
 ```
-### Browser <!-- {{{3 -->
+### Browser
 
 The default browser used for :ViraBrowse is the environment variable $BROWSER. Override this by setting g:vira_browser.
 ```
 let g:vira_browser = 'chromium'
 ```
 
-## Usage <!-- {{{2 -->
+## Usage
 A list of the important commands, functions and global variables
 to be used to help configure Vira to work for you.
 
-### Commands <!-- {{{3 -->
+### Commands
 `ViraBrowse` - View JIRA issue in web-browser.  
 `ViraComment` - Insert a comment into JIRA for your active issue.  
 `ViraGetReport` - Get a report fr the active issue.  
@@ -59,15 +59,15 @@ to be used to help configure Vira to work for you.
 `ViraSetServer` - Change your active JIRA server.  
 `ViraTodo` - Make a TODO note for current issue.  
 
-### Functions <!-- {{{3 -->
+### Functions
 `ViraGetActiveIssue()` - Get the currently selected active issue.  
 `ViraStatusline()` - Quick statusline drop-in.  
 
-### Variables <!-- {{{3 -->
+### Variables
 `g:vira_null_issue` - Text used when there is no issue.  
 `g:vira_null_project` - Text used when there is no project.  
 
-### Examples: <!-- {{{3 -->
+### Examples:
 ```
 nnoremap <silent> <leader>vc :ViraComment<cr>
 nnoremap <silent> <leader>vi :ViraSetIssue<cr>
@@ -79,7 +79,7 @@ nnoremap <silent> <leader>vT :ViraTodo<cr>
 statusline+=%{ViraStatusline()}
 ```
 
-### Plugin Support: <!-- {{{3 -->
+### Plugin Support:
 Plugins used and supported.
 
 #### airline

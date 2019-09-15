@@ -35,12 +35,15 @@ def vira_connect(server, user, pw):
         vim.command("let s:vira_is_init = 0")
 
 # Issues {{{1
-def vira_add_issue(issue): # {{{2
+def vira_add_issue(project, summary, description, issuetype): # {{{2
     '''
     Get single issue by isuue id
     '''
 
-    return jira.issue(issue)
+    jira.create_issue(project={'key': project},
+                      summary=summary,
+                      description=description,
+                      issuetype={'name': issuetype})
 
 def vira_get_issue(issue): # {{{2
     '''

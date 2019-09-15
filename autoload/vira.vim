@@ -15,8 +15,10 @@ let s:vira_end_time = 0
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 let s:virapy_path = s:vira_root_dir . '/py/vira.py'
 
+let s:vira_todo_header = 'TODO'
+
 " Filters
-let s:filter_project_key = "VIRA"
+let s:filter_project_key = 'VIRA'
 
 " Functions {{{1
 function! vira#_browse() "{{{2
@@ -71,7 +73,19 @@ function! vira#_comment() "{{{2
   endif
 endfunction
 
-" TODO: VIRA-50 [190914] - Basics are in time to blend with issue selectsion
+function! vira#_add_issue() "{{{2
+  " Add issue only if a project has been selected
+  if !(g:vira_project == g:vira_null_project || g:vira_project == "")
+    let summary = input(g:vira_project . " - Issue Summary: ")
+    if !(summary == "")
+      let description = input(g:vira_project . " - Issue Description: ")
+      python vira_add_issue(vim.eval('g:vira_project'), vim.eval('summary'), vim.eval('description'), "Bug")
+    else
+      echo "\nSummary should not be blank"
+    endif
+  endif
+endfunction
+
 function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
 endfunction
@@ -231,22 +245,28 @@ function! vira#_timestamp() "{{{2
 endfunction
 
 function! vira#_todo() "{{{2
-  " Confirm an issue has been selected
-  if (vira#_get_active_issue() == g:vira_null_issue)
-    " User can select an issue now
-    call vira#_set_issue()
-  endif
-
-  " Final chance to have a selected issue
+  " Build default or issue header
+  let comment_header = s:vira_todo_header
   if !(vira#_get_active_issue() == g:vira_null_issue)
-    let comment = input(vira#_get_active_issue() . ": ")
+    let comment_header .=  ": " . vira#_get_active_issue()
+  endif
+  let comment_header .= " [" . strftime('%y%m%d') . "] - "
+
+  " Comment entry from user
+  let comment = input(comment_header)
+
+  " Post existing comments in the file and on the issue if selected
+  if !(comment == "")
+    " Jira comment
     let file_path = "{code}" . @% . "{code}"
-    if !(comment == "")
-      execute "normal mmO" . g:vira_todo_header . " " . vira#_get_active_issue() . " [" . strftime('%y%m%d') . "] - " . comment . "\<esc>mn"
-      call NERDComment(0, "Toggle")
-      normal `m
-      python3 vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . g:vira_todo_header . "* " . comment'))
+    if !(vira#_get_active_issue() == g:vira_null_issue)
+      python3 vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
     endif
+
+    " Vim comment
+    execute "normal mmO" . comment_header . comment . "\<esc>mn"
+    call NERDComment(0, "Toggle")
+    normal `m
   endif
 endfunction
 
@@ -276,4 +296,3 @@ function! vira#_update_virarc() "{{{2
     exec 'source ' . s:vira_gitroot
   endif
 endfunction
-

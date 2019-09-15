@@ -22,10 +22,11 @@ endif
 " virarc {{{3
 call vira#_update_virarc()
 
-" Null project text {{{3
+" Null and default project text {{{3
 if !exists('g:vira_null_project')
   let g:vira_null_project = 'None'
 endif
+let g:vira_project = g:vira_null_project
 
 " Active issue text {{{3
 if !exists('g:vira_active_issue')
@@ -37,16 +38,13 @@ if !exists('g:vira_serv')
   let g:vira_serv = ''
 endif
 
-" todo Header
-if !exists('g:vira_todo_header')
-  let g:vira_todo_header = 'TODO:'
-endif
 
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into
 " commands
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_comment()
+command! -nargs=0 -bang ViraAddIssue call vira#_add_issue()
 command! -nargs=0 -bang ViraGetReport call vira#_get_report()
 command! -nargs=0 -bang ViraGetTodos call vira#_get_todo()
 command! -nargs=0 -bang ViraSetIssue call vira#_set_issue()
