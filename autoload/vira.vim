@@ -186,13 +186,16 @@ function! vira#_init_python() "{{{2
     let i = i + 1
   endfor
 
+  " Specify whether the server's TLS certificate needs to be verified
+  let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')
+
   " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
     " Load `py/vira.py` and connect to server
     silent! python3 import sys
     silent! exe 'python3 sys.path = ["' . s:vira_root_dir . '"] + sys.path'
     silent! exe 'py3file ' . s:virapy_path
-    silent! python3 vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"))
+    silent! python3 vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
 
     " Check if Vira connected to the server
     if (s:vira_is_init != 1)

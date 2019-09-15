@@ -17,18 +17,22 @@ import datetime
 import urllib3
 
 # Connect {{{1
-def vira_connect(server, user, pw):
+def vira_connect(server, user, pw, skip_cert_verify):
     '''
     Connect to Jira server with supplied auth details
     '''
 
     global jira
 
-    # TODO: VIRA-49 [190911] - make this optional
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    # Specify whether the server's TLS certificate needs to be verified
+    if skip_cert_verify == "1":
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        cert_verify = False
+    else:
+        cert_verify = True
 
     try:
-        jira = JIRA(options={'server': server, 'verify': False}, auth=(user, pw), timeout=5)
+        jira = JIRA(options={'server': server, 'verify': cert_verify}, auth=(user, pw), timeout=5)
         vim.command("let s:vira_is_init = 1")
     except:
         vim.command("let s:vira_is_init = 0")
