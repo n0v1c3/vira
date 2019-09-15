@@ -22,10 +22,11 @@ endif
 " virarc {{{3
 call vira#_update_virarc()
 
-" Null project text {{{3
+" Null and default project text {{{3
 if !exists('g:vira_null_project')
   let g:vira_null_project = 'None'
 endif
+let g:vira_project = g:vira_null_project
 
 " Active issue text {{{3
 if !exists('g:vira_active_issue')
@@ -36,6 +37,7 @@ endif
 if !exists('g:vira_serv')
   let g:vira_serv = ''
 endif
+
 
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into

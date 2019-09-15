@@ -63,7 +63,6 @@ def vira_add_issue(project, summary, description, issuetype): # {{{2
     Get single issue by isuue id
     '''
 
-    #  TODO: VIRA-5 [190915] - Add safety to this code
     jira.create_issue(project={'key': project},
                       summary=summary,
                       description=description,
