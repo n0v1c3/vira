@@ -13,7 +13,6 @@ Internals and API functions for vira
 # Imports {{{1
 import vim
 from jira import JIRA
-import argparse
 import datetime
 import urllib3
 
