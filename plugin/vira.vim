@@ -38,7 +38,6 @@ if !exists('g:vira_serv')
   let g:vira_serv = ''
 endif
 
-
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into
 " commands
@@ -51,6 +50,13 @@ command! -nargs=0 -bang ViraSetIssue call vira#_set_issue()
 command! -nargs=0 -bang ViraSetProject call vira#_set_project()
 command! -nargs=0 -bang ViraSetServer call vira#_set_server()
 command! -nargs=0 -bang ViraTodo call vira#_todo()
+
+" Style {{{1
+" Vira {{{2
+augroup Vira
+  autocmd!
+  autocmd BufNewFile,BufRead vira_report setf vira
+augroup END
 
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2
