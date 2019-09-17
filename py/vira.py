@@ -195,7 +195,7 @@ def vira_report(issue):
                                 json_result='True')
 
     # Print issue content
-    print(issue + ' | ' + vira_str(issues["issues"][0]["fields"]["summary"]))
+    print(issue + ': ' + vira_str(issues["issues"][0]["fields"]["summary"]))
     print('Description: ' + vira_str(issues["issues"][0]["fields"]["description"]))
     print("\nComments:")
     print("----------")
