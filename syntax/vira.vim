@@ -1,30 +1,31 @@
 " Quit when a syntax file was already loaded.
 if exists('b:current_syntax') | finish|  endif
 
-syntax match simpleVar "\k\+" nextgroup=simpleAssignment
-syntax match simpleAssignment "=" contained nextgroup=simpleValue
-syntax match simpleValue ".*" contained
-highlight default link simpleVar Identifier
-highlight default link simpleAssignment Statement
-highlight default link simpleValue String
-
-syntax match viraTitle "\%1l.*:" nextgroup=viraTitleStory
-" syntax match viraTitleStory "\v|.*"
+syntax match viraTitle "\%1l.*:" nextgroup=viraStory
+syntax match viraStory "\v.*" contained
 highlight default link viraTitle Title
-" highlight default link viraTitleStory Statement
+highlight default link viraStory Identifier
 
-syntax match viraDescriptionTitle "\%2l.*:" nextgroup=viraDescriptionText
-syntax match viraDescriptionText ".*Comments:"
+syntax match viraDescriptionTitle "Description:" nextgroup=viraDescription
 highlight default link viraDescriptionTitle Title
+
+syntax match viraCommentTitle "Comments:" nextgroup=viraCommentFold
+syntax match viraCommentDate ".*{{{2" nextgroup=viraCommentAuthor
+syntax match viraCommentAuthor ".*@"
+highlight default link viraCommentTitle Title
+highlight default link viraCommentAuthor Identifier
+" highlight default link viraCommentAuthor String
+highlight default link viraCommentDate Statement
 
 syntax match viraCode "\v\{code:.*\}\n.*\{code\}"
 highlight default link viraCode Statement
 
-syntax match viraCommentTitle "Comments:" nextgroup=viraCommentAuthor
-syntax match viraCommentAuthor "\v.*\@" nextgroup=viraCommentDate
-syntax match viraCommentDate "\v.*" contained
-highlight default link viraCommentTitle Title
-highlight default link viraCommentAuthor String
-highlight default link viraCommentDate Statement
+syntax match viraBullets ".*\* "
+highlight default link viraBullets Title
+
+" set foldexpr=(getline(v:lnum)=~g:vira_project)\\|\\|(getline(v:lnum)=~'Description:')?0:(getline(v:lnum)=~'-----')?'<2':3
+" set foldmethod=expr
+" set foldlevel=2
+" set foldcolumn=1
 
 let b:current_syntax = 'vira'

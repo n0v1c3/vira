@@ -198,13 +198,14 @@ def vira_report(issue):
     print(issue + ': ' + vira_str(issues["issues"][0]["fields"]["summary"]))
     print('Description: ' + vira_str(issues["issues"][0]["fields"]["description"]))
     print("\nComments:")
-    print("----------")
+    print("----")
     for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
-        print(vira_str(comment['author']['displayName']) + ' @ ' +
+        print('\n' + vira_str(comment['author']['displayName']) + ' @ ' +
               vira_str(comment['updated'][0:10]) + ' ' +
-              vira_str(comment['updated'][11:16]))
+              vira_str(comment['updated'][11:16]) + ' {' + '{{2')
+        print("----")
         print(vira_str(comment['body']))
-        print("----------")
+        print('----')
 
 # Main {{{1
 def main():
