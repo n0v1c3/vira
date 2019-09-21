@@ -16,10 +16,47 @@ highlight default link viraCommentTitle Title
 highlight default link viraCommentAuthor Identifier
 highlight default link viraCommentDate Statement
 
-syntax match viraCode "\v\{code:.*\}\n.*\{code\}"
-highlight default link viraCode Statement
+syntax region viraCode start=/{code.*}/ end=/{code}/
+highlight default link viraCode Question
+
+syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
+highlight default link viraNoformat Normal
+
+syntax match viraLink "\!.*|.*\!"
+highlight default link viraLink Title
+
+syntax match viraBold "\*.*\*"
+highlight viraBold cterm=bold gui=bold
 
 syntax match viraBullets ".*\* "
-highlight default link viraBullets Title
+highlight default link viraBullets Identifier
+
+syntax match viraItalic "_.*_"
+highlight viraItalic cterm=italic gui=italic
+
+syntax match viraUnderline "+.*+"
+highlight viraUnderline cterm=underline gui=underline
+
+syntax match viraStrikethrough "-.*-"
+" highlight default link viraStrikethrough Error
+highlight viraStrikethrough cterm=strikethrough gui=strikethrough
+
+syntax match viraLine "----"
+highlight default link viraLine Title
+
+syntax match viraSubscript "\~.*\~"
+highlight default link viraSubscript Question
+
+syntax match viraCitvtion "??.*??"
+highlight default link viraCitvtion Title
+
+syntax match viraMonospaced "{{.*}}"
+highlight default link viraMonospaced Question
+
+syntax match viraUsername "\[\~.*\]"
+highlight viraUsername cterm=underline gui=underline
+
+syntax match viraLink "\[.*|.*\]"
+highlight viraLink cterm=underline gui=underline
 
 let b:current_syntax = 'vira'
