@@ -52,12 +52,6 @@ command! -nargs=0 -bang ViraSetServer call vira#_set_server()
 command! -nargs=0 -bang ViraTodo call vira#_todo()
 
 " Style {{{1
-" Vira {{{2
-augroup Vira
-  autocmd!
-  autocmd BufNewFile,BufRead vira_report setf vira
-augroup END
-
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2
   " Return the actuve issue key
