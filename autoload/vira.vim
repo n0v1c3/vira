@@ -79,7 +79,7 @@ function! vira#_add_issue() "{{{2
     let summary = input(g:vira_project . " - Issue Summary: ")
     if !(summary == "")
       let description = input(g:vira_project . " - Issue Description: ")
-      python vira_add_issue(vim.eval('g:vira_project'), vim.eval('summary'), vim.eval('description'), "Bug")
+      python3 vira_add_issue(vim.eval('g:vira_project'), vim.eval('summary'), vim.eval('description'), "Bug")
     else
       echo "\nSummary should not be blank"
     endif
