@@ -51,7 +51,6 @@ command! -nargs=0 -bang ViraSetProject call vira#_set_project()
 command! -nargs=0 -bang ViraSetServer call vira#_set_server()
 command! -nargs=0 -bang ViraTodo call vira#_todo()
 
-" Style {{{1
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2
   " Return the actuve issue key
