@@ -50,8 +50,8 @@ function! vira#_browse() "{{{2
 endfunction
 
 function! vira#_check_init() "{{{2
-  call vira#_update_virarc()
   if (s:vira_is_init != 1)
+    call vira#_update_virarc()
     call vira#_init_python()
   endif
   return s:vira_is_init == 1
@@ -231,15 +231,15 @@ endfunction
 
 function! vira#_set_issue() "{{{2
   if (vira#_check_init())
-    silent! python3 vira_set_issue()
-    silent! popup &Vira
+    python3 vira_set_issue()
+    " silent! popup &Vira
   endif
 endfunction
 
 function! vira#_set_project() "{{{2
   if (vira#_check_init())
     silent! python3 vira_get_projects()
-    silent! popup &Vira
+    " silent! popup &Vira
   endif
 endfunction
 

@@ -19,9 +19,6 @@ if !exists('g:vira_null_issue')
   let g:vira_null_issue = 'None'
 endif
 
-" virarc {{{3
-call vira#_update_virarc()
-
 " Null and default project text {{{3
 if !exists('g:vira_null_project')
   let g:vira_null_project = 'None'

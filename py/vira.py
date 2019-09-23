@@ -11,10 +11,16 @@ Internals and API functions for vira
 # Version: 0.0.1
 
 # Imports {{{1
+from __future__ import print_function, unicode_literals
 import vim
+import sys
+import os
 from jira import JIRA
 import datetime
 import urllib3
+from PyInquirer import style_from_dict, Token, prompt, Separator
+from pprint import pprint
+#  from examples import custom_style_2
 
 # Connect {{{1
 def vira_connect(server, user, pw, skip_cert_verify):
@@ -73,6 +79,46 @@ def vira_str_amenu(string):
     string = string.replace(" ", "\\ ")
     return string
 
+def vira_pyinquirer_multi(answers, message, name):
+    '''
+    Multiple select menu
+    '''
+
+    # New window
+    vim.command("silent! new +read!echo ''")
+
+    # Build menu with passed objects
+    choices = []
+    for answer in answers:
+        answer = vira_str_amenu(str(answer))
+        choices.append({'name': answer})
+    questions = [
+        {
+            'type': 'checkbox',
+            'qmark': '😃',
+            'message': message,
+            'name': 'answers',
+            'choices': choices,
+            'validate': lambda answer: 'You must choose at least one topping.'
+                                       if len(answer) == 0 else True
+        }
+    ]
+
+    # Display menu
+    selection = prompt(questions)
+
+    # Build array as a string of selected values
+    iter_answers = iter(selection['answers'])
+    iter_answer = next(iter_answers)
+    for answer in iter_answers:
+        iter_answer += ', ' + answer
+
+    # Close menu
+    vim.command("q!")
+
+    # Return string represent the array
+    return iter_answer
+
 def vira_set_issue(): # {{{3
     '''
     Get my issues with JQL
@@ -81,7 +127,7 @@ def vira_set_issue(): # {{{3
     query = ''
     try:
         if (vim.eval('g:vira_project') != ''):
-            query += 'project = ' + vim.eval('g:vira_project') + ' AND '
+            query += 'project in (' + vim.eval('g:vira_project') + ') AND '
     except:
         query += ''
 
@@ -90,20 +136,11 @@ def vira_set_issue(): # {{{3
         fields='summary,comment',
         json_result='True')
 
-    #  TODO-TJG [190213] - This is almost exactly the same as vira_get_projects() should be merged into a single function.
-    # Rebuild the menu
-    vira_null_issue = vira_str_amenu(vim.eval('g:vira_null_issue'))
-    vim.command('redraw')
-    vim.command('amenu&Vira.&<tab>:exec :<cr>')
-    vim.command('aunmenu &Vira')
-    vim.command('amenu&Vira.&' +
-                vira_null_issue + '<tab>:exec :call vira#_set_active_issue("' +
-                vira_null_issue + '")<cr>')
-    for issue in issues["issues"]:
-        key = vira_str_amenu(issue["key"])
-        vim.command("amenu&Vira.&" +
-                    vira_str_amenu(key + " " + issue["fields"]["summary"]) +
-                    '<tab>:exec :let g:vira_active_issue = "' + key + '"<cr>')
+    keys = []
+    for issue in issues['issues']:
+        keys.append(vira_str_amenu(issue["key"]))
+
+    vim.command('silent! let g:vira_active_issue = "' + vira_pyinquirer_multi(keys, "*ISSUES*", 'isseus') + '"')
 
 # Projects {{{2
 def vira_get_projects(): # {{{3
@@ -111,22 +148,7 @@ def vira_get_projects(): # {{{3
     Build a vim popup menu for a list of projects
     '''
 
-    # Get a list of project keys from Jira
-    projects = jira.projects()
-
-    # Rebuild the menu
-    vira_null_project = vira_str_amenu(vim.eval('g:vira_null_project'))
-    vim.command('redraw')
-    vim.command('amenu&Vira.&<tab>:exec :<cr>')
-    vim.command('aunmenu &Vira')
-    vim.command('amenu&Vira.&' + vira_null_project +
-                '<tab>:exec :call vira#_set_active_issue("' +
-                vira_null_project + '")<cr>')
-    for project in projects:
-        project = vira_str_amenu(str(project))
-        vim.command("amenu&Vira.&" + project +
-                    '<tab>:exec :silent! let g:vira_project="' +
-                    project + '"<cr>')
+    vim.command('silent! let g:vira_project="' + vira_pyinquirer_multi(jira.projects(), '*PROJECTS*', 'projects') + '"')
 
 # Comments {{{1
 def vira_add_comment(issue, comment):
