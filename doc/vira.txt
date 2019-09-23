@@ -1,0 +1,18 @@
+*vira*  Vira: Vim Jira
+
+Author: n0v1c3 (Travis Gall) <travis.gall@gmail.com>
+
+Interface for Jira issues.
+
+==============================================================================
+Vira                                        *vira*
+
+1. Introduction                             |vira-intro|
+
+==============================================================================
+1. Introduction                             *supertab-intro*
+
+Vira is a plugin which allows you to connect with a Jira server and generate 
+the reports.
+
+vim:tw=78:ts=8:ft=help:norl:
