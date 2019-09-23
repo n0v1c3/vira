@@ -13,14 +13,10 @@ Internals and API functions for vira
 # Imports {{{1
 from __future__ import print_function, unicode_literals
 import vim
-import sys
-import os
 from jira import JIRA
 import datetime
 import urllib3
-from PyInquirer import style_from_dict, Token, prompt, Separator
-from pprint import pprint
-#  from examples import custom_style_2
+from PyInquirer import prompt
 
 # Connect {{{1
 def vira_connect(server, user, pw, skip_cert_verify):
@@ -68,18 +64,20 @@ def vira_str(string): # {{{3
     '''
     Protect strings from JIRA for Python and Vim
     '''
+
     return string
 
 def vira_str_amenu(string):
     '''
     Protect strings from JIRA for Python and Vim
     '''
+
     string = string.replace("\\", "\\\\")
     string = string.replace(".", r"\.")
     string = string.replace(" ", "\\ ")
     return string
 
-def vira_pyinquirer_multi(answers, message, name):
+def vira_pyinquirer_multi(answers, message, menu_type):
     '''
     Multiple select menu
     '''
@@ -94,7 +92,7 @@ def vira_pyinquirer_multi(answers, message, name):
         choices.append({'name': answer})
     questions = [
         {
-            'type': 'checkbox',
+            'type': menu_type,
             'qmark': '😃',
             'message': message,
             'name': 'answers',
@@ -107,17 +105,21 @@ def vira_pyinquirer_multi(answers, message, name):
     # Display menu
     selection = prompt(questions)
 
-    # Build array as a string of selected values
-    iter_answers = iter(selection['answers'])
-    iter_answer = next(iter_answers)
-    for answer in iter_answers:
-        iter_answer += ', ' + answer
+    if isinstance(selection['answers'], list):
+        # Change a list to a string for the query to be run
+        iter_answers = iter(selection['answers'])
+        query = next(iter_answers)
+        for answer in iter_answers:
+            query += ', ' + answer
+    else:
+        # Just a string nice and easy
+        query = selection['answers']
 
     # Close menu
     vim.command("q!")
 
     # Return string represent the array
-    return iter_answer
+    return query
 
 def vira_set_issue(): # {{{3
     '''
@@ -140,7 +142,7 @@ def vira_set_issue(): # {{{3
     for issue in issues['issues']:
         keys.append(vira_str_amenu(issue["key"]))
 
-    vim.command('silent! let g:vira_active_issue = "' + vira_pyinquirer_multi(keys, "*ISSUES*", 'isseus') + '"')
+    vim.command('silent! let g:vira_active_issue = "' + vira_pyinquirer_multi(keys, "*ISSUES*", 'list') + '"')
 
 # Projects {{{2
 def vira_get_projects(): # {{{3
@@ -148,7 +150,7 @@ def vira_get_projects(): # {{{3
     Build a vim popup menu for a list of projects
     '''
 
-    vim.command('silent! let g:vira_project="' + vira_pyinquirer_multi(jira.projects(), '*PROJECTS*', 'projects') + '"')
+    vim.command('silent! let g:vira_project="' + vira_pyinquirer_multi(jira.projects(), '*PROJECTS*', 'checkbox') + '"')
 
 # Comments {{{1
 def vira_add_comment(issue, comment):
