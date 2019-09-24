@@ -261,7 +261,7 @@ function! vira#_todo() "{{{2
   " Post existing comments in the file and on the issue if selected
   if !(comment == "")
     " Jira comment
-    let file_path = "{code}" . @% . "{code}"
+    let file_path = "{code}\n" . @% . "\n{code}"
     if !(vira#_get_active_issue() == g:vira_null_issue)
       python3 vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
     endif

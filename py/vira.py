@@ -18,8 +18,9 @@ import datetime
 import urllib3
 from PyInquirer import prompt
 
-# Connect {{{1
-def vira_connect(server, user, pw, skip_cert_verify):
+# Functions {{{1
+# Connect {{{2
+def vira_connect(server, user, pw, skip_cert_verify): # {{{3
     '''
     Connect to Jira server with supplied auth details
     '''
@@ -39,27 +40,7 @@ def vira_connect(server, user, pw, skip_cert_verify):
     except:
         vim.command("let s:vira_is_init = 0")
 
-# Issues {{{1
-def vira_add_issue(project, summary, description, issuetype): # {{{2
-    '''
-    Get single issue by isuue id
-    '''
-
-    jira.create_issue(project={'key': project},
-                      summary=summary,
-                      description=description,
-                      issuetype={'name': issuetype})
-
-def vira_get_issue(issue): # {{{2
-    '''
-    Get single issue by isuue id
-    '''
-
-    return jira.issue(issue)
-
-# Functions {{{1
 # Issues {{{2
-
 def vira_str(string): # {{{3
     '''
     Protect strings from JIRA for Python and Vim
@@ -67,7 +48,7 @@ def vira_str(string): # {{{3
 
     return string
 
-def vira_str_amenu(string):
+def vira_str_amenu(string): # {{{3
     '''
     Protect strings from JIRA for Python and Vim
     '''
@@ -77,7 +58,7 @@ def vira_str_amenu(string):
     string = string.replace(" ", "\\ ")
     return string
 
-def vira_pyinquirer_multi(answers, message, menu_type):
+def vira_pyinquirer(answers, message, menu_type): # {{{3
     '''
     Multiple select menu
     '''
@@ -133,8 +114,13 @@ def vira_set_issue(): # {{{3
     except:
         query += ''
 
+    #  TODO: VIRA-47 [190923] - Unique calls required for exitsing query
+    query += 'resolution = Unresolved '
+    #  query += ' AND assignee in (currentUser()) '
+    query += 'ORDER BY updated DESC'
+
     issues = jira.search_issues(
-        query + 'resolution = Unresolved AND assignee in (currentUser()) ORDER BY updated DESC',
+        query,
         fields='summary,comment',
         json_result='True')
 
@@ -142,7 +128,24 @@ def vira_set_issue(): # {{{3
     for issue in issues['issues']:
         keys.append(vira_str_amenu(issue["key"]))
 
-    vim.command('silent! let g:vira_active_issue = "' + vira_pyinquirer_multi(keys, "*ISSUES*", 'list') + '"')
+    vim.command('silent! let g:vira_active_issue = "' + vira_pyinquirer(keys, "*ISSUES*", 'list') + '"')
+
+def vira_add_issue(project, summary, description, issuetype): # {{{3
+    '''
+    Get single issue by isuue id
+    '''
+
+    jira.create_issue(project={'key': project},
+                      summary=summary,
+                      description=description,
+                      issuetype={'name': issuetype})
+
+def vira_get_issue(issue): # {{{3
+    '''
+    Get single issue by isuue id
+    '''
+
+    return jira.issue(issue)
 
 # Projects {{{2
 def vira_get_projects(): # {{{3
@@ -150,17 +153,17 @@ def vira_get_projects(): # {{{3
     Build a vim popup menu for a list of projects
     '''
 
-    vim.command('silent! let g:vira_project="' + vira_pyinquirer_multi(jira.projects(), '*PROJECTS*', 'checkbox') + '"')
+    vim.command('silent! let g:vira_project="' + vira_pyinquirer(jira.projects(), '*PROJECTS*', 'checkbox') + '"')
 
-# Comments {{{1
-def vira_add_comment(issue, comment):
+# Comments {{{2
+def vira_add_comment(issue, comment): # {{{3
     '''
     Comment on specified issue
     '''
 
     jira.add_comment(issue, comment)
 
-def vira_get_comments(issue):
+def vira_get_comments(issue): # {{{3
     '''
     Get all the comments for an issue
     '''
@@ -180,8 +183,8 @@ def vira_get_comments(issue):
 
     return comments
 
-# Worklog {{{1
-def vira_add_worklog(issue, timeSpentSeconds, comment):
+# Worklog {{{2
+def vira_add_worklog(issue, timeSpentSeconds, comment): # {{{3
     '''
     Calculate the offset for the start time of the time tracking
     '''
@@ -191,16 +194,16 @@ def vira_add_worklog(issue, timeSpentSeconds, comment):
     jira.add_worklog(
         issue=issue, timeSpentSeconds=timeSpentSeconds, comment=comment, started=earlier)
 
-# Status {{{1
-def vira_set_status(issue, status):
+# Status {{{2
+def vira_set_status(issue, status): # {{{3
     '''
     Set the status of the given issue
     '''
 
     jira.transition_issue(issue, status)
 
-# Time {{{1
-def vira_timestamp():
+# Time {{{2
+def vira_timestamp(): # {{{3
     '''
     Selected for Development
     '''
@@ -208,7 +211,7 @@ def vira_timestamp():
     return str(datetime.datetime.now())
 
 # Print a report of the given issue key
-def vira_report(issue):
+def vira_report(issue): # {{{3
     '''
     Print a report for the given issue
     '''
@@ -233,7 +236,7 @@ def vira_report(issue):
     print("}}" + "}",)
 
 # Main {{{1
-def main():
+def main(): # {{{2
     '''
     Main script entry point
     Used for testing
@@ -244,5 +247,5 @@ def main():
     #  vim.command("let s:vira_is_init = 0")
 
 # Run script if this file is executed directly
-if __name__ == '__main__':
+if __name__ == '__main__': # {{{2
     main()
