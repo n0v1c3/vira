@@ -69,19 +69,17 @@ def vira_pyinquirer(answers, message, menu_type): # {{{3
     # Build menu with passed objects
     choices = []
     for answer in answers:
-        answer = vira_str_amenu(str(answer))
+        answer = str(answer)
         choices.append({'name': answer})
-    questions = [
-        {
-            'type': menu_type,
-            'qmark': '😃',
-            'message': message,
-            'name': 'answers',
-            'choices': choices,
-            'validate': lambda answer: 'You must choose at least one topping.'
-                                       if len(answer) == 0 else True
-        }
-    ]
+    questions = [{
+        'type': menu_type,
+        'qmark': '😃',
+        'message': message,
+        'name': 'answers',
+        'choices': choices,
+        'validate': lambda answer: 'You must choose at least one topping.'
+                                   if len(answer) == 0 else True
+    }]
 
     # Display menu
     selection = prompt(questions)
@@ -126,9 +124,10 @@ def vira_set_issue(): # {{{3
 
     keys = []
     for issue in issues['issues']:
-        keys.append(vira_str_amenu(issue["key"]))
+        keys.append(issue["key"] + ' - ' + issue["fields"]['summary'])
 
-    vim.command('silent! let g:vira_active_issue = "' + vira_pyinquirer(keys, "*ISSUES*", 'list') + '"')
+    issue = vira_pyinquirer(keys, "*ISSUES*", 'list').partition(' ')[0]
+    vim.command('silent! let g:vira_active_issue = "' + issue + '"')
 
 def vira_add_issue(project, summary, description, issuetype): # {{{3
     '''
