@@ -125,6 +125,7 @@ function! vira#_get_report() "{{{2
     " Clean-up extra output
     silent! execute '%s/\^M//g'
     silent! execute 'normal gg2dd0'
+    silent! normal GV3kzogg
 
     " TODO-TJG [190128] - Move this to a vimscript for the buffer {{{
     " Local key mappings

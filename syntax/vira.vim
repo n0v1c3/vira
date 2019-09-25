@@ -2,8 +2,6 @@
 if exists('b:current_syntax') | finish|  endif
 
 " Syntax matching
-" syntax match viraCommentTitle "Comments:" " nextgroup=viraCommentAuthor
-
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
