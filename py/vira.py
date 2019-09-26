@@ -228,13 +228,15 @@ def vira_report(issue): # {{{3
     # Print issue content
     print(issue + ': ' + vira_str(issues["issues"][0]["fields"]["summary"]))
     print('Details {{' + '{1')
-    print("Created:  " + vira_str(issues["issues"][0]["fields"]["created"]))
-    print("Updated:  " + vira_str(issues["issues"][0]["fields"]["updated"]))
-    print("Type:     " + vira_str(issues["issues"][0]["fields"]["issuetype"]["name"]))
-    print("Status:   " + vira_str(issues["issues"][0]["fields"]["status"]["name"]))
-    print("Priority: " + vira_str(issues["issues"][0]["fields"]["priority"]["name"]))
-    print("Assignee: " + vira_str(issues["issues"][0]["fields"]["assignee"]['displayName']))
-    print("Reporter: " + vira_str(issues["issues"][0]["fields"]["reporter"]['displayName']))
+    print(" Created  :  " + vira_str(issues["issues"][0]["fields"]["created"][0:10]) +
+          ' ' + vira_str(issues["issues"][0]["fields"]["created"][11:16]))
+    print(" Updated  :  " + vira_str(issues["issues"][0]["fields"]["updated"][0:10]) +
+          ' ' + vira_str(issues["issues"][0]["fields"]["updated"][11:16]))
+    print("    Type  :  " + vira_str(issues["issues"][0]["fields"]["issuetype"]["name"]))
+    print("  Status  :  " + vira_str(issues["issues"][0]["fields"]["status"]["name"]))
+    print("Priority  :  " + vira_str(issues["issues"][0]["fields"]["priority"]["name"]))
+    print("Assignee  :  " + vira_str(issues["issues"][0]["fields"]["assignee"]['displayName']))
+    print("Reporter  :  " + vira_str(issues["issues"][0]["fields"]["reporter"]['displayName']))
     print('}}' + '}')
     print('Description {{' + '{1')
     print(vira_str(issues["issues"][0]["fields"]["description"]))
