@@ -8,8 +8,8 @@ syntax match viraCitvtion "??.*??"
 syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
 syntax match viraCommentClose "}}}"
 syntax match viraCommentDate /@.*/hs=s,he=e contained
-syntax match viraTitleComment /Comments.*{{/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
-syntax match viraTitleDescription /Description.*{{/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
+syntax match viraTitleComment /.*{{1/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
+" syntax match viraTitleDescription /Description.*{{1/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
 syntax match viraItalic "_.*_"
 syntax match viraLink "\[.*|.*\]"
 syntax match viraMonospaced "{{.*}}"
