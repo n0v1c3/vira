@@ -1,2 +1,0 @@
-let g:vira_serv = 'https://jira.tgall.ca'
-let g:vira_project = 'VIRA'
