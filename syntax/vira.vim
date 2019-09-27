@@ -49,14 +49,9 @@ highlight default link viraCommentDate Statement
 highlight default link viraDetailsA Identifier
 highlight default link viraDetailsB Question
 highlight default link viraDetailsC Question
-highlight default link viraDetailsHigh Title
-highlight default link viraDetailsHighest Title
-highlight default link viraDetailsLow Title
-highlight default link viraDetailsLowest Title
-highlight default link viraDetailsMedium Title
-highlight default link viraDetailsStatusTodo Title
-highlight default link viraDetailsStatusInProgress Title
 highlight default link viraDetailsStatusComplete Title
+highlight default link viraDetailsStatusInProgress Title
+highlight default link viraDetailsStatusTodo Title
 highlight default link viraDetailsTypeBug Title
 highlight default link viraDetailsTypeEpic Title
 highlight default link viraDetailsTypeStory Title
@@ -72,6 +67,11 @@ highlight default link viraTitleComment Title
 highlight default link viraTitleDescription Title
 highlight default link viraTitleFold Statement
 highlight viraBold cterm=bold gui=bold
+highlight viraDetailsHigh ctermfg=red guifg=red
+highlight viraDetailsHighest ctermfg=darkred guifg=darkred
+highlight viraDetailsLow ctermfg=darkgreen guifg=darkgreen
+highlight viraDetailsLowest ctermfg=green guifg=green
+highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
