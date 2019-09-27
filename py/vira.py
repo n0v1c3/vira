@@ -46,7 +46,7 @@ def vira_str(string): # {{{3
     Protect strings from JIRA for Python and Vim
     '''
 
-    return string
+    return str(string)
 
 def vira_str_amenu(string): # {{{3
     '''
@@ -218,25 +218,36 @@ def vira_report(issue): # {{{3
     # Get passed issue content
 
     issues = jira.search_issues('issue = "' + issue + '"',
+                                #  fields='*',
                                 fields='summary,comment,' +
                                        'description,issuetype,' +
                                        'priority,status,' +
                                        'created,updated,' +
-                                       'assignee,reporter',
+                                       'assignee,reporter,' +
+                                       'customfield_10106,',
                                 json_result='True')
+
+    #  print(vira_str(str(issues["issues"][0]["fields"])))
 
     # Print issue content
     print(issue + ': ' + vira_str(issues["issues"][0]["fields"]["summary"]))
     print('Details {{' + '{1')
-    print(" Created  :  " + vira_str(issues["issues"][0]["fields"]["created"][0:10]) +
+    print("Story Points  :  " + vira_str(issues["issues"][0]["fields"]["customfield_10106"]))
+    print("     Created  :  " + vira_str(issues["issues"][0]["fields"]["created"][0:10]) +
           ' ' + vira_str(issues["issues"][0]["fields"]["created"][11:16]))
-    print(" Updated  :  " + vira_str(issues["issues"][0]["fields"]["updated"][0:10]) +
+    print("     Updated  :  " + vira_str(issues["issues"][0]["fields"]["updated"][0:10]) +
           ' ' + vira_str(issues["issues"][0]["fields"]["updated"][11:16]))
-    print("    Type  :  " + vira_str(issues["issues"][0]["fields"]["issuetype"]["name"]))
-    print("  Status  :  " + vira_str(issues["issues"][0]["fields"]["status"]["name"]))
-    print("Priority  :  " + vira_str(issues["issues"][0]["fields"]["priority"]["name"]))
-    print("Assignee  :  " + vira_str(issues["issues"][0]["fields"]["assignee"]['displayName']))
-    print("Reporter  :  " + vira_str(issues["issues"][0]["fields"]["reporter"]['displayName']))
+    print("        Type  :  " + vira_str(issues["issues"][0]["fields"]["issuetype"]["name"]))
+    print("      Status  :  " + vira_str(issues["issues"][0]["fields"]["status"]["name"]))
+    print("    Priority  :  " + vira_str(issues["issues"][0]["fields"]["priority"]["name"]))
+
+    print("    Assignee  :  ", end="")
+    try:
+        print(vira_str(issues["issues"][0]["fields"]["assignee"]["displayName"]))
+    except:
+        print("Unassigned")
+
+    print("    Reporter  :  " + vira_str(issues["issues"][0]["fields"]["reporter"]['displayName']))
     print('}}' + '}')
     print('Description {{' + '{1')
     print(vira_str(issues["issues"][0]["fields"]["description"]))
