@@ -2,6 +2,8 @@
 if exists('b:current_syntax') | finish|  endif
 
 " Syntax matching
+syntax match viraIssuesDescription "-  .*"hs=s+3 contained
+syntax match viraIssuesIssue ".*-.*  -"he=e contains=viraIssuesDescription nextgroup=viraIssuesDescription
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
@@ -41,6 +43,8 @@ syntax region viraCode start=/{code.*}/ end=/{code}/
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
 
 " Highlighting
+highlight default link viraIssuesDescription Question
+highlight default link viraIssuesIssue Title
 highlight default link viraBullets Identifier
 highlight default link viraCitvtion Title
 highlight default link viraCode Question

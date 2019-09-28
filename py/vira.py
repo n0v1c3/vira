@@ -100,65 +100,33 @@ def vira_pyinquirer(answers, message, menu_type): # {{{3
     # Return string represent the array
     return query
 
+def vira_query_issues(): # {{{3
+    query = ''
+    try:
+        if (vim.eval('g:vira_project') != ''):
+            query += 'project in (' + vim.eval('g:vira_project') + ') AND '
+    except:
+        query += ''
+
+    #  TODO: VIRA-47 [190923] - Unique calls required for exitsing query
+    query += 'resolution = Unresolved '
+    #  query += ' AND assignee in (currentUser()) '
+    query += 'ORDER BY updated DESC'
+
+    issues = jira.search_issues(
+        query,
+        fields='summary,comment',
+        json_result='True')
+
+    return issues['issues']
+
 def vira_get_issues(): # {{{3
     '''
     Get my issues with JQL
     '''
 
-    query = ''
-    try:
-        if (vim.eval('g:vira_project') != ''):
-            query += 'project in (' + vim.eval('g:vira_project') + ') AND '
-    except:
-        query += ''
-
-    #  TODO: VIRA-47 [190923] - Unique calls required for exitsing query
-    query += 'resolution = Unresolved '
-    #  query += ' AND assignee in (currentUser()) '
-    query += 'ORDER BY updated DESC'
-
-    issues = jira.search_issues(
-        query,
-        fields='summary,comment',
-        json_result='True')
-
-    keys = []
-    for issue in issues['issues']:
-        keys.append(issue["key"] + ' - ' + issue["fields"]['summary'])
-        print(issue['key'])
-
-    issue = vira_pyinquirer(keys, "*ISSUES*", 'list').partition(' ')[0]
-    vim.command('silent! let g:vira_active_issue = "' + issue + '"')
-
-def vira_menu(): # {{{3
-    '''
-    Get my issues with JQL
-    '''
-
-    query = ''
-    try:
-        if (vim.eval('g:vira_project') != ''):
-            query += 'project in (' + vim.eval('g:vira_project') + ') AND '
-    except:
-        query += ''
-
-    #  TODO: VIRA-47 [190923] - Unique calls required for exitsing query
-    query += 'resolution = Unresolved '
-    #  query += ' AND assignee in (currentUser()) '
-    query += 'ORDER BY updated DESC'
-
-    issues = jira.search_issues(
-        query,
-        fields='summary,comment',
-        json_result='True')
-
-    keys = []
-    for issue in issues['issues']:
-        keys.append(issue["key"] + ' - ' + issue["fields"]['summary'])
-        print(issue["key"] + ' - ' + issue["fields"]['summary'])
-
-    #  issue = vira_pyinquirer(keys, "*ISSUES*", 'list').partition(' ')[0]
-    #  vim.command('silent! let g:vira_active_issue = "' + issue + '"')
+    for issue in vira_query_issues():
+        print(issue["key"] + '  -  ' + issue["fields"]['summary'])
 
 def vira_add_issue(project, summary, description, issuetype): # {{{3
     '''
@@ -178,12 +146,17 @@ def vira_get_issue(issue): # {{{3
     return jira.issue(issue)
 
 # Projects {{{2
+def vira_query_projects(): # {{{3
+
+    return jira.projects()
+
 def vira_get_projects(): # {{{3
     '''
     Build a vim popup menu for a list of projects
     '''
 
-    vim.command('silent! let g:vira_project="' + vira_pyinquirer(jira.projects(), '*PROJECTS*', 'checkbox') + '"')
+    for project in vira_query_projects():
+        print(project)
 
 # Comments {{{2
 def vira_add_comment(issue, comment): # {{{3
