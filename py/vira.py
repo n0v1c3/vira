@@ -198,13 +198,14 @@ def vira_add_worklog(issue, timeSpentSeconds, comment): # {{{3
         issue=issue, timeSpentSeconds=timeSpentSeconds, comment=comment, started=earlier)
 
 # Report {{{2
-def vira_report(issue): # {{{3
+def vira_get_report(): # {{{3
     '''
     Print a report for the given issue
     '''
 
     # Get passed issue content
 
+    issue = vim.eval("g:vira_active_issue")
     issues = jira.search_issues('issue = "' + issue + '"',
                                 #  fields='*',
                                 fields='summary,comment,' +
@@ -214,8 +215,6 @@ def vira_report(issue): # {{{3
                                        'assignee,reporter,' +
                                        'customfield_10106,',
                                 json_result='True')
-
-    #  print(vira_str(str(issues["issues"][0]["fields"])))
 
     # Print issue content
     print(issue + ': ' + vira_str(issues["issues"][0]["fields"]["summary"]))

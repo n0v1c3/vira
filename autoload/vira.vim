@@ -104,7 +104,11 @@ function! vira#_menu(type) "{{{2
     " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
 
     " Get the current winnr of the 'vira_report' buffer
-    silent! let winnr = bufwinnr('^' . 'vira_menu' . '$')
+    if a:type == 'report'
+      silent! let winnr = bufwinnr('^' . 'vira_report' . '$')
+    else
+      silent! let winnr = bufwinnr('^' . 'vira_menu' . '$')
+    endif
 
     " Toggle/create the report buffer
     if (winnr < 0)
@@ -112,8 +116,12 @@ function! vira#_menu(type) "{{{2
       echo 'Issue Menu!'
 
       " Open buffer into a window
-      silent! execute 'botright new ' . fnameescape('vira_menu')
-      silent! execute 'resize 5'
+      if a:type == 'report'
+        silent! execute 'botright vnew ' . fnameescape('vira_report')
+      else
+        silent! execute 'botright new ' . fnameescape('vira_menu')
+        silent! execute 'resize 5'
+      endif
       silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
       silent! redraw
       silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
@@ -161,58 +169,9 @@ function! vira#_menu(type) "{{{2
 endfunction
 
 function! vira#_get_report() "{{{2
-  " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
-
-  " Get the current winnr of the 'vira_report' buffer
-  silent! let winnr = bufwinnr('^' . 'vira_report' . '$')
-
-  " Toggle/create the report buffer
-  if (winnr < 0)
-    " Update user
-    echo 'Issue: ' . vira#_get_active_issue() . ' report being updated.'
-
-    " Open buffer into a window
-    silent! execute 'botright vnew ' . fnameescape('vira_report')
-    silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
-    silent! redraw
-    silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
-
-    " Clean-up existing report buffer
-    silent! normal ggVGd
-
-    " Write report output into buffer
-    silent! redir @x>|silent! call vira#_get_active_issue_report()|silent! redir END|silent! put x
-
-    " Remove folding and line numbers from the report
-    " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type
-    silent! let &foldcolumn=0
-    silent! set relativenumber!
-    silent! set nonumber
-
-    " Clean-up extra output
-    silent! execute '%s/\^M//g'
-    silent! normal GV3kzogg2dd0
-
-    " TODO-TJG [190128] - Move this to a vimscript for the buffer {{{
-    " Local key mappings
-    silent! execute 'nnoremap <silent> <buffer> q :q<CR>'
-    silent! execute 'nnoremap <silent> <buffer> j gj'
-    silent! execute 'nnoremap <silent> <buffer> k gk'
-    silent! execute 'vnoremap <silent> <buffer> j gj'
-    silent! execute 'vnoremap <silent> <buffer> k gk'
-
-    " Ensure wrap and linebreak are enabled
-    silent! execute 'set wrap'
-    silent! execute 'set linebreak'
-    " }}}
-
-    " Update user
-    echo 'Issue: ' . vira#_get_active_issue() . ' report!'
-  else
-    " silent! execute winnr .'wincmd w'
-    silent! execute winnr .'wincmd q'
-  endif
+  call vira#_menu('report')
 endfunction
+
 function! vira#_get_statusline() "{{{2
   return g:vira_active_issue
   python3 vim.exec("let s:vira_statusline = " . vira_statusline())
