@@ -122,10 +122,15 @@ function! vira#_get_report() "{{{2
     " Write report output into buffer
     silent! redir @x>|silent! call vira#_get_active_issue_report()|silent! redir END|silent! put x
 
+    " Remove folding and line numbers from the report
+    " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type
+    silent! let &foldcolumn=0
+    silent! set relativenumber!
+    silent! set nonumber
+
     " Clean-up extra output
     silent! execute '%s/\^M//g'
-    silent! execute 'normal gg2dd0'
-    silent! normal GV3kzogg
+    silent! normal GV3kzogg2dd0
 
     " TODO-TJG [190128] - Move this to a vimscript for the buffer {{{
     " Local key mappings
