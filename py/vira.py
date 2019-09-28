@@ -16,7 +16,6 @@ import vim
 from jira import JIRA
 import datetime
 import urllib3
-from PyInquirer import prompt
 
 # Functions {{{1
 # Connect {{{2
@@ -57,48 +56,6 @@ def vira_str_amenu(string): # {{{3
     string = string.replace(".", r"\.")
     string = string.replace(" ", "\\ ")
     return string
-
-def vira_pyinquirer(answers, message, menu_type): # {{{3
-    '''
-    Multiple select menu
-    '''
-
-    # New window
-    vim.command("silent! new +read!echo ''")
-
-    # Build menu with passed objects
-    choices = []
-    for answer in answers:
-        answer = str(answer)
-        choices.append({'name': answer})
-    questions = [{
-        'type': menu_type,
-        'qmark': '😃',
-        'message': message,
-        'name': 'answers',
-        'choices': choices,
-        'validate': lambda answer: 'You must choose at least one topping.'
-                                   if len(answer) == 0 else True
-    }]
-
-    # Display menu
-    selection = prompt(questions)
-
-    if isinstance(selection['answers'], list):
-        # Change a list to a string for the query to be run
-        iter_answers = iter(selection['answers'])
-        query = next(iter_answers)
-        for answer in iter_answers:
-            query += ', ' + answer
-    else:
-        # Just a string nice and easy
-        query = selection['answers']
-
-    # Close menu
-    vim.command("q!")
-
-    # Return string represent the array
-    return query
 
 def vira_query_issues(): # {{{3
     query = ''

@@ -76,27 +76,27 @@ to be used to help configure Vira to work for you.
 - `ViraComment` - Insert a comment into JIRA for your active issue.
 - `ViraGetReport` - Get a report fr the active issue.
 - `ViraGetTodo` - Get a list of the remaining TODOs.
-- `ViraSetIssue` - Select active **issue** from a dropdown menu.
-- `ViraSetProject` - Select active **project** from a dropdown menu.
+- `ViraGetIssues` - Select active **issue** from a menu.
+- `ViraGetProjects` - Select active **project** from a menu.
 - `ViraSetServer` - Change your active JIRA server.
 - `ViraTodo` - Make a TODO note for current issue.
 
 ### Functions
 
-`ViraGetActiveIssue()` - Get the currently selected active issue.
-`ViraStatusline()` - Quick statusline drop-in.
+- `ViraGetActiveIssue()` - Get the currently selected active issue.
+- `ViraStatusline()` - Quick statusline drop-in.
 
 ### Variables
 
-`g:vira_null_issue` - Text used when there is no issue.
-`g:vira_null_project` - Text used when there is no project.
+- `g:vira_null_issue` - Text used when there is no issue.
+- `g:vira_null_project` - Text used when there is no project.
 
 ### Examples:
 
 ```
 nnoremap <silent> <leader>vc :ViraComment<cr>
-nnoremap <silent> <leader>vi :ViraSetIssue<cr>
-nnoremap <silent> <leader>vp :ViraSetProject<cr>
+nnoremap <silent> <leader>vi :ViraGetIssues<cr>
+nnoremap <silent> <leader>vp :ViraGetProjects<cr>
 nnoremap <silent> <leader>vr :ViraReport<cr>
 nnoremap <silent> <leader>vs :ViraSetServer<cr>
 nnoremap <silent> <leader>vt :ViraGetTodo<cr>
