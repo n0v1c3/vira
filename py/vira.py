@@ -100,7 +100,7 @@ def vira_pyinquirer(answers, message, menu_type): # {{{3
     # Return string represent the array
     return query
 
-def vira_set_issue(): # {{{3
+def vira_get_issues(): # {{{3
     '''
     Get my issues with JQL
     '''
@@ -125,9 +125,40 @@ def vira_set_issue(): # {{{3
     keys = []
     for issue in issues['issues']:
         keys.append(issue["key"] + ' - ' + issue["fields"]['summary'])
+        print(issue['key'])
 
     issue = vira_pyinquirer(keys, "*ISSUES*", 'list').partition(' ')[0]
     vim.command('silent! let g:vira_active_issue = "' + issue + '"')
+
+def vira_menu(): # {{{3
+    '''
+    Get my issues with JQL
+    '''
+
+    query = ''
+    try:
+        if (vim.eval('g:vira_project') != ''):
+            query += 'project in (' + vim.eval('g:vira_project') + ') AND '
+    except:
+        query += ''
+
+    #  TODO: VIRA-47 [190923] - Unique calls required for exitsing query
+    query += 'resolution = Unresolved '
+    #  query += ' AND assignee in (currentUser()) '
+    query += 'ORDER BY updated DESC'
+
+    issues = jira.search_issues(
+        query,
+        fields='summary,comment',
+        json_result='True')
+
+    keys = []
+    for issue in issues['issues']:
+        keys.append(issue["key"] + ' - ' + issue["fields"]['summary'])
+        print(issue["key"] + ' - ' + issue["fields"]['summary'])
+
+    #  issue = vira_pyinquirer(keys, "*ISSUES*", 'list').partition(' ')[0]
+    #  vim.command('silent! let g:vira_active_issue = "' + issue + '"')
 
 def vira_add_issue(project, summary, description, issuetype): # {{{3
     '''
@@ -193,23 +224,7 @@ def vira_add_worklog(issue, timeSpentSeconds, comment): # {{{3
     jira.add_worklog(
         issue=issue, timeSpentSeconds=timeSpentSeconds, comment=comment, started=earlier)
 
-# Status {{{2
-def vira_set_status(issue, status): # {{{3
-    '''
-    Set the status of the given issue
-    '''
-
-    jira.transition_issue(issue, status)
-
-# Time {{{2
-def vira_timestamp(): # {{{3
-    '''
-    Selected for Development
-    '''
-
-    return str(datetime.datetime.now())
-
-# Print a report of the given issue key
+# Report {{{2
 def vira_report(issue): # {{{3
     '''
     Print a report for the given issue
@@ -260,6 +275,22 @@ def vira_report(issue): # {{{3
         print(vira_str(comment['body']))
         print('}}' + '}')
     print("}}" + "}",)
+
+# Status {{{2
+def vira_set_status(issue, status): # {{{3
+    '''
+    Set the status of the given issue
+    '''
+
+    jira.transition_issue(issue, status)
+
+# Time {{{2
+def vira_timestamp(): # {{{3
+    '''
+    Selected for Development
+    '''
+
+    return str(datetime.datetime.now())
 
 # Main {{{1
 def main(): # {{{2

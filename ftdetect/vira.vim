@@ -7,4 +7,5 @@
 augroup Vira
   autocmd!
   autocmd BufNewFile,BufRead vira_report setf vira
+  autocmd BufNewFile,BufRead vira_menu setf vira
 augroup END
