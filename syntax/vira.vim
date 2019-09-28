@@ -8,7 +8,7 @@ syntax match viraCitvtion "??.*??"
 syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
 syntax match viraCommentClose "}}}"
 syntax match viraCommentDate /@.*/hs=s,he=e contained
-syntax match viraDetailsA ".*  :"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsHighest,viraDetailsHigh,viraDetailsMedium,viraDetailsLow,viraDetailsLowest,viraDetailsStatusTodo,viraDetailsStatusInProgress,viraDetailsStatusComplete,viraDetailsTypeBug,viraDetailsTypeTask,viraDetailsTypeStory,viraDetailsTypeEpic nextgroup=viraDetailsB
+syntax match viraDetailsA ".*  :"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsHighest,viraDetailsHigh,viraDetailsMedium,viraDetailsLow,viraDetailsLowest,viraDetailsStatusTodo,viraDetailsStatusInProgress,viraDetailsStatusComplete,viraDetailsStatusDone,viraDetailsTypeBug,viraDetailsTypeTask,viraDetailsTypeStory,viraDetailsTypeEpic nextgroup=viraDetailsB
 syntax match viraDetailsB ":" contained nextgroup=viraDetailsC
 syntax match viraDetailsC ":  .*"hs=s+1 contained nextgroup=viraDetailsHigh
 syntax match viraDetailsHigh ":  High"hs=s+1 contained nextgroup=viraDetailsHighest
@@ -16,13 +16,14 @@ syntax match viraDetailsHighest ":  Highest"hs=s+1 contained nextgroup=viraDetai
 syntax match viraDetailsLow ":  Low"hs=s+1 contained nextgroup=viraDetailsLowest
 syntax match viraDetailsLowest ":  Lowest"hs=s+1 contained nextgroup=viraDetailsMedium
 syntax match viraDetailsMedium ":  Medium"hs=s+1 contained nextgroup=viraDetailsStatusComplete
-syntax match viraDetailsStatusComplete ":  Complete"hs=s+3 contained nextgroup=viraDetailsTypeInProgress
+syntax match viraDetailsStatusComplete ":  Complete"hs=s+3 contained nextgroup=viraDetailsStatusDone
+syntax match viraDetailsStatusDone ":  Done"hs=s+3 contained nextgroup=viraDetailsStatusInProgress
 syntax match viraDetailsStatusInProgress ":  In Progress"hs=s+3 contained nextgroup=viraDetailsStatusTodo
 syntax match viraDetailsStatusTodo ":  To Do"hs=s+3 contained nextgroup=viraDetailsTypeBug
-syntax match viraDetailsTypeBug ":  Bug"hs=s+1 contained nextgroup=viraDetailsTypeEpic
-syntax match viraDetailsTypeEpic ":  Epic"hs=s+1 contained nextgroup=viraDetailsTypeStory
-syntax match viraDetailsTypeStory ":  Story"hs=s+1 contained nextgroup=viraDetailsTypeTask
-syntax match viraDetailsTypeTask ":  Task"hs=s+1 contained
+syntax match viraDetailsTypeBug ":  Bug"hs=s+3 contained nextgroup=viraDetailsTypeEpic
+syntax match viraDetailsTypeEpic ":  Epic"hs=s+3 contained nextgroup=viraDetailsTypeStory
+syntax match viraDetailsTypeStory ":  Story"hs=s+3 contained nextgroup=viraDetailsTypeTask
+syntax match viraDetailsTypeTask ":  Task"hs=s+3 contained
 syntax match viraItalic "_.*_"
 syntax match viraLink "\[.*|.*\]"
 syntax match viraMonospaced "{{.*}}"
@@ -65,11 +66,12 @@ highlight viraDetailsHighest ctermfg=darkred guifg=darkred
 highlight viraDetailsLow ctermfg=darkgreen guifg=darkgreen
 highlight viraDetailsLowest ctermfg=green guifg=green
 highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
-highlight viraDetailsStatusComplete ctermbg=green ctermfg=white guibg=green guifg=white
+highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
+highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusInProgress ctermbg=darkyellow ctermfg=black guibg=darkyellow guifg=black
 highlight viraDetailsStatusTodo ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
 highlight viraDetailsTypeBug ctermfg=red guifg=red
-highlight viraDetailsTypeEpic ctermfg=grey guifg=grey
+highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
 highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
 highlight viraItalic cterm=italic gui=italic
