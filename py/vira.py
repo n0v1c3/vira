@@ -65,10 +65,11 @@ def vira_query_issues(): # {{{3
     except:
         query += ''
 
-    #  TODO: VIRA-47 [190923] - Unique calls required for exitsing query
+    #  TODO: VIRA-81 [190928] - Custom queries besed on menu {{{
     query += 'resolution = Unresolved '
     #  query += ' AND assignee in (currentUser()) '
     query += 'ORDER BY updated DESC'
+    #  }}}
 
     issues = jira.search_issues(
         query,
@@ -76,6 +77,14 @@ def vira_query_issues(): # {{{3
         json_result='True')
 
     return issues['issues']
+
+def vira_get_servers(): # {{{3
+    '''
+    Get my issues with JQL
+    '''
+
+    for server in vim.eval("g:vira_srvs"):
+        print(server)
 
 def vira_get_issues(): # {{{3
     '''
