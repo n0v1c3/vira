@@ -73,7 +73,76 @@ function! vira#_comment() "{{{2
   endif
 endfunction
 
-function! vira#_add_issue() "{{{2
+function! vira#_get_active_issue() "{{{2
+  return g:vira_active_issue
+endfunction
+
+function! vira#_get_active_issue_desc() "{{{2
+  " TODO-TJG [190126] - Python function required for active issue description
+  return g:vira_active_issue
+endfunction
+
+function! vira#_get_active_issue_report() "{{{2
+  python3 vira_report(vim.eval("vira#_get_active_issue()"))
+endfunction
+
+function! vira#_get_statusline() "{{{2
+  return g:vira_active_issue
+  python3 vim.exec("let s:vira_statusline = " . vira_statusline())
+endfunction
+
+function! vira#_get_version() "{{{2
+  return s:vira_version
+endfunction
+
+function! vira#_init_python() "{{{2
+  " Confirm a server has been selected, this can be done outside of this init
+  silent! let vira_serv_config = 1
+  if (!exists('g:vira_serv') || g:vira_serv == '')
+    silent! let vira_serv_config = 0
+    call vira#_set_server()
+  endif
+  
+  " User/password lookup
+  let i = 0
+  for serv in g:vira_srvs
+    if (serv == g:vira_serv)
+      let g:vira_user = g:vira_usrs[i]
+      if (!exists('g:vira_pass'))
+        let s:vira_pass_input = inputsecret('Enter password: ')
+      else
+        let s:vira_pass_input = system(g:vira_pass[i])[:-2]
+      endif
+    endif
+    let i = i + 1
+  endfor
+
+  " Specify whether the server's TLS certificate needs to be verified
+  let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')
+
+  " Was a server chosen?
+  if (exists('g:vira_serv') && g:vira_serv != '')
+    " Load `py/vira.py` and connect to server
+    silent! python3 import sys
+    silent! exe 'python3 sys.path = ["' . s:vira_root_dir . '"] + sys.path'
+    silent! exe 'py3file ' . s:virapy_path
+    silent! python3 vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
+
+    " Check if Vira connected to the server
+    if (s:vira_is_init != 1)
+      " Inform user with possible errors and reset unconfigured information
+      echo "\nNot logged in! Check configuration and CAPTCHA"
+      if (vira_serv_config == 0)
+        let g:vira_serv = ""
+      endif
+    endif
+    
+    " Clear password
+    let s:vira_pass_input = ""
+  endif
+endfunction
+
+function! vira#_issue() "{{{2
   " Add issue only if a project has been selected
   if !(g:vira_project == g:vira_null_project || g:vira_project == "")
     let summary = input(g:vira_project . " - Issue Summary: ")
@@ -86,17 +155,8 @@ function! vira#_add_issue() "{{{2
   endif
 endfunction
 
-function! vira#_get_active_issue() "{{{2
-  return g:vira_active_issue
-endfunction
-
-function! vira#_get_active_issue_desc() "{{{2
-  " TODO-TJG [190126] - Python function required for active issue description
-  return g:vira_active_issue
-endfunction
-
-function! vira#_get_active_issue_report() "{{{2
-  python3 vira_report(vim.eval("vira#_get_active_issue()"))
+function! vira#_issues() "{{{2
+  call vira#_menu("issues")
 endfunction
 
 function! vira#_menu(type) "{{{2
@@ -162,73 +222,12 @@ function! vira#_menu(type) "{{{2
   endif
 endfunction
 
-function! vira#_get_report() "{{{2
+function! vira#_projects() "{{{2
+  call vira#_menu("projects")
+endfunction
+
+function! vira#_report() "{{{2
   call vira#_menu('report')
-endfunction
-
-function! vira#_get_statusline() "{{{2
-  return g:vira_active_issue
-  python3 vim.exec("let s:vira_statusline = " . vira_statusline())
-endfunction
-
-function! vira#_get_todo() "{{{2
-  " Binary files that can be ignored
-  set wildignore+=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
-  " Seacrch the CWD to find all of your current TODOs
-  vimgrep /TODO.*\[\d\{6}]/ **/* **/.* | cw 5
-  " Un-ignore the binary files
-  set wildignore-=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
-endfunction
-
-function! vira#_get_version() "{{{2
-  return s:vira_version
-endfunction
-
-function! vira#_init_python() "{{{2
-  " Confirm a server has been selected, this can be done outside of this init
-  silent! let vira_serv_config = 1
-  if (!exists('g:vira_serv') || g:vira_serv == '')
-    silent! let vira_serv_config = 0
-    call vira#_set_server()
-  endif
-  
-  " User/password lookup
-  let i = 0
-  for serv in g:vira_srvs
-    if (serv == g:vira_serv)
-      let g:vira_user = g:vira_usrs[i]
-      if (!exists('g:vira_pass'))
-        let s:vira_pass_input = inputsecret('Enter password: ')
-      else
-        let s:vira_pass_input = system(g:vira_pass[i])[:-2]
-      endif
-    endif
-    let i = i + 1
-  endfor
-
-  " Specify whether the server's TLS certificate needs to be verified
-  let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')
-
-  " Was a server chosen?
-  if (exists('g:vira_serv') && g:vira_serv != '')
-    " Load `py/vira.py` and connect to server
-    silent! python3 import sys
-    silent! exe 'python3 sys.path = ["' . s:vira_root_dir . '"] + sys.path'
-    silent! exe 'py3file ' . s:virapy_path
-    silent! python3 vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
-
-    " Check if Vira connected to the server
-    if (s:vira_is_init != 1)
-      " Inform user with possible errors and reset unconfigured information
-      echo "\nNot logged in! Check configuration and CAPTCHA"
-      if (vira_serv_config == 0)
-        let g:vira_serv = ""
-      endif
-    endif
-    
-    " Clear password
-    let s:vira_pass_input = ""
-  endif
 endfunction
 
 function! vira#_set_server() "{{{2
@@ -265,20 +264,8 @@ function! vira#_set_servers() "{{{2
   call vira#_init_python()
 endfunction
 
-function! vira#_get_servers() "{{{2
+function! vira#_servers() "{{{2
   call vira#_menu("servers")
-endfunction
-
-function! vira#_get_issues() "{{{2
-  call vira#_menu("issues")
-endfunction
-
-function! vira#_get_projects() "{{{2
-  call vira#_menu("projects")
-endfunction
-
-function! vira#_timestamp() "{{{2
-  python3 vira_timestamp()
 endfunction
 
 function! vira#_todo() "{{{2
@@ -305,6 +292,19 @@ function! vira#_todo() "{{{2
     call NERDComment(0, "Toggle")
     normal `m
   endif
+endfunction
+
+function! vira#_todos() "{{{2
+  " Binary files that can be ignored
+  set wildignore+=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
+  " Seacrch the CWD to find all of your current TODOs
+  vimgrep /TODO.*\[\d\{6}]/ **/* **/.* | cw 5
+  " Un-ignore the binary files
+  set wildignore-=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
+endfunction
+
+function! vira#_timestamp() "{{{2
+  python3 vira_timestamp()
 endfunction
 
 function! vira#_update_virarc() "{{{2
