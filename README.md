@@ -74,12 +74,13 @@ to be used to help configure Vira to work for you.
 
 - `ViraBrowse` - View JIRA issue in web-browser.
 - `ViraComment` - Insert a comment into JIRA for your active issue.
-- `ViraGetReport` - Get a report fr the active issue.
-- `ViraGetTodo` - Get a list of the remaining TODOs.
-- `ViraGetIssues` - Select active **issue** from a menu.
-- `ViraGetProjects` - Select active **project** from a menu.
-- `ViraSetServer` - Change your active JIRA server.
+- `ViraIssue` - Create a new **issue**.
+- `ViraIssues` - Select active **issue** from a menu.
+- `ViraProjects` - Select active **project** from a menu.
+- `ViraReport` - Get a report fr the active issue.
+- `ViraServers` - Change your active JIRA server.
 - `ViraTodo` - Make a TODO note for current issue.
+- `ViraTodos` - Get a list of the remaining TODOs.
 
 ### Functions
 
@@ -94,13 +95,14 @@ to be used to help configure Vira to work for you.
 ### Examples:
 
 ```
-nnoremap <silent> <leader>vc :ViraComment<cr>
-nnoremap <silent> <leader>vi :ViraGetIssues<cr>
-nnoremap <silent> <leader>vp :ViraGetProjects<cr>
-nnoremap <silent> <leader>vr :ViraReport<cr>
-nnoremap <silent> <leader>vs :ViraSetServer<cr>
-nnoremap <silent> <leader>vt :ViraGetTodo<cr>
+nnoremap <silent> <leader>vI :ViraIssue<cr>
 nnoremap <silent> <leader>vT :ViraTodo<cr>
+nnoremap <silent> <leader>vc :ViraComment<cr>
+nnoremap <silent> <leader>vi :ViraIssues<cr>
+nnoremap <silent> <leader>vp :ViraProjects<cr>
+nnoremap <silent> <leader>vr :ViraReport<cr>
+nnoremap <silent> <leader>vs :ViraServers<cr>
+nnoremap <silent> <leader>vt :ViraTodos<cr>
 statusline+=%{ViraStatusline()}
 ```
 
