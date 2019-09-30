@@ -1,12 +1,19 @@
 # vira
 
-Vim JIRA interface plugin
+Vim JIRA interface plugin.
+
+Stay inside vim while following and updating Jira issues
+along with creating new issues on the go.
 
 ## Installation
 
-Add `n0v1c3/vira` to your favorite VIM package manager and finaly
-install JIRA into Python.
+Add to your Vim Plugins:
 
+```
+Plugin n0v1c3/vira
+```
+
+Install required python3 Jira package:
 ```
 sudo python3 -m pip install jira
 ```
@@ -15,7 +22,7 @@ sudo python3 -m pip install jira
 
 ### Required
 
-Add the following lines to your `.vimrc`
+Add the following lines to your `$HOME/.vimrc` or `$HOME/.virarc`
 
 ```
 let g:vira_srvs = ['https://jira.website.com', 'https://jira.othersite.com']
@@ -108,7 +115,8 @@ statusline+=%{ViraStatusline()}
 
 ### Plugin Support:
 
-Plugins used and supported.
+Plugins used and supported. This list will build as required
+from other requests.
 
 #### airline
 
