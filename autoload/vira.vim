@@ -201,7 +201,7 @@ function! vira#_menu(type) "{{{2
 
       " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
       " Key mapping
-      silent! execute 'nnoremap <silent> <buffer> <cr> :call vira#_set_' . a:type . '()<cr>:q!<cr>'
+      silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
       silent! execute 'nnoremap <silent> <buffer> k gk'
       silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
       silent! execute 'vnoremap <silent> <buffer> j gj'
