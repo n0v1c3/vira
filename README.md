@@ -79,15 +79,21 @@ to be used to help configure Vira to work for you.
 
 ### Commands
 
-- `ViraBrowse` - View JIRA issue in web-browser.
-- `ViraComment` - Insert a comment into JIRA for your active issue.
+- `ViraBrowse` - View Jira issue in web-browser.
+- `ViraComment` - Insert a comment for active issue.
+- `ViraEpics` - Get and Set Project(s) epic issues.
+- `ViraFilterAssignees` - Add assignees to filter.
+- `ViraFilterPriorities` - Add priorities to filter.
+- `ViraFilterProjects` - Add projects to filter.
+- `ViraFilterReset` - Reset filter to default.
+- `ViraFilterStatuses` - Add statuses to filter.
+- `ViraFilterTypes` - Add issuetypes to filter.
 - `ViraIssue` - Create a new **issue**.
-- `ViraIssues` - Select active **issue** from a menu.
-- `ViraProjects` - Select active **project** from a menu.
-- `ViraReport` - Get a report fr the active issue.
-- `ViraServers` - Change your active JIRA server.
-- `ViraTodo` - Make a TODO note for current issue.
-- `ViraTodos` - Get a list of the remaining TODOs.
+- `ViraIssues` - Get and Set the active **issue**.
+- `ViraReport` - Get report for active issue.
+- `ViraServers` - Get and Set active Jira server.
+- `ViraTodo` - Make a **TODO** note for current issue.
+- `ViraTodos `- Get a list of the remaining TODOs.
 
 ### Functions
 
@@ -102,14 +108,26 @@ to be used to help configure Vira to work for you.
 ### Examples:
 
 ```
+" Basics
 nnoremap <silent> <leader>vI :ViraIssue<cr>
 nnoremap <silent> <leader>vT :ViraTodo<cr>
+nnoremap <silent> <leader>vb :ViraBrowse<cr>
 nnoremap <silent> <leader>vc :ViraComment<cr>
+nnoremap <silent> <leader>ve :ViraEpics<cr>
 nnoremap <silent> <leader>vi :ViraIssues<cr>
-nnoremap <silent> <leader>vp :ViraProjects<cr>
 nnoremap <silent> <leader>vr :ViraReport<cr>
 nnoremap <silent> <leader>vs :ViraServers<cr>
 nnoremap <silent> <leader>vt :ViraTodos<cr>
+
+" Search filters
+nnoremap <silent> <leader>vfP :ViraFilterPriorities<cr>
+nnoremap <silent> <leader>vfa :ViraFilterAssignees<cr>
+nnoremap <silent> <leader>vfp :ViraFilterProjects<cr>
+nnoremap <silent> <leader>vfs :ViraFilterStatuses<cr>
+nnoremap <silent> <leader>vft :ViraFilterReset<cr>
+nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
+
+" Status
 statusline+=%{ViraStatusline()}
 ```
 
