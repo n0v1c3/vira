@@ -57,13 +57,28 @@ def vira_str_amenu(string): # {{{3
     string = string.replace(" ", "\\ ")
     return string
 
-def vira_query_issues(): # {{{3
+def vira_query_issues(status="" , priorities="", issuetypes="", reporters="", assignees=""): # {{{3
     query = ''
     try:
         if (vim.eval('g:vira_project') != ''):
             query += 'project in (' + vim.eval('g:vira_project') + ') AND '
     except:
         query += ''
+
+    if set(status):
+        query += 'status in (' + status + ') AND '
+
+    if set(priorities):
+        query += 'status in (' + status + ') AND '
+
+    if set(issuetypes):
+        query += 'issuetype in (' + issuetypes + ') AND '
+
+    if set(reporters):
+        query += 'reporter in (' + reporters + ') AND '
+
+    if set(assignees):
+        query += 'assignee in (' + assignees + ') AND '
 
     #  TODO: VIRA-81 [190928] - Custom queries besed on menu {{{
     query += 'resolution = Unresolved '
@@ -77,6 +92,46 @@ def vira_query_issues(): # {{{3
         json_result='True')
 
     return issues['issues']
+
+def vira_get_epics(): # {{{3
+    '''
+    Get my issues with JQL
+    '''
+
+    for issue in vira_query_issues(issuetypes="Epic"):
+        print(issue["key"] + '  -  ' + issue["fields"]['summary'])
+
+def vira_get_issuetypes(): # {{{3
+    '''
+    Get my issues with JQL
+    '''
+
+    for issuetype in jira.issue_types():
+        print(issuetype)
+
+def vira_get_users(): # {{{3
+    '''
+    Get my issues with JQL
+    '''
+
+    for user in jira.search_users("."):
+        print(user)
+
+def vira_get_statuses(): # {{{3
+    '''
+    Get my issues with JQL
+    '''
+
+    for status in jira.statuses():
+        print(status)
+
+def vira_get_priorities(): # {{{3
+    '''
+    Get my issues with JQL
+    '''
+
+    for priority in jira.priorities():
+        print(priority)
 
 def vira_get_servers(): # {{{3
     '''

@@ -155,10 +155,6 @@ function! vira#_issue() "{{{2
   endif
 endfunction
 
-function! vira#_issues() "{{{2
-  call vira#_menu("issues")
-endfunction
-
 function! vira#_menu(type) "{{{2
   if (vira#_check_init())
     " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
@@ -222,14 +218,6 @@ function! vira#_menu(type) "{{{2
   endif
 endfunction
 
-function! vira#_projects() "{{{2
-  call vira#_menu("projects")
-endfunction
-
-function! vira#_report() "{{{2
-  call vira#_menu('report')
-endfunction
-
 function! vira#_set_server() "{{{2
   " Confirm server list is set by user
   if exists('g:vira_srvs')
@@ -262,10 +250,6 @@ function! vira#_set_servers() "{{{2
   execute 'normal 0<c-v>$y'
   let g:vira_serv = expand('<cWORD>')
   call vira#_init_python()
-endfunction
-
-function! vira#_servers() "{{{2
-  call vira#_menu("servers")
 endfunction
 
 function! vira#_todo() "{{{2
