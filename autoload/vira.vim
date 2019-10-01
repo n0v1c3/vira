@@ -159,20 +159,16 @@ function! vira#_menu(type) "{{{2
   if (vira#_check_init())
     " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
 
-    " Get the current winnr of the 'vira_report' buffer
-    if a:type == 'report'
-      silent! let winnr = bufwinnr('^' . 'vira_report' . '$')
-    else
-      silent! let winnr = bufwinnr('^' . 'vira_menu' . '$')
-    endif
+    " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
+    silent! let winnr = bufwinnr('^' . 'vira_' . a:type . '$')
 
     " Toggle/create the report buffer
     if (winnr < 0)
       " Open buffer into a window
       if a:type == 'report'
-        silent! execute 'botright vnew ' . fnameescape('vira_report')
+        silent! execute 'botright vnew ' . fnameescape('vira_' . a:type)
       else
-        silent! execute 'botright new ' . fnameescape('vira_menu')
+        silent! execute 'botright new ' . fnameescape('vira_' . a:type)
         silent! execute 'resize 7'
       endif
       silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
@@ -216,6 +212,13 @@ function! vira#_menu(type) "{{{2
       call vira#_menu(a:type)
     endif
   endif
+endfunction
+
+function! vira#_quit() "{{{2
+  call vira#_menu('menu')
+  close
+  call vira#_menu('report')
+  close
 endfunction
 
 function! vira#_set_server() "{{{2

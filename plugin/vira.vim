@@ -36,25 +36,26 @@ if !exists('g:vira_serv')
 endif
 
 " Commands {{{1
-" VIRA-8 - Changed any functions that are not returning values for use into
-" commands
+" VIRA-8 - Changed any functions that are not returning values for use into commands
+" Basics
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_comment()
-command! -nargs=0 -bang ViraIssue call vira#_issue()
-command! -nargs=0 -bang ViraTodo call vira#_todo()
-
-" get_set mixed commands
-command! -nargs=0 -bang ViraFilterAssignees call vira#_menu("assignees")
 command! -nargs=0 -bang ViraEpics call vira#_menu("epics")
-command! -nargs=0 -bang ViraFilterTypes call vira#_menu("issuetypes")
+command! -nargs=0 -bang ViraIssue call vira#_issue()
 command! -nargs=0 -bang ViraIssues call vira#_menu("issues")
+command! -nargs=0 -bang ViraQuit call vira#_quit()
+command! -nargs=0 -bang ViraReport call vira#_menu("report")
+command! -nargs=0 -bang ViraServers call vira#_menu("servers")
+command! -nargs=0 -bang ViraTodo call vira#_todo()
+command! -nargs=0 -bang ViraTodos call vira#_todos()
+
+" Filters
+command! -nargs=0 -bang ViraFilterAssignees call vira#_menu("assignees")
 command! -nargs=0 -bang ViraFilterPriorities call vira#_menu("priorities")
 command! -nargs=0 -bang ViraFilterProjects call vira#_menu("projects")
-command! -nargs=0 -bang ViraReport call vira#_menu("report")
 command! -nargs=0 -bang ViraFilterReporters call vira#_menu("reporters")
-command! -nargs=0 -bang ViraServers call vira#_menu("servers")
 command! -nargs=0 -bang ViraFilterStatuses call vira#_menu("statuses")
-command! -nargs=0 -bang ViraTodos call vira#_todos()
+command! -nargs=0 -bang ViraFilterTypes call vira#_menu("issuetypes")
 
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2
