@@ -11,6 +11,17 @@ if !has('python3')
   finish
 endif
 
+" TODO-MB [190924] - print
+silent! python3 import sys
+" let g:testvar = eval("python3 print(sys.path)")
+silent! python3 import sys
+silent! exe 'python3 sys.path = ["' . s:vira_root_dir . '"] + sys.path'
+silent! python3 import Vira
+" python3 print(dir(Vira))
+silent! python3 Vira.vira_test()
+echo g:testvar
+" let g:testvar = "test"
+
 " Variables {{{1
 " Globals {{{2
 " virarc {{{3

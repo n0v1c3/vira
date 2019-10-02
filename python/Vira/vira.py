@@ -285,6 +285,11 @@ def vira_timestamp(): # {{{3
 
     return str(datetime.datetime.now())
 
+
+def vira_test(): # {{{2
+    # TODO-MB [190924] - delete after testing is complete
+    vim.command('let g:testvar = "testpy"')
+
 # Main {{{1
 def main(): # {{{2
     '''

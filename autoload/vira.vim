@@ -125,8 +125,12 @@ function! vira#_init_python() "{{{2
     " Load `py/vira.py` and connect to server
     silent! python3 import sys
     silent! exe 'python3 sys.path = ["' . s:vira_root_dir . '"] + sys.path'
-    silent! exe 'py3file ' . s:virapy_path
-    silent! python3 vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
+    " silent! exe 'py3file ' . s:virapy_path
+    python3 print(sys.path)
+    silent! python3 import Vira
+    " TODO-MB [190924] - Uncomment after testing
+    silent! python3 vira_test()
+    " silent! python3 vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
 
     " Check if Vira connected to the server
     if (s:vira_is_init != 1)
