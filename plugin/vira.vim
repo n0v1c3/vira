@@ -17,8 +17,8 @@ silent! python3 import sys
 let vira_root_dir = '/home/mike/.vim/plugged/vira/python'
 exe 'python3 sys.path.append(f"'.vira_root_dir.'")'
 python3 import Vira
-" python3 print(dir(Vira))
-python3 Vira.vira_test()
+python3 print(dir(Vira))
+python3 Vira.api.vira_test()
 echo g:testvar
 
 " Variables {{{1

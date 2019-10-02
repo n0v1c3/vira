@@ -10,4 +10,4 @@
 # - Search out all TODO-MB and fix them
 # - add leading _ to all internal functions
 
-from .vira import *
+from .vira import api  # noqa F401

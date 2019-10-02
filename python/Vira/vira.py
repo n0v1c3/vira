@@ -9,285 +9,279 @@ from jira import JIRA
 import datetime
 import urllib3
 
-# Connect
-def vira_connect(server, user, pw, skip_cert_verify):
+class ViraAPI():
     '''
-    Connect to Jira server with supplied auth details
-    '''
-
-    global jira
-
-    # Specify whether the server's TLS certificate needs to be verified
-    if skip_cert_verify == "1":
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        cert_verify = False
-    else:
-        cert_verify = True
-
-    try:
-        jira = JIRA(
-            options={
-                'server': server,
-                'verify': cert_verify
-            }, auth=(user, pw), timeout=5)
-        vim.command("let s:vira_is_init = 1")
-    except:
-        vim.command("let s:vira_is_init = 0")
-
-# Issues
-def vira_str(string):
-    '''
-    Protect strings from JIRA for Python and Vim
+    This class gets imported by __init__.py
     '''
 
-    return str(string)
+    # Connect
+    def vira_connect(server, user, pw, skip_cert_verify):
+        '''
+        Connect to Jira server with supplied auth details
+        '''
 
-def vira_str_amenu(string):
-    '''
-    Protect strings from JIRA for Python and Vim
-    '''
+        global jira
 
-    string = string.replace("\\", "\\\\")
-    string = string.replace(".", r"\.")
-    string = string.replace(" ", "\\ ")
-    return string
+        # Specify whether the server's TLS certificate needs to be verified
+        if skip_cert_verify == "1":
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            cert_verify = False
+        else:
+            cert_verify = True
 
-def vira_query_issues(
-        status="", priorities="", issuetypes="", reporters="", assignees=""):
-    query = ''
-    try:
-        if (vim.eval('g:vira_project') != ''):
-            query += 'project in (' + vim.eval('g:vira_project') + ') AND '
-    except:
-        query += ''
+        try:
+            jira = JIRA(
+                options={
+                    'server': server,
+                    'verify': cert_verify
+                }, auth=(user, pw), timeout=5)
+            vim.command("let s:vira_is_init = 1")
+        except:
+            vim.command("let s:vira_is_init = 0")
 
-    if set(status):
-        query += 'status in (' + status + ') AND '
+    # Issues
+    def vira_str(string):
+        '''
+        Protect strings from JIRA for Python and Vim
+        '''
 
-    if set(priorities):
-        query += 'status in (' + status + ') AND '
+        return str(string)
 
-    if set(issuetypes):
-        query += 'issuetype in (' + issuetypes + ') AND '
+    def vira_query_issues(
+            status="", priorities="", issuetypes="", reporters="", assignees=""):
+        query = ''
+        try:
+            if (vim.eval('g:vira_project') != ''):
+                query += 'project in (' + vim.eval('g:vira_project') + ') AND '
+        except:
+            query += ''
 
-    if set(reporters):
-        query += 'reporter in (' + reporters + ') AND '
+        if set(status):
+            query += 'status in (' + status + ') AND '
 
-    if set(assignees):
-        query += 'assignee in (' + assignees + ') AND '
+        if set(priorities):
+            query += 'status in (' + status + ') AND '
 
-    #  TODO: VIRA-81 [190928] - Custom queries besed on menu {{{
-    query += 'resolution = Unresolved '
-    #  query += ' AND assignee in (currentUser()) '
-    query += 'ORDER BY updated DESC'
-    #  }}}
+        if set(issuetypes):
+            query += 'issuetype in (' + issuetypes + ') AND '
 
-    issues = jira.search_issues(query, fields='summary,comment', json_result='True')
+        if set(reporters):
+            query += 'reporter in (' + reporters + ') AND '
 
-    return issues['issues']
+        if set(assignees):
+            query += 'assignee in (' + assignees + ') AND '
 
-def vira_get_epics():
-    '''
-    Get my issues with JQL
-    '''
+        #  TODO: VIRA-81 [190928] - Custom queries besed on menu {{{
+        query += 'resolution = Unresolved '
+        #  query += ' AND assignee in (currentUser()) '
+        query += 'ORDER BY updated DESC'
+        #  }}}
 
-    for issue in vira_query_issues(issuetypes="Epic"):
-        print(issue["key"] + '  -  ' + issue["fields"]['summary'])
+        issues = jira.search_issues(query, fields='summary,comment', json_result='True')
 
-def vira_get_issuetypes():
-    '''
-    Get my issues with JQL
-    '''
+        return issues['issues']
 
-    for issuetype in jira.issue_types():
-        print(issuetype)
+    def vira_get_epics():
+        '''
+        Get my issues with JQL
+        '''
 
-def vira_get_users():
-    '''
-    Get my issues with JQL
-    '''
+        for issue in vira_query_issues(issuetypes="Epic"):
+            print(issue["key"] + '  -  ' + issue["fields"]['summary'])
 
-    for user in jira.search_users("."):
-        print(user)
+    def vira_get_issuetypes():
+        '''
+        Get my issues with JQL
+        '''
 
-def vira_get_statuses():
-    '''
-    Get my issues with JQL
-    '''
+        for issuetype in jira.issue_types():
+            print(issuetype)
 
-    for status in jira.statuses():
-        print(status)
+    def vira_get_users():
+        '''
+        Get my issues with JQL
+        '''
 
-def vira_get_priorities():
-    '''
-    Get my issues with JQL
-    '''
+        for user in jira.search_users("."):
+            print(user)
 
-    for priority in jira.priorities():
-        print(priority)
+    def vira_get_statuses():
+        '''
+        Get my issues with JQL
+        '''
 
-def vira_get_servers():
-    '''
-    Get my issues with JQL
-    '''
+        for status in jira.statuses():
+            print(status)
 
-    for server in vim.eval("g:vira_srvs"):
-        print(server)
+    def vira_get_priorities():
+        '''
+        Get my issues with JQL
+        '''
 
-def vira_get_issues():
-    '''
-    Get my issues with JQL
-    '''
+        for priority in jira.priorities():
+            print(priority)
 
-    for issue in vira_query_issues():
-        print(issue["key"] + '  -  ' + issue["fields"]['summary'])
+    def vira_get_servers():
+        '''
+        Get my issues with JQL
+        '''
 
-def vira_add_issue(project, summary, description, issuetype):
-    '''
-    Get single issue by isuue id
-    '''
+        for server in vim.eval("g:vira_srvs"):
+            print(server)
 
-    jira.create_issue(
-        project={'key': project},
-        summary=summary,
-        description=description,
-        issuetype={'name': issuetype})
+    def vira_get_issues():
+        '''
+        Get my issues with JQL
+        '''
 
-def vira_get_issue(issue):
-    '''
-    Get single issue by isuue id
-    '''
+        for issue in vira_query_issues():
+            print(issue["key"] + '  -  ' + issue["fields"]['summary'])
 
-    return jira.issue(issue)
+    def vira_add_issue(project, summary, description, issuetype):
+        '''
+        Get single issue by isuue id
+        '''
 
-# Projects
-def vira_query_projects():
+        jira.create_issue(
+            project={'key': project},
+            summary=summary,
+            description=description,
+            issuetype={'name': issuetype})
 
-    return jira.projects()
+    def vira_get_issue(issue):
+        '''
+        Get single issue by isuue id
+        '''
 
-def vira_get_projects():
-    '''
-    Build a vim popup menu for a list of projects
-    '''
+        return jira.issue(issue)
 
-    for project in vira_query_projects():
-        print(project)
+    # Projects
+    def vira_query_projects():
 
-# Comments
-def vira_add_comment(issue, comment):
-    '''
-    Comment on specified issue
-    '''
+        return jira.projects()
 
-    jira.add_comment(issue, comment)
+    def vira_get_projects():
+        '''
+        Build a vim popup menu for a list of projects
+        '''
 
-def vira_get_comments(issue):
-    '''
-    Get all the comments for an issue
-    '''
+        for project in vira_query_projects():
+            print(project)
 
-    # Get the issue requested
-    issues = jira.search_issues(
-        'issue = "' + issue.key + '"', fields='summary,comment', json_result='True')
+    # Comments
+    def vira_add_comment(issue, comment):
+        '''
+        Comment on specified issue
+        '''
 
-    # Loop through all of the comments
-    comments = ''
-    for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
-        comments += (
-            vira_str(comment['author']['displayName']) + ' | ',
-            vira_str(comment['updated'][0:10]) + ' @ ',
-            vira_str(comment['updated'][11:16]) + ' | ', vira_str(comment['body'] + '\n'))
+        jira.add_comment(issue, comment)
 
-    return comments
+    def vira_get_comments(issue):
+        '''
+        Get all the comments for an issue
+        '''
 
-# Worklog
-def vira_add_worklog(issue, timeSpentSeconds, comment):
-    '''
-    Calculate the offset for the start time of the time tracking
-    '''
+        # Get the issue requested
+        issues = jira.search_issues(
+            'issue = "' + issue.key + '"', fields='summary,comment', json_result='True')
 
-    earlier = datetime.datetime.now() - datetime.timedelta(seconds=timeSpentSeconds)
+        # Loop through all of the comments
+        comments = ''
+        for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
+            comments += (
+                vira_str(comment['author']['displayName']) + ' | ',
+                vira_str(comment['updated'][0:10]) + ' @ ',
+                vira_str(comment['updated'][11:16]) + ' | ', vira_str(comment['body'] + '\n'))
 
-    jira.add_worklog(
-        issue=issue, timeSpentSeconds=timeSpentSeconds, comment=comment, started=earlier)
+        return comments
 
-# Report
-def vira_get_report():
-    '''
-    Print a report for the given issue
-    '''
+    # Worklog
+    def vira_add_worklog(issue, timeSpentSeconds, comment):
+        '''
+        Calculate the offset for the start time of the time tracking
+        '''
 
-    # Get passed issue content
+        earlier = datetime.datetime.now() - datetime.timedelta(seconds=timeSpentSeconds)
 
-    issue = vim.eval("g:vira_active_issue")
-    issues = jira.search_issues(
-        'issue = "' + issue + '"',
-        #  fields='*',
-        fields='summary,comment,' + 'description,issuetype,' + 'priority,status,' +
-        'created,updated,' + 'assignee,reporter,' + 'customfield_10106,',
-        json_result='True')
+        jira.add_worklog(
+            issue=issue, timeSpentSeconds=timeSpentSeconds, comment=comment, started=earlier)
 
-    # Print issue content
-    print(issue + ': ' + vira_str(issues["issues"][0]["fields"]["summary"]))
-    print('Details {{' + '{1')
-    print(
-        "Story Points  :  " +
-        vira_str(issues["issues"][0]["fields"]["customfield_10106"]))
-    print(
-        "     Created  :  " + vira_str(issues["issues"][0]["fields"]["created"][0:10]) +
-        ' ' + vira_str(issues["issues"][0]["fields"]["created"][11:16]))
-    print(
-        "     Updated  :  " + vira_str(issues["issues"][0]["fields"]["updated"][0:10]) +
-        ' ' + vira_str(issues["issues"][0]["fields"]["updated"][11:16]))
-    print(
-        "        Type  :  " +
-        vira_str(issues["issues"][0]["fields"]["issuetype"]["name"]))
-    print("      Status  :  " + vira_str(issues["issues"][0]["fields"]["status"]["name"]))
-    print(
-        "    Priority  :  " + vira_str(issues["issues"][0]["fields"]["priority"]["name"]))
+    # Report
+    def vira_get_report():
+        '''
+        Print a report for the given issue
+        '''
 
-    print("    Assignee  :  ", end="")
-    try:
-        print(vira_str(issues["issues"][0]["fields"]["assignee"]["displayName"]))
-    except:
-        print("Unassigned")
+        # Get passed issue content
 
-    print(
-        "    Reporter  :  " +
-        vira_str(issues["issues"][0]["fields"]["reporter"]['displayName']))
-    print('}}' + '}')
-    print('Description {{' + '{1')
-    print(vira_str(issues["issues"][0]["fields"]["description"]))
-    print('}}' + '}')
-    print("Comments {" + "{{1")
-    for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
+        issue = vim.eval("g:vira_active_issue")
+        issues = jira.search_issues(
+            'issue = "' + issue + '"',
+            #  fields='*',
+            fields='summary,comment,' + 'description,issuetype,' + 'priority,status,' +
+            'created,updated,' + 'assignee,reporter,' + 'customfield_10106,',
+            json_result='True')
+
+        # Print issue content
+        print(issue + ': ' + vira_str(issues["issues"][0]["fields"]["summary"]))
+        print('Details {{' + '{1')
         print(
-            vira_str(comment['author']['displayName']) + ' @ ' +
-            vira_str(comment['updated'][0:10]) + ' ' +
-            vira_str(comment['updated'][11:16]) + ' {' + '{{2')
-        print(vira_str(comment['body']))
+            "Story Points  :  " +
+            vira_str(issues["issues"][0]["fields"]["customfield_10106"]))
+        print(
+            "     Created  :  " + vira_str(issues["issues"][0]["fields"]["created"][0:10]) +
+            ' ' + vira_str(issues["issues"][0]["fields"]["created"][11:16]))
+        print(
+            "     Updated  :  " + vira_str(issues["issues"][0]["fields"]["updated"][0:10]) +
+            ' ' + vira_str(issues["issues"][0]["fields"]["updated"][11:16]))
+        print(
+            "        Type  :  " +
+            vira_str(issues["issues"][0]["fields"]["issuetype"]["name"]))
+        print("      Status  :  " + vira_str(issues["issues"][0]["fields"]["status"]["name"]))
+        print(
+            "    Priority  :  " + vira_str(issues["issues"][0]["fields"]["priority"]["name"]))
+
+        print("    Assignee  :  ", end="")
+        try:
+            print(vira_str(issues["issues"][0]["fields"]["assignee"]["displayName"]))
+        except:
+            print("Unassigned")
+
+        print(
+            "    Reporter  :  " +
+            vira_str(issues["issues"][0]["fields"]["reporter"]['displayName']))
         print('}}' + '}')
-    print("}}" + "}",)
+        print('Description {{' + '{1')
+        print(vira_str(issues["issues"][0]["fields"]["description"]))
+        print('}}' + '}')
+        print("Comments {" + "{{1")
+        for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
+            print(
+                vira_str(comment['author']['displayName']) + ' @ ' +
+                vira_str(comment['updated'][0:10]) + ' ' +
+                vira_str(comment['updated'][11:16]) + ' {' + '{{2')
+            print(vira_str(comment['body']))
+            print('}}' + '}')
+        print("}}" + "}",)
 
-# Status
-def vira_set_status(issue, status):
-    '''
-    Set the status of the given issue
-    '''
+    # Status
+    def vira_set_status(issue, status):
+        '''
+        Set the status of the given issue
+        '''
 
-    jira.transition_issue(issue, status)
+        jira.transition_issue(issue, status)
 
-# Time
+    def vira_test(self):
+        # TODO-MB [190924] - delete after testing is complete
+        vim.command('let g:testvar = "testpy"')
+
 def vira_timestamp():
     '''
     Selected for Development
     '''
 
     return str(datetime.datetime.now())
-
-def vira_test():
-    # TODO-MB [190924] - delete after testing is complete
-    vim.command('let g:testvar = "testpy"')
 
 def main():
     '''
@@ -302,3 +296,5 @@ def main():
 # Run script if this file is executed directly
 if __name__ == '__main__':
     main()
+
+api = ViraAPI()
