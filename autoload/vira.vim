@@ -13,7 +13,7 @@ let s:vira_start_time = 0
 let s:vira_end_time = 0
 
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
-let s:virapy_path = s:vira_root_dir . '/python/Vira'
+let s:virapy_path = s:vira_root_dir . '/python'
 
 let s:vira_todo_header = 'TODO'
 
