@@ -11,28 +11,42 @@ if !has('python3')
   finish
 endif
 
-" Variables {{{1
-" Globals {{{2
-" virarc {{{3
-" Null issue text {{{3
-if !exists('g:vira_null_issue')
+" Global Variables {{{1
+if !exists('g:vira_null_issue') " {{{2
   let g:vira_null_issue = 'None'
 endif
 
-" Null and default project text {{{3
-if !exists('g:vira_null_project')
+if !exists('g:vira_null_project') " {{{2
   let g:vira_null_project = 'None'
 endif
 let g:vira_project = g:vira_null_project
 
-" Active issue text {{{3
-if !exists('g:vira_active_issue')
+if !exists('g:vira_active_issue') " {{{2
   let g:vira_active_issue = g:vira_null_issue
 endif
 
-" Server selected {{{3
-if !exists('g:vira_serv')
+if !exists('g:vira_serv') " {{{2
   let g:vira_serv = ''
+endif
+
+if !exists('g:vira_filter_assignees') " {{{2
+  let g:vira_filter_assignees = ''
+endif
+
+if !exists('g:vira_filter_issuetype') " {{{2
+  let g:vira_filter_issuetype = ''
+endif
+
+if !exists('g:vira_filter_priorities') " {{{2
+  let g:vira_filter_priorities = ''
+endif
+
+if !exists('g:vira_filter_reporters') " {{{2
+  let g:vira_filter_reporters = ''
+endif
+
+if !exists('g:vira_filter_status') " {{{2
+  let g:vira_filter_status = ['"To Do"', '"In Progress"']
 endif
 
 " Commands {{{1
