@@ -14,14 +14,16 @@ class ViraAPI():
     This class gets imported by __init__.py
     '''
 
-    def vira_add_comment(self, issue, comment):
+    # TODO-MB [191002] - Split out all methods that don't use jira object into another python class or module
+
+    def add_comment(self, issue, comment):
         '''
         Comment on specified issue
         '''
 
         self.jira.add_comment(issue, comment)
 
-    def vira_add_issue(self, project, summary, description, issuetype):
+    def add_issue(self, project, summary, description, issuetype):
         '''
         Get single issue by isuue id
         '''
@@ -45,7 +47,7 @@ class ViraAPI():
             comment=comment,
             started=earlier)
 
-    def vira_connect(self, server, user, pw, skip_cert_verify):
+    def connect(self, server, user, pw, skip_cert_verify):
         '''
         Connect to Jira server with supplied auth details
         '''
@@ -136,7 +138,7 @@ class ViraAPI():
         for project in self.vira_query_projects():
             print(project)
 
-    def vira_get_report(self):
+    def get_report(self):
         '''
         Print a report for the given issue
         '''

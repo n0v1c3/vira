@@ -68,7 +68,7 @@ function! vira#_comment() "{{{2
   if !(vira#_get_active_issue() == g:vira_null_issue)
     let comment = input(vira#_get_active_issue() . ": ")
     if !(comment == "")
-      python3 vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
+      python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
     endif
   endif
 endfunction
@@ -80,10 +80,6 @@ endfunction
 function! vira#_get_active_issue_desc() "{{{2
   " TODO-TJG [190126] - Python function required for active issue description
   return g:vira_active_issue
-endfunction
-
-function! vira#_get_active_issue_report() "{{{2
-  python3 vira_report(vim.eval("vira#_get_active_issue()"))
 endfunction
 
 function! vira#_get_statusline() "{{{2
@@ -124,13 +120,9 @@ function! vira#_init_python() "{{{2
   if (exists('g:vira_serv') && g:vira_serv != '')
     " Load `py/vira.py` and connect to server
     silent! python3 import sys
-    silent! exe 'python3 sys.path = ["' . s:vira_root_dir . '"] + sys.path'
-    " silent! exe 'py3file ' . s:virapy_path
-    python3 print(sys.path)
+    silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '")'
     silent! python3 import Vira
-    " TODO-MB [190924] - Uncomment after testing
-    silent! python3 vira_test()
-    " silent! python3 vira_connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
+    silent! python3 Vira.api.connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
 
     " Check if Vira connected to the server
     if (s:vira_is_init != 1)
@@ -152,7 +144,7 @@ function! vira#_issue() "{{{2
     let summary = input(g:vira_project . " - Issue Summary: ")
     if !(summary == "")
       let description = input(g:vira_project . " - Issue Description: ")
-      python3 vira_add_issue(vim.eval('g:vira_project'), vim.eval('summary'), vim.eval('description'), "Bug")
+      python3 Vira.api.add_issue(vim.eval('g:vira_project'), vim.eval('summary'), vim.eval('description'), "Bug")
     else
       echo "\nSummary should not be blank"
     endif
@@ -188,7 +180,7 @@ function! vira#_menu(type) "{{{2
 
       " Write report output into buffer
       silent! redir @x>
-      silent! execute 'python3 vira_get_' . a:type . '()'
+      silent! execute 'python3 get_' . a:type . '()'
       silent! redir END
       silent! put x
 
@@ -272,7 +264,7 @@ function! vira#_todo() "{{{2
     " Jira comment
     let file_path = "{code}\n" . @% . "\n{code}"
     if !(vira#_get_active_issue() == g:vira_null_issue)
-      python3 vira_add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
+      python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
     endif
 
     " Vim comment
@@ -292,7 +284,7 @@ function! vira#_todos() "{{{2
 endfunction
 
 function! vira#_timestamp() "{{{2
-  python3 vira_timestamp()
+  python3 Vira.timestamp()
 endfunction
 
 function! vira#_update_virarc() "{{{2

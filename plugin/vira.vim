@@ -11,16 +11,6 @@ if !has('python3')
   finish
 endif
 
-" TODO-MB [190924] - print test
-silent! python3 import sys
-" let g:testvar = eval("python3 print(sys.path)")
-let vira_root_dir = '/home/mike/.vim/plugged/vira/python'
-exe 'python3 sys.path.append(f"'.vira_root_dir.'")'
-python3 import Vira
-" python3 print(dir(Vira))
-" python3 Vira.api.vira_test()
-" echo g:testvar
-
 " Variables {{{1
 " Globals {{{2
 " virarc {{{3
