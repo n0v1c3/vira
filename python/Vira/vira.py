@@ -82,10 +82,10 @@ class ViraAPI():
         comments = ''
         for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
             comments += (
-                vira_str(comment['author']['displayName']) + ' | ',
-                vira_str(comment['updated'][0:10]) + ' @ ',
-                vira_str(comment['updated'][11:16]) + ' | ',
-                vira_str(comment['body'] + '\n'))
+                f"{comment['author']['displayName']}" + ' | ',
+                f"{comment['updated'][0:10]}" + ' @ ',
+                f"{comment['updated'][11:16]}" + ' | ',
+                f"{comment['body']} + '\n'")
 
         return comments
 
@@ -152,49 +152,49 @@ class ViraAPI():
             json_result='True')
 
         # Print issue content
-        print(issue + ': ' + vira_str(issues["issues"][0]["fields"]["summary"]))
+        print(issue + ': ' + f"{issues['issues'][0]['fields']['summary']}")
         print('Details {{' + '{1')
         print(
             "Story Points  :  " +
-            vira_str(issues["issues"][0]["fields"]["customfield_10106"]))
+            f"{issues['issues'][0]['fields']['customfield_10106']}")
         print(
             "     Created  :  " +
-            vira_str(issues["issues"][0]["fields"]["created"][0:10]) + ' ' +
-            vira_str(issues["issues"][0]["fields"]["created"][11:16]))
+            f"{issues['issues'][0]['fields']['created'][0:10]}" + ' ' +
+            f"{issues['issues'][0]['fields']['created'][11:16]}")
         print(
             "     Updated  :  " +
-            vira_str(issues["issues"][0]["fields"]["updated"][0:10]) + ' ' +
-            vira_str(issues["issues"][0]["fields"]["updated"][11:16]))
+            f"{issues['issues'][0]['fields']['updated'][0:10]}" + ' ' +
+            f"{issues['issues'][0]['fields']['updated'][11:16]}")
         print(
             "        Type  :  " +
-            vira_str(issues["issues"][0]["fields"]["issuetype"]["name"]))
+            f"{issues['issues'][0]['fields']['issuetype']['name']}")
         print(
             "      Status  :  " +
-            vira_str(issues["issues"][0]["fields"]["status"]["name"]))
+            f"{issues['issues'][0]['fields']['status']['name']}")
         print(
             "    Priority  :  " +
-            vira_str(issues["issues"][0]["fields"]["priority"]["name"]))
+            f"{issues['issues'][0]['fields']['priority']['name']}")
 
         print("    Assignee  :  ", end="")
         try:
-            print(vira_str(issues["issues"][0]["fields"]["assignee"]["displayName"]))
+            print(f"{issues['issues'][0]['fields']['assignee']['displayName']}")
         except:
             print("Unassigned")
 
         print(
             "    Reporter  :  " +
-            vira_str(issues["issues"][0]["fields"]["reporter"]['displayName']))
+            f"{issues['issues'][0]['fields']['reporter']['displayName']}")
         print('}}' + '}')
         print('Description {{' + '{1')
-        print(vira_str(issues["issues"][0]["fields"]["description"]))
+        print(f"{issues['issues'][0]['fields']['description']}")
         print('}}' + '}')
         print("Comments {" + "{{1")
-        for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
+        for comment in issues['issues'][0]['fields']['comment']['comments']:
             print(
-                vira_str(comment['author']['displayName']) + ' @ ' +
-                vira_str(comment['updated'][0:10]) + ' ' +
-                vira_str(comment['updated'][11:16]) + ' {' + '{{2')
-            print(vira_str(comment['body']))
+                f"{comment['author']['displayName']}" + ' @ ' +
+                f"{comment['updated'][0:10]}" + ' ' +
+                f"{comment['updated'][11:16]}" + ' {' + '{{2')
+            print(f"{comment['body']}")
             print('}}' + '}')
         print("}}" + "}",)
 
@@ -271,14 +271,6 @@ def vira_get_servers():
 
     for server in vim.eval("g:vira_srvs"):
         print(server)
-
-def vira_str(string):
-    '''
-    Protect strings from JIRA for Python and Vim
-    '''
-
-    # TODO-MB [191002] - get rid of function and use f-strings
-    return str(string)
 
 def vira_timestamp():
     '''
