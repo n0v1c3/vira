@@ -34,8 +34,10 @@ These lists should be of equal length with at least **one** entry each
 and represent the address of the JIRA site along with the user
 names being used to log in.
 
-Passwords are calls to external commands such as `pass` and `lpass`. A simple
-`echo` chould be used but this would not be a safe way to save the passwords.
+Passwords are calls to external commands such as `pass` and `lpass`. If you do not
+use software as mentioned you can remove the `g:vira_pass` variable and manually
+enter the password when connecting. An `echo` could be used as a workaround in
+the `g:vira_pass` however, this is not recommened for your security.
 
 You will be propted for your password only **once for each vim session**
 on the first usage.

@@ -19,7 +19,7 @@ import urllib3
 
 # Functions {{{1
 # Connect {{{2
-def vira_connect(server, user, pw, skip_cert_verify): # {{{3
+def vira_connect(server, user, pw, skip_cert_verify):
     '''
     Connect to Jira server with supplied auth details
     '''
@@ -40,14 +40,14 @@ def vira_connect(server, user, pw, skip_cert_verify): # {{{3
         vim.command("let s:vira_is_init = 0")
 
 # Issues {{{2
-def vira_str(string): # {{{3
+def vira_str(string):
     '''
     Protect strings from JIRA for Python and Vim
     '''
 
     return str(string)
 
-def vira_str_amenu(string): # {{{3
+def vira_str_amenu(string):
     '''
     Protect strings from JIRA for Python and Vim
     '''
@@ -57,31 +57,71 @@ def vira_str_amenu(string): # {{{3
     string = string.replace(" ", "\\ ")
     return string
 
-def vira_query_issues(status="" , priorities="", issuetypes="", reporters="", assignees=""): # {{{3
+def vira_filter_str(startQuery, queryType):
+    '''
+    Build a filter string to add to a JQL query
+    '''
+
+    query = ''
+    evals = vim.eval('g:vira_filter_' + queryType)
+    if set(evals) and evals != '':
+        if set(startQuery) and startQuery != '':
+            query = ' AND '
+        else:
+            query = ''
+
+        query += queryType + ' in ('
+        if isinstance(evals, list):
+            query += ','.join(evals)
+        else:
+            query += evals
+
+        query += ')'
+
+    return query
+
+def vira_query_issues():
+
     query = ''
     try:
         if (vim.eval('g:vira_project') != ''):
-            query += 'project in (' + vim.eval('g:vira_project') + ') AND '
+            query += 'project in (' + vim.eval('g:vira_project') + ')'
     except:
         query += ''
 
-    if set(status):
-        query += 'status in (' + status + ') AND '
+    #  if set(vim.eval('g:vira_filter_status')):
+        #  query += 'status in (' + status + ') AND '
 
-    if set(priorities):
-        query += 'status in (' + status + ') AND '
+    #  if set(vim.eval('g:vira_filter_priorities')):
+        #  query += 'status in (' + status + ') AND '
 
-    if set(issuetypes):
-        query += 'issuetype in (' + issuetypes + ') AND '
+    queryTypes = ['status', 'issuetype']
+    for queryType in queryTypes:
+        query += vira_filter_str(query, queryType)
 
-    if set(reporters):
-        query += 'reporter in (' + reporters + ') AND '
+    '''
+    if set(vim.eval('g:vira_filter_issuetypes')):
+        query += 'issuetype in ('
+        if isinstance(vim.eval('g:vira_filter_issuetypes'), list):
+            query += ','.join(vim.eval('g:vira_filter_issuetypes'))
+        else:
+            query += vim.eval('g:vira_filter_issuetypes')
 
-    if set(assignees):
+        query += ') AND '
+    '''
+    '''
+    if set(vim.eval('g:vira_filter_reporters')):
+        if isinstance(vim.eval('g:vira_filter_reporters'), list):
+            query += 'reporter in (' + str(vim.eval('g:vira_filter_reporters')) + ') AND '
+        else:
+            query += 'reporter in (' + reporters + ') AND '
+
+    if set(vim.eval('g:vira_filter_assignees')):
         query += 'assignee in (' + assignees + ') AND '
+    '''
 
     #  TODO: VIRA-81 [190928] - Custom queries besed on menu {{{
-    query += 'resolution = Unresolved '
+    #  query += 'resolution = Unresolved '
     #  query += ' AND assignee in (currentUser()) '
     query += 'ORDER BY updated DESC'
     #  }}}
@@ -93,7 +133,7 @@ def vira_query_issues(status="" , priorities="", issuetypes="", reporters="", as
 
     return issues['issues']
 
-def vira_get_epics(): # {{{3
+def vira_get_epics():
     '''
     Get my issues with JQL
     '''
@@ -101,7 +141,7 @@ def vira_get_epics(): # {{{3
     for issue in vira_query_issues(issuetypes="Epic"):
         print(issue["key"] + '  -  ' + issue["fields"]['summary'])
 
-def vira_get_issuetypes(): # {{{3
+def vira_get_issuetypes():
     '''
     Get my issues with JQL
     '''
@@ -109,7 +149,7 @@ def vira_get_issuetypes(): # {{{3
     for issuetype in jira.issue_types():
         print(issuetype)
 
-def vira_get_users(): # {{{3
+def vira_get_users():
     '''
     Get my issues with JQL
     '''
@@ -117,7 +157,7 @@ def vira_get_users(): # {{{3
     for user in jira.search_users("."):
         print(user)
 
-def vira_get_statuses(): # {{{3
+def vira_get_statuses():
     '''
     Get my issues with JQL
     '''
@@ -125,7 +165,7 @@ def vira_get_statuses(): # {{{3
     for status in jira.statuses():
         print(status)
 
-def vira_get_priorities(): # {{{3
+def vira_get_priorities():
     '''
     Get my issues with JQL
     '''
@@ -133,7 +173,7 @@ def vira_get_priorities(): # {{{3
     for priority in jira.priorities():
         print(priority)
 
-def vira_get_servers(): # {{{3
+def vira_get_servers():
     '''
     Get my issues with JQL
     '''
@@ -141,7 +181,7 @@ def vira_get_servers(): # {{{3
     for server in vim.eval("g:vira_srvs"):
         print(server)
 
-def vira_get_issues(): # {{{3
+def vira_get_issues():
     '''
     Get my issues with JQL
     '''
@@ -149,7 +189,7 @@ def vira_get_issues(): # {{{3
     for issue in vira_query_issues():
         print(issue["key"] + '  -  ' + issue["fields"]['summary'])
 
-def vira_add_issue(project, summary, description, issuetype): # {{{3
+def vira_add_issue(project, summary, description, issuetype):
     '''
     Get single issue by isuue id
     '''
@@ -159,7 +199,7 @@ def vira_add_issue(project, summary, description, issuetype): # {{{3
                       description=description,
                       issuetype={'name': issuetype})
 
-def vira_get_issue(issue): # {{{3
+def vira_get_issue(issue):
     '''
     Get single issue by isuue id
     '''
@@ -167,11 +207,11 @@ def vira_get_issue(issue): # {{{3
     return jira.issue(issue)
 
 # Projects {{{2
-def vira_query_projects(): # {{{3
+def vira_query_projects():
 
     return jira.projects()
 
-def vira_get_projects(): # {{{3
+def vira_get_projects():
     '''
     Build a vim popup menu for a list of projects
     '''
@@ -180,14 +220,14 @@ def vira_get_projects(): # {{{3
         print(project)
 
 # Comments {{{2
-def vira_add_comment(issue, comment): # {{{3
+def vira_add_comment(issue, comment):
     '''
     Comment on specified issue
     '''
 
     jira.add_comment(issue, comment)
 
-def vira_get_comments(issue): # {{{3
+def vira_get_comments(issue):
     '''
     Get all the comments for an issue
     '''
@@ -208,7 +248,7 @@ def vira_get_comments(issue): # {{{3
     return comments
 
 # Worklog {{{2
-def vira_add_worklog(issue, timeSpentSeconds, comment): # {{{3
+def vira_add_worklog(issue, timeSpentSeconds, comment):
     '''
     Calculate the offset for the start time of the time tracking
     '''
@@ -219,7 +259,7 @@ def vira_add_worklog(issue, timeSpentSeconds, comment): # {{{3
         issue=issue, timeSpentSeconds=timeSpentSeconds, comment=comment, started=earlier)
 
 # Report {{{2
-def vira_get_report(): # {{{3
+def vira_get_report():
     '''
     Print a report for the given issue
     '''
@@ -270,7 +310,7 @@ def vira_get_report(): # {{{3
     print("}}" + "}",)
 
 # Status {{{2
-def vira_set_status(issue, status): # {{{3
+def vira_set_status(issue, status):
     '''
     Set the status of the given issue
     '''
@@ -278,7 +318,7 @@ def vira_set_status(issue, status): # {{{3
     jira.transition_issue(issue, status)
 
 # Time {{{2
-def vira_timestamp(): # {{{3
+def vira_timestamp():
     '''
     Selected for Development
     '''
@@ -286,7 +326,7 @@ def vira_timestamp(): # {{{3
     return str(datetime.datetime.now())
 
 # Main {{{1
-def main(): # {{{2
+def main():
     '''
     Main script entry point
     Used for testing
@@ -297,5 +337,5 @@ def main(): # {{{2
     #  vim.command("let s:vira_is_init = 0")
 
 # Run script if this file is executed directly
-if __name__ == '__main__': # {{{2
+if __name__ == '__main__':
     main()
