@@ -84,8 +84,7 @@ class ViraAPI():
             comments += (
                 f"{comment['author']['displayName']}" + ' | ',
                 f"{comment['updated'][0:10]}" + ' @ ',
-                f"{comment['updated'][11:16]}" + ' | ',
-                f"{comment['body']} + '\n'")
+                f"{comment['updated'][11:16]}" + ' | ', f"{comment['body']} + '\n'")
 
         return comments
 
@@ -155,25 +154,18 @@ class ViraAPI():
         print(issue + ': ' + f"{issues['issues'][0]['fields']['summary']}")
         print('Details {{' + '{1')
         print(
-            "Story Points  :  " +
-            f"{issues['issues'][0]['fields']['customfield_10106']}")
+            "Story Points  :  " + f"{issues['issues'][0]['fields']['customfield_10106']}")
         print(
-            "     Created  :  " +
-            f"{issues['issues'][0]['fields']['created'][0:10]}" + ' ' +
-            f"{issues['issues'][0]['fields']['created'][11:16]}")
+            "     Created  :  " + f"{issues['issues'][0]['fields']['created'][0:10]}" +
+            ' ' + f"{issues['issues'][0]['fields']['created'][11:16]}")
         print(
-            "     Updated  :  " +
-            f"{issues['issues'][0]['fields']['updated'][0:10]}" + ' ' +
-            f"{issues['issues'][0]['fields']['updated'][11:16]}")
+            "     Updated  :  " + f"{issues['issues'][0]['fields']['updated'][0:10]}" +
+            ' ' + f"{issues['issues'][0]['fields']['updated'][11:16]}")
         print(
-            "        Type  :  " +
-            f"{issues['issues'][0]['fields']['issuetype']['name']}")
+            "        Type  :  " + f"{issues['issues'][0]['fields']['issuetype']['name']}")
+        print("      Status  :  " + f"{issues['issues'][0]['fields']['status']['name']}")
         print(
-            "      Status  :  " +
-            f"{issues['issues'][0]['fields']['status']['name']}")
-        print(
-            "    Priority  :  " +
-            f"{issues['issues'][0]['fields']['priority']['name']}")
+            "    Priority  :  " + f"{issues['issues'][0]['fields']['priority']['name']}")
 
         print("    Assignee  :  ", end="")
         try:
@@ -192,11 +184,19 @@ class ViraAPI():
         for comment in issues['issues'][0]['fields']['comment']['comments']:
             print(
                 f"{comment['author']['displayName']}" + ' @ ' +
-                f"{comment['updated'][0:10]}" + ' ' +
-                f"{comment['updated'][11:16]}" + ' {' + '{{2')
+                f"{comment['updated'][0:10]}" + ' ' + f"{comment['updated'][11:16]}" +
+                ' {' + '{{2')
             print(f"{comment['body']}")
             print('}}' + '}')
         print("}}" + "}",)
+
+    def get_servers(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        for server in vim.eval("g:vira_srvs"):
+            print(server)
 
     def get_statuses(self):
         '''
@@ -255,14 +255,6 @@ class ViraAPI():
         '''
 
         self.jira.transition_issue(issue, status)
-
-def get_servers():
-    '''
-    Get my issues with JQL
-    '''
-
-    for server in vim.eval("g:vira_srvs"):
-        print(server)
 
 def timestamp():
     '''
