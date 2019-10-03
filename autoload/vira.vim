@@ -180,7 +180,7 @@ function! vira#_menu(type) "{{{2
 
       " Write report output into buffer
       silent! redir @x>
-      silent! execute 'python3 get_' . a:type . '()'
+      silent! execute 'python3 Vira.api.get_' . a:type . '()'
       silent! redir END
       silent! put x
 

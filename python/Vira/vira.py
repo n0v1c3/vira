@@ -34,7 +34,7 @@ class ViraAPI():
             description=description,
             issuetype={'name': issuetype})
 
-    def vira_add_worklog(self, issue, timeSpentSeconds, comment):
+    def add_worklog(self, issue, timeSpentSeconds, comment):
         '''
         Calculate the offset for the start time of the time tracking
         '''
@@ -71,7 +71,7 @@ class ViraAPI():
         except:
             vim.command("let s:vira_is_init = 0")
 
-    def vira_get_comments(self, issue):
+    def get_comments(self, issue):
         '''
         Get all the comments for an issue
         '''
@@ -91,30 +91,30 @@ class ViraAPI():
 
         return comments
 
-    def vira_get_epics(self):
+    def get_epics(self):
         '''
         Get my issues with JQL
         '''
 
-        for issue in self.vira_query_issues(issuetypes="Epic"):
+        for issue in self.query_issues(issuetypes="Epic"):
             print(issue["key"] + '  -  ' + issue["fields"]['summary'])
 
-    def vira_get_issue(self, issue):
+    def get_issue(self, issue):
         '''
         Get single issue by isuue id
         '''
 
         return self.jira.issue(issue)
 
-    def vira_get_issues(self):
+    def get_issues(self):
         '''
         Get my issues with JQL
         '''
 
-        for issue in self.vira_query_issues():
+        for issue in self.query_issues():
             print(issue["key"] + '  -  ' + issue["fields"]['summary'])
 
-    def vira_get_issuetypes(self):
+    def get_issuetypes(self):
         '''
         Get my issues with JQL
         '''
@@ -122,7 +122,7 @@ class ViraAPI():
         for issuetype in self.jira.issue_types():
             print(issuetype)
 
-    def vira_get_priorities(self):
+    def get_priorities(self):
         '''
         Get my issues with JQL
         '''
@@ -130,12 +130,12 @@ class ViraAPI():
         for priority in self.jira.priorities():
             print(priority)
 
-    def vira_get_projects(self):
+    def get_projects(self):
         '''
         Build a vim popup menu for a list of projects
         '''
 
-        for project in self.vira_query_projects():
+        for project in self.query_projects():
             print(project)
 
     def get_report(self):
@@ -200,7 +200,7 @@ class ViraAPI():
             print('}}' + '}')
         print("}}" + "}",)
 
-    def vira_get_statuses(self):
+    def get_statuses(self):
         '''
         Get my issues with JQL
         '''
@@ -208,7 +208,7 @@ class ViraAPI():
         for status in self.jira.statuses():
             print(status)
 
-    def vira_get_users(self):
+    def get_users(self):
         '''
         Get my issues with JQL
         '''
@@ -216,7 +216,7 @@ class ViraAPI():
         for user in self.jira.search_users("."):
             print(user)
 
-    def vira_query_issues(
+    def query_issues(
             self, status="", priorities="", issuetypes="", reporters="", assignees=""):
         query = ''
         try:
@@ -251,11 +251,11 @@ class ViraAPI():
 
         return issues['issues']
 
-    def vira_query_projects(self):
+    def query_projects(self):
 
         return self.jira.projects()
 
-    def vira_set_status(self, issue, status):
+    def set_status(self, issue, status):
         '''
         Set the status of the given issue
         '''
@@ -266,7 +266,7 @@ class ViraAPI():
         # TODO-MB [190924] - delete after testing is complete
         vim.command('let g:testvar = "testpy"')
 
-def vira_get_servers():
+def get_servers():
     '''
     Get my issues with JQL
     '''
@@ -274,7 +274,7 @@ def vira_get_servers():
     for server in vim.eval("g:vira_srvs"):
         print(server)
 
-def vira_timestamp():
+def timestamp():
     '''
     Selected for Development
     '''
