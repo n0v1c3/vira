@@ -14,8 +14,6 @@ class ViraAPI():
     This class gets imported by __init__.py
     '''
 
-    # TODO-MB [191002] - Split out all methods that don't use jira object into another python class or module
-
     def add_comment(self, issue, comment):
         '''
         Comment on specified issue
