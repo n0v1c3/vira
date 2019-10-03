@@ -300,11 +300,11 @@ class ViraAPI():
 
         self.jira.transition_issue(issue, status)
 
-def timestamp():
-    '''
-    Selected for Development
-    '''
+    def timestamp():
+        '''
+        Selected for Development
+        '''
 
-    return str(datetime.datetime.now())
+        return str(datetime.datetime.now())
 
 api = ViraAPI()
