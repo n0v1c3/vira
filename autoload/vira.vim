@@ -13,7 +13,6 @@ let s:vira_start_time = 0
 let s:vira_end_time = 0
 
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
-let s:virapy_path = s:vira_root_dir . '/python'
 
 let s:vira_todo_header = 'TODO'
 
@@ -120,7 +119,7 @@ function! vira#_init_python() "{{{2
   if (exists('g:vira_serv') && g:vira_serv != '')
     " Load `py/vira.py` and connect to server
     silent! python3 import sys
-    silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '")'
+    silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
     silent! python3 import Vira
     silent! python3 Vira.api.connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
 

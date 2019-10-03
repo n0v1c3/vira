@@ -135,7 +135,7 @@ class ViraAPI():
         Build a vim popup menu for a list of projects
         '''
 
-        for project in self.query_projects():
+        for project in self.jira.projects():
             print(project)
 
     def get_report(self):
@@ -251,20 +251,12 @@ class ViraAPI():
 
         return issues['issues']
 
-    def query_projects(self):
-
-        return self.jira.projects()
-
     def set_status(self, issue, status):
         '''
         Set the status of the given issue
         '''
 
         self.jira.transition_issue(issue, status)
-
-    def vira_test(self):
-        # TODO-MB [190924] - delete after testing is complete
-        vim.command('let g:testvar = "testpy"')
 
 def get_servers():
     '''
