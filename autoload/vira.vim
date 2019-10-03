@@ -154,7 +154,7 @@ function! vira#_menu(type) "{{{2
   if (vira#_check_init())
     " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
 
-    " Get the current winnr of the 'vira_report' buffer
+    " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
     if a:type == 'report'
       silent! let winnr = bufwinnr('^' . 'vira_report' . '$')
     else
@@ -196,7 +196,7 @@ function! vira#_menu(type) "{{{2
 
       " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
       " Key mapping
-      silent! execute 'nnoremap <silent> <buffer> <cr> :call vira#_set_' . a:type . '()<cr>:q!<cr>'
+      silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
       silent! execute 'nnoremap <silent> <buffer> k gk'
       silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
       silent! execute 'vnoremap <silent> <buffer> j gj'
@@ -211,6 +211,17 @@ function! vira#_menu(type) "{{{2
       call vira#_menu(a:type)
     endif
   endif
+endfunction
+
+function! vira#_filter(name) "{{{2
+  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_filter_' . a:type . '")'
+endfunction
+
+function! vira#_quit() "{{{2
+  call vira#_menu('menu')
+  close
+  call vira#_menu('report')
+  close
 endfunction
 
 function! vira#_set_server() "{{{2

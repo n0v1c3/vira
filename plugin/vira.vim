@@ -11,51 +11,74 @@ if !has('python3')
   finish
 endif
 
-" Variables {{{1
-" Globals {{{2
-" virarc {{{3
-" Null issue text {{{3
+" Global Variables {{{1
+" vira_null_issue {{{2
 if !exists('g:vira_null_issue')
   let g:vira_null_issue = 'None'
 endif
 
-" Null and default project text {{{3
+" vira_null_issue {{{2
 if !exists('g:vira_null_project')
   let g:vira_null_project = 'None'
 endif
 let g:vira_project = g:vira_null_project
 
-" Active issue text {{{3
+" vira_null_issue {{{2
 if !exists('g:vira_active_issue')
   let g:vira_active_issue = g:vira_null_issue
 endif
 
-" Server selected {{{3
+" vira_serv {{{2
 if !exists('g:vira_serv')
   let g:vira_serv = ''
 endif
 
+" vira_filter_assignees {{{2
+if !exists('g:vira_filter_assignees')
+  let g:vira_filter_assignees = ''
+endif
+
+" vira_filter_issuetype {{{2
+if !exists('g:vira_filter_issuetype')
+  let g:vira_filter_issuetype = ''
+endif
+
+" vira_filter_priorities {{{2
+if !exists('g:vira_filter_priorities')
+  let g:vira_filter_priorities = ''
+endif
+
+" vira_filter_reporters {{{2
+if !exists('g:vira_filter_reporters')
+  let g:vira_filter_reporters = ''
+endif
+
+" vira_filter_status {{{2
+if !exists('g:vira_filter_status')
+  let g:vira_filter_status = ['"To Do"', '"In Progress"']
+endif
+
 " Commands {{{1
-" VIRA-8 - Changed any functions that are not returning values for use into
-" commands
+" VIRA-8 - Changed any functions that are not returning values for use into commands
+" Basics
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_comment()
 command! -nargs=0 -bang ViraEpics call vira#_menu("epics")
 command! -nargs=0 -bang ViraIssue call vira#_issue()
-command! -nargs=0 -bang ViraTodo call vira#_todo()
-
-" get_set mixed commands
-command! -nargs=0 -bang ViraAssignees call vira#_menu("assignees")
-command! -nargs=0 -bang ViraIssueTypes call vira#_menu("issuetypes")
 command! -nargs=0 -bang ViraIssues call vira#_menu("issues")
-command! -nargs=0 -bang ViraPriorities call vira#_menu("priorities")
-command! -nargs=0 -bang ViraProjects call vira#_menu("projects")
+command! -nargs=0 -bang ViraQuit call vira#_quit()
 command! -nargs=0 -bang ViraReport call vira#_menu("report")
-command! -nargs=0 -bang ViraReporters call vira#_menu("reporters")
 command! -nargs=0 -bang ViraServers call vira#_menu("servers")
-command! -nargs=0 -bang ViraStatuses call vira#_menu("statuses")
-command! -nargs=0 -bang ViraUsers call vira#_menu("users")
+command! -nargs=0 -bang ViraTodo call vira#_todo()
 command! -nargs=0 -bang ViraTodos call vira#_todos()
+
+" Filters
+command! -nargs=0 -bang ViraFilterAssignees call vira#_menu("assignees")
+command! -nargs=0 -bang ViraFilterPriorities call vira#_menu("priorities")
+command! -nargs=0 -bang ViraFilterProjects call vira#_menu("projects")
+command! -nargs=0 -bang ViraFilterReporters call vira#_menu("reporters")
+command! -nargs=0 -bang ViraFilterStatuses call vira#_menu("statuses")
+command! -nargs=0 -bang ViraFilterTypes call vira#_menu("issuetypes")
 
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2

@@ -69,6 +69,29 @@ class ViraAPI():
         except:
             vim.command("let s:vira_is_init = 0")
 
+    def filter_str(self, startQuery, queryType):
+        '''
+        Build a filter string to add to a JQL query
+        '''
+
+        query = ''
+        evals = vim.eval('g:vira_filter_' + queryType)
+        if set(evals) and evals != '':
+            if set(startQuery) and startQuery != '':
+                query = ' AND '
+            else:
+                query = ''
+
+            query += queryType + ' in ('
+            if isinstance(evals, list):
+                query += ','.join(evals)
+            else:
+                query += evals
+
+            query += ')'
+
+        return query
+
     def get_comments(self, issue):
         '''
         Get all the comments for an issue
@@ -214,38 +237,59 @@ class ViraAPI():
         for user in self.jira.search_users("."):
             print(user)
 
-    def query_issues(
-            self, status="", priorities="", issuetypes="", reporters="", assignees=""):
+    def query_issues(self):
+        '''
+        Query issues based on current filters
+        '''
+
         query = ''
         try:
             if (vim.eval('g:vira_project') != ''):
-                query += 'project in (' + vim.eval('g:vira_project') + ') AND '
+                query += 'project in (' + vim.eval('g:vira_project') + ')'
         except:
             query += ''
 
-        if set(status):
-            query += 'status in (' + status + ') AND '
+        #  if set(vim.eval('g:vira_filter_status')):
+            #  query += 'status in (' + status + ') AND '
 
-        if set(priorities):
-            query += 'status in (' + status + ') AND '
+        #  if set(vim.eval('g:vira_filter_priorities')):
+            #  query += 'status in (' + status + ') AND '
 
-        if set(issuetypes):
-            query += 'issuetype in (' + issuetypes + ') AND '
+        queryTypes = ['status', 'issuetype']
+        for queryType in queryTypes:
+            query += self.filter_str(query, queryType)
 
-        if set(reporters):
-            query += 'reporter in (' + reporters + ') AND '
+        '''
+        if set(vim.eval('g:vira_filter_issuetypes')):
+            query += 'issuetype in ('
+            if isinstance(vim.eval('g:vira_filter_issuetypes'), list):
+                query += ','.join(vim.eval('g:vira_filter_issuetypes'))
+            else:
+                query += vim.eval('g:vira_filter_issuetypes')
 
-        if set(assignees):
+            query += ') AND '
+        '''
+        '''
+        if set(vim.eval('g:vira_filter_reporters')):
+            if isinstance(vim.eval('g:vira_filter_reporters'), list):
+                query += 'reporter in (' + str(vim.eval('g:vira_filter_reporters')) + ') AND '
+            else:
+                query += 'reporter in (' + reporters + ') AND '
+
+        if set(vim.eval('g:vira_filter_assignees')):
             query += 'assignee in (' + assignees + ') AND '
+        '''
 
         #  TODO: VIRA-81 [190928] - Custom queries besed on menu {{{
-        query += 'resolution = Unresolved '
+        #  query += 'resolution = Unresolved '
         #  query += ' AND assignee in (currentUser()) '
         query += 'ORDER BY updated DESC'
         #  }}}
 
         issues = self.jira.search_issues(
-            query, fields='summary,comment', json_result='True')
+            query,
+            fields='summary,comment',
+            json_result='True')
 
         return issues['issues']
 
