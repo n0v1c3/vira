@@ -84,7 +84,7 @@ class ViraAPI():
 
             query += queryType + ' in ('
             if isinstance(evals, list):
-                query += ','.join(evals)
+                query += ',' . join(evals)
             else:
                 query += evals
 
@@ -131,8 +131,11 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
+        #  issues = []
         for issue in self.query_issues():
             print(issue["key"] + '  -  ' + issue["fields"]['summary'])
+            #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
+        #  return str(issues)
 
     def get_issuetypes(self):
         '''

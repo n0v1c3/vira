@@ -12,51 +12,42 @@ if !has('python3')
 endif
 
 " Global Variables {{{1
-" vira_null_issue {{{2
-if !exists('g:vira_null_issue')
-  let g:vira_null_issue = 'None'
-endif
+" vira_virarc {{{2
+let g:vira_virarc = get(g:, 'vira_virarc', '.virarc')
+
+" vira_skip_cert_verify
+let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')
 
 " vira_null_issue {{{2
-if !exists('g:vira_null_project')
-  let g:vira_null_project = 'None'
-endif
+let g:vira_null_issue = get(g:, 'vira_null_issue', 'None')
+
+" vira_null_project {{{2
+let g:vira_null_project = get(g:, 'vira_null_project', 'None')
 let g:vira_project = g:vira_null_project
 
-" vira_null_issue {{{2
-if !exists('g:vira_active_issue')
-  let g:vira_active_issue = g:vira_null_issue
-endif
+" vira_active_issue {{{2
+let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
 
 " vira_serv {{{2
-if !exists('g:vira_serv')
-  let g:vira_serv = ''
-endif
+let g:vira_serv = get(g:, 'vira_serv', '')
+
+" vira_serv {{{2
+let g:vira_srvs = get(g:, 'vira_srvs', [])
 
 " vira_filter_assignees {{{2
-if !exists('g:vira_filter_assignees')
-  let g:vira_filter_assignees = ''
-endif
+let g:vira_filter_assignees = get(g:, 'vira_filter_assigneees', '')
 
 " vira_filter_issuetype {{{2
-if !exists('g:vira_filter_issuetype')
-  let g:vira_filter_issuetype = ''
-endif
+let g:vira_filter_issuetype = get(g:, 'vira_filter_issuetype', '')
 
 " vira_filter_priorities {{{2
-if !exists('g:vira_filter_priorities')
-  let g:vira_filter_priorities = ''
-endif
+let g:vira_filter_priorities = get(g:, 'vira_filter_priorities', '')
 
 " vira_filter_reporters {{{2
-if !exists('g:vira_filter_reporters')
-  let g:vira_filter_reporters = ''
-endif
+let g:vira_filter_reporters = get(g:, 'vira_filter_reporters', '')
 
 " vira_filter_status {{{2
-if !exists('g:vira_filter_status')
-  let g:vira_filter_status = ['"To Do"', '"In Progress"']
-endif
+let g:vira_filter_status = get(g:, 'vira_filter_status', ['"To Do"', '" In Progress"'])
 
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into commands
