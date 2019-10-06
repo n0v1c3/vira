@@ -246,69 +246,6 @@ function! vira#_menu(type) " {{{2
   endif
 endfunction
 
-function! vira#_menus(type) "{{{2
-  if (vira#_check_init())
-    " let command = join(map(split(vira#_get_active_issue_repot()), 'expand(v:val)'))
-
-    " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
-    if a:type == 'report'
-      silent! let winnr = bufwinnr('^' . 'vira_report' . '$')
-    else
-      silent! let winnr = bufwinnr('^' . 'vira_menu' . '$')
-    endif
-
-    " Toggle/create the report buffer
-    if (winnr < 0)
-      " Open buffer into a window
-      if a:type == 'report'
-        silent! execute 'botright vnew ' . fnameescape('vira_report')
-      else
-        silent! execute 'botright new ' . fnameescape('vira_menu')
-        silent! execute 'resize 7'
-      endif
-      silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
-      silent! redraw
-      silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
-
-      " Clean-up existing report buffer
-      silent! normal ggVGd
-
-      " Write report output into buffer
-      silent! redir @x>
-      silent! execute 'python3 Vira.api.get_' . a:type . '()'
-      silent! redir END
-      silent! put x
-
-      " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type {{{
-      " Remove folding and line numbers from the report
-      silent! let &foldcolumn=0
-      silent! set relativenumber!
-      silent! set nonumber
-      " }}}
-
-      " Clean-up extra output
-      silent! execute '%s/\^M//g'
-      silent! normal GV3kzogg2dd0
-
-      " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
-      " Key mapping
-      silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
-      silent! execute 'nnoremap <silent> <buffer> k gk'
-      silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
-      silent! execute 'vnoremap <silent> <buffer> j gj'
-      silent! execute 'vnoremap <silent> <buffer> k gk'
-      " }}}
-
-      " Ensure wrap and linebreak are enabled
-      silent! execute 'set wrap'
-      silent! execute 'set linebreak'
-    else
-      silent! execute winnr .'wincmd q'
-      call vira#_menu(a:type)
-    endif
-  endif
-endfunction
-
 function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_filter_' . a:type . '")'
 endfunction
