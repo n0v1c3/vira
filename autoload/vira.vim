@@ -62,43 +62,7 @@ function! vira#_comment() "{{{2
   endif
 endfunction
 
-function! vira#_get_active_issue() "{{{2
-  return g:vira_active_issue
-endfunction
-
-function! vira#_get_active_issue_desc() "{{{2
-  " TODO-TJG [190126] - Python function required for active issue description
-  return g:vira_active_issue
-endfunction
-
-function! vira#_get_statusline() "{{{2
-  return g:vira_active_issue
-  python3 vim.exec("let s:vira_statusline = " . vira_statusline())
-endfunction
-
-function! vira#_get_version() "{{{2
-  return s:vira_version
-endfunction
-
-function! vira#_init() "{{{2
-  if s:vira_is_init != 1
-    " Init flag
-    let s:vira_is_init = 1
-
-    " Init virarc
-    silent! call vira#_update_virarc()
-
-    " Init python
-    call vira#_init_python()
-
-    " Connect if vira_serv already set
-    if exists('g:vira_serv') && g:vira_serv != ''
-      call vira#_connect()
-    endif
-  endif
-endfunction
-
-function vira#_connect() "{{{2
+function! vira#_connect() "{{{2
   " User/password lookup
   let i = 0
   for serv in g:vira_srvs 
@@ -130,6 +94,54 @@ function vira#_connect() "{{{2
 
   " Set connection state
   let s:vira_is_connect = 1
+endfunction
+
+function! vira#_filter(name) "{{{2
+  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_filter_' . a:type . '")'
+endfunction
+
+function! vira#_get_active_issue() "{{{2
+  return g:vira_active_issue
+endfunction
+
+function! vira#_get_active_issue_desc() "{{{2
+  " TODO-TJG [190126] - Python function required for active issue description
+  return g:vira_active_issue
+endfunction
+
+function! vira#_get_menu(type) " {{{2
+  if a:type == 'servers'
+    return g:vira_srvs
+  else
+    return execute('python3 Vira.api.get_' . a:type . '()')
+  endif
+endfunction
+
+function! vira#_get_statusline() "{{{2
+  return g:vira_active_issue
+  python3 vim.exec("let s:vira_statusline = " . vira_statusline())
+endfunction
+
+function! vira#_get_version() "{{{2
+  return s:vira_version
+endfunction
+
+function! vira#_init() "{{{2
+  if s:vira_is_init != 1
+    " Init flag
+    let s:vira_is_init = 1
+
+    " Init virarc
+    silent! call vira#_update_virarc()
+
+    " Init python
+    call vira#_init_python()
+
+    " Connect if vira_serv already set
+    if exists('g:vira_serv') && g:vira_serv != ''
+      call vira#_connect()
+    endif
+  endif
 endfunction
 
 function! vira#_init_python() "{{{2
@@ -170,19 +182,6 @@ function! vira#_print_menu(list) " {{{2
   else
     execute ':normal! o' . a:list . "\<esc>"
   endif
-endfunction
-
-function! vira#_get_menu(type) " {{{2
-  if a:type == 'servers'
-    return g:vira_srvs
-  else
-    return execute('python3 Vira.api.get_' . a:type . '()')
-  endif
-endfunction
-
-function! vira#_servers()
-  call vira#_menu("servers")
-  " call vira#_init_python()
 endfunction
 
 function! vira#_menu(type) " {{{2
@@ -255,12 +254,8 @@ function! vira#_menu(type) " {{{2
     endif
   else
     silent! execute winnr .'wincmd q'
-    call vira#_servers()
+    call vira#_menu("servers")
   endif
-endfunction
-
-function! vira#_filter(name) "{{{2
-  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_filter_' . a:type . '")'
 endfunction
 
 function! vira#_quit() "{{{2

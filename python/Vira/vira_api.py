@@ -202,10 +202,10 @@ class ViraAPI():
 
         report += "\n    Reporter  :  "
         report += f"{issues['issues'][0]['fields']['reporter']['displayName']}"
-        report += '}}' + '}'
+        report += '\n}}' + '}'
         report += '\nDescription {{' + '{1'
         report += f"\n{issues['issues'][0]['fields']['description']}"
-        report += '}}' + '}'
+        report += '\n}}' + '}'
         report += "\nComments {" + "{{1"
         for comment in issues['issues'][0]['fields']['comment']['comments']:
             report += f"\n{comment['author']['displayName']}" + ' @ '
