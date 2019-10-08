@@ -268,20 +268,51 @@ function! vira#_quit() "{{{2
   endfor
 endfunction
 
+function! vira#_set_filter(variable, type)
+  execute 'normal 0'
+
+  if a:type == '<cWORD>'
+    let value = expand('<cWORD>')
+  else
+    let value = getline('.')
+  endif
+  execute 'let ' . a:variable . ' = "' . value . '"'
+  
+  if a:variable == 'g:vira_serv'
+    call vira#_connect()
+  endif
+endfunction
+
 function! vira#_set_issues() "{{{2
-  execute 'normal <c-v>vf hy'
-  let g:vira_active_issue = expand('<cWORD>')
+  call  vira#_set_filter('g:vira_active_issue', '<cWORD>')
 endfunction
 
 function! vira#_set_projects() "{{{2
-  execute 'normal <c-v>wey'
-  let g:vira_project = expand('<cword>')
+  call  vira#_set_filter('g:vira_project', '<cWORD>')
 endfunction
 
 function! vira#_set_servers() "{{{2
-  execute 'normal 0<c-v>$y'
-  let g:vira_serv = expand('<cWORD>')
-  call vira#_connect()
+  call  vira#_set_filter('g:vira_serv', '<cWORD>')
+endfunction
+
+function! vira#_set_statuses() "{{{2
+  call  vira#_set_filter('g:vira_filter_status', '.')
+endfunction
+
+function! vira#_set_assignees() "{{{2
+  call  vira#_set_filter('g:vira_filter_assignee', '.')
+endfunction
+
+function! vira#_set_priorities() "{{{2
+  call  vira#_set_filter('g:vira_filter_priority', '.')
+endfunction
+
+function! vira#_set_reporters() "{{{2
+  call  vira#_set_filter('g:vira_filter_reporter', '.')
+endfunction
+
+function! vira#_set_issuetypes() "{{{2
+  call  vira#_set_filter('g:vira_filter_issuetype', '.')
 endfunction
 
 function! vira#_todo() "{{{2

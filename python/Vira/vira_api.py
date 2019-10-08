@@ -241,6 +241,20 @@ class ViraAPI():
         for user in self.jira.search_users("."):
             print(user)
 
+    def get_assignees(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_users()
+
+    def get_reporters(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_users()
+
     def query_issues(self):
         '''
         Query issues based on current filters

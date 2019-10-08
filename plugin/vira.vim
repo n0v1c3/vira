@@ -47,7 +47,7 @@ let g:vira_filter_priorities = get(g:, 'vira_filter_priorities', '')
 let g:vira_filter_reporters = get(g:, 'vira_filter_reporters', '')
 
 " vira_filter_status {{{2
-let g:vira_filter_status = get(g:, 'vira_filter_status', ['"To Do"', '"In Progress"'])
+let g:vira_filter_status = get(g:, 'vira_filter_status', ['To Do', 'In Progress'])
 
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into commands
