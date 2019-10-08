@@ -155,7 +155,7 @@ endfunction
 function! vira#_print_report(list) " {{{2
   " Write report output into buffer
   silent! redir @x>
-  silent! execute 'python3 Vira.api.get_report()'
+  silent! execute 'python3 print(Vira.api.get_report())'
   silent! redir END
   silent! put x
 endfunction
@@ -170,10 +170,6 @@ function! vira#_print_menu(list) " {{{2
   else
     execute ':normal! o' . a:list . "\<esc>"
   endif
-endfunction
-
-function! vira#_report() " {{{2
-  call vira#_menu('report')
 endfunction
 
 function! vira#_get_menu(type) " {{{2

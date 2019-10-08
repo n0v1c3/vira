@@ -177,44 +177,45 @@ class ViraAPI():
             json_result='True')
 
         # Print issue content
-        print(issue + ': ' + f"{issues['issues'][0]['fields']['summary']}")
-        print('Details {{' + '{1')
-        print(
-            "Story Points  :  " + f"{issues['issues'][0]['fields']['customfield_10106']}")
-        print(
-            "     Created  :  " + f"{issues['issues'][0]['fields']['created'][0:10]}" +
-            ' ' + f"{issues['issues'][0]['fields']['created'][11:16]}")
-        print(
-            "     Updated  :  " + f"{issues['issues'][0]['fields']['updated'][0:10]}" +
-            ' ' + f"{issues['issues'][0]['fields']['updated'][11:16]}")
-        print(
-            "        Type  :  " + f"{issues['issues'][0]['fields']['issuetype']['name']}")
-        print("      Status  :  " + f"{issues['issues'][0]['fields']['status']['name']}")
-        print(
-            "    Priority  :  " + f"{issues['issues'][0]['fields']['priority']['name']}")
+        report = issue + ': ' + f"{issues['issues'][0]['fields']['summary']}"
+        report += '\nDetails {{' + '{1'
+        report += "\nStory Points  :  "
+        report += f"{issues['issues'][0]['fields']['customfield_10106']}"
+        report += "\n     Created  :  "
+        report += f"{issues['issues'][0]['fields']['created'][0:10]}"
+        report += ' ' + f"{issues['issues'][0]['fields']['created'][11:16]}"
+        report += "\n     Updated  :  "
+        report += f"{issues['issues'][0]['fields']['updated'][0:10]}"
+        report += ' ' + f"{issues['issues'][0]['fields']['updated'][11:16]}"
+        report += "\n        Type  :  "
+        report += f"{issues['issues'][0]['fields']['issuetype']['name']}"
+        report += "\n      Status  :  "
+        report += f"{issues['issues'][0]['fields']['status']['name']}"
+        report += "\n    Priority  :  "
+        report += f"{issues['issues'][0]['fields']['priority']['name']}"
 
-        print("    Assignee  :  ", end="")
+        report += "\n    Assignee  :  "
         try:
-            print(f"{issues['issues'][0]['fields']['assignee']['displayName']}")
+            report += f"{issues['issues'][0]['fields']['assignee']['displayName']}"
         except:
-            print("Unassigned")
+            report += "Unassigned"
 
-        print(
-            "    Reporter  :  " +
-            f"{issues['issues'][0]['fields']['reporter']['displayName']}")
-        print('}}' + '}')
-        print('Description {{' + '{1')
-        print(f"{issues['issues'][0]['fields']['description']}")
-        print('}}' + '}')
-        print("Comments {" + "{{1")
+        report += "\n    Reporter  :  "
+        report += f"{issues['issues'][0]['fields']['reporter']['displayName']}"
+        report += '}}' + '}'
+        report += '\nDescription {{' + '{1'
+        report += f"\n{issues['issues'][0]['fields']['description']}"
+        report += '}}' + '}'
+        report += "\nComments {" + "{{1"
         for comment in issues['issues'][0]['fields']['comment']['comments']:
-            print(
-                f"{comment['author']['displayName']}" + ' @ ' +
-                f"{comment['updated'][0:10]}" + ' ' + f"{comment['updated'][11:16]}" +
-                ' {' + '{{2')
-            print(f"{comment['body']}")
-            print('}}' + '}')
-        print("}}" + "}",)
+            report += f"\n{comment['author']['displayName']}" + ' @ '
+            report += f"{comment['updated'][0:10]}" + ' '
+            report += f"{comment['updated'][11:16]}" + ' {' + '{{2'
+            report += f"\n{comment['body']}"
+            report += '\n}}' + '}'
+        report += "\n}}" + "}"
+
+        return report
 
     def get_servers(self):
         '''
