@@ -84,9 +84,9 @@ class ViraAPI():
 
             query += queryType + ' in ('
             if isinstance(evals, list):
-                query += ',' . join(evals)
+                query += ','.join("'{0}'".format(e) for e in evals)
             else:
-                query += evals
+                query += "'" + evals + "'"
 
             query += ')'
 
@@ -247,12 +247,13 @@ class ViraAPI():
         '''
 
         query = ''
+        project = vim.eval('g:vira_project')
         try:
-            if (vim.eval('g:vira_project') != '' and vim.eval('g:vira_project') != vim.eval('g:vira_null_project')):
+            if (project != '' and project != vim.eval('g:vira_null_project')):
                 query += 'project in (' + vim.eval('g:vira_project') + ')'
         except:
             query += ''
-        queryTypes = ['status', 'issuetype']
+        queryTypes = ['assignee', 'status', 'issuetype', 'priority', 'reporter', 'assignee']
         for queryType in queryTypes:
             query += self.filter_str(query, queryType)
 
