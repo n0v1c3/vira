@@ -11,6 +11,7 @@ if !has('python3')
   finish
 endif
 
+
 " Global Variables {{{1
 " vira_virarc {{{2
 let g:vira_virarc = get(g:, 'vira_virarc', '.virarc')
@@ -48,6 +49,8 @@ let g:vira_filter_reporters = get(g:, 'vira_filter_reporters', '')
 
 " vira_filter_status {{{2
 let g:vira_filter_status = get(g:, 'vira_filter_status', ['"To Do"', '"In Progress"'])
+
+" call vira#_init()
 
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into commands

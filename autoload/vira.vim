@@ -7,6 +7,7 @@
 " Variables {{{1
 let s:vira_version = '0.0.1'
 let s:vira_is_init = 0
+let s:vira_is_connect = 0
 
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
@@ -81,16 +82,26 @@ endfunction
 
 function! vira#_init() "{{{2
   if s:vira_is_init != 1
+    " Init flag
     let s:vira_is_init = 1
+
+    " Init virarc
     silent! call vira#_update_virarc()
+
+    " Init python
     call vira#_init_python()
+
+    " Connect if vira_serv already set
+    if exists('g:vira_serv') && g:vira_serv != ''
+      call vira#_connect()
+    endif
   endif
 endfunction
 
 function vira#_connect() "{{{2
   " User/password lookup
   let i = 0
-  for serv in g:vira_srvs
+  for serv in g:vira_srvs 
     if (serv == g:vira_serv)
       let g:vira_user = g:vira_usrs[i]
       if (!exists('g:vira_pass'))
@@ -104,10 +115,7 @@ function vira#_connect() "{{{2
   
   " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
-    " Load `py/vira.py` and connect to server
-    " silent! python3 import sys
-    " silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
-    " silent! python3 import Vira
+    " Connect to server
     silent! python3 Vira.api.connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
 
     " Check if Vira connected to the server
@@ -115,21 +123,20 @@ function vira#_connect() "{{{2
       " Inform user with possible errors and reset unconfigured information
       echo "\nNot logged in! Check configuration and CAPTCHA"
     endif
-    
-    " Clear password
-    let s:vira_pass_input = ""
   endif
+
+  " Clear password
+  let s:vira_pass_input = ""
+
+  " Set connection state
+  let s:vira_is_connect = 1
 endfunction
 
 function! vira#_init_python() "{{{2
+  " Load `py/vira.py`
   silent! python3 import sys
   silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
   silent! python3 import Vira
-
-  " Confirm a server has been selected, this can be done outside of this init
-  " if (!exists('g:vira_serv') || g:vira_serv == '')
-    " call vira#_servers()
-  " endif
 endfunction
 
 function! vira#_issue() "{{{2
@@ -185,7 +192,7 @@ endfunction
 function! vira#_menu(type) " {{{2
   call vira#_init()
 
-  if a:type == 'servers' || s:vira_is_init
+  if a:type == 'servers' || s:vira_is_connect == 1
     " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
     if a:type == 'report'
       let type = 'report'
@@ -283,7 +290,6 @@ endfunction
 function! vira#_set_servers() "{{{2
   execute 'normal 0<c-v>$y'
   let g:vira_serv = expand('<cWORD>')
-  call vira#_init_python()
   call vira#_connect()
 endfunction
 

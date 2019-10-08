@@ -247,47 +247,15 @@ class ViraAPI():
 
         query = ''
         try:
-            if (vim.eval('g:vira_project') != ''):
+            if (vim.eval('g:vira_project') != '' and vim.eval('g:vira_project') != vim.eval('g:vira_null_project')):
                 query += 'project in (' + vim.eval('g:vira_project') + ')'
         except:
             query += ''
-
-        #  if set(vim.eval('g:vira_filter_status')):
-            #  query += 'status in (' + status + ') AND '
-
-        #  if set(vim.eval('g:vira_filter_priorities')):
-            #  query += 'status in (' + status + ') AND '
-
         queryTypes = ['status', 'issuetype']
         for queryType in queryTypes:
             query += self.filter_str(query, queryType)
 
-        '''
-        if set(vim.eval('g:vira_filter_issuetypes')):
-            query += 'issuetype in ('
-            if isinstance(vim.eval('g:vira_filter_issuetypes'), list):
-                query += ','.join(vim.eval('g:vira_filter_issuetypes'))
-            else:
-                query += vim.eval('g:vira_filter_issuetypes')
-
-            query += ') AND '
-        '''
-        '''
-        if set(vim.eval('g:vira_filter_reporters')):
-            if isinstance(vim.eval('g:vira_filter_reporters'), list):
-                query += 'reporter in (' + str(vim.eval('g:vira_filter_reporters')) + ') AND '
-            else:
-                query += 'reporter in (' + reporters + ') AND '
-
-        if set(vim.eval('g:vira_filter_assignees')):
-            query += 'assignee in (' + assignees + ') AND '
-        '''
-
-        #  TODO: VIRA-81 [190928] - Custom queries besed on menu {{{
-        #  query += 'resolution = Unresolved '
-        #  query += ' AND assignee in (currentUser()) '
         query += 'ORDER BY updated DESC'
-        #  }}}
 
         issues = self.jira.search_issues(
             query,
