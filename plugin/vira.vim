@@ -15,7 +15,7 @@ endif
 " vira_virarc {{{2
 let g:vira_virarc = get(g:, 'vira_virarc', '.virarc')
 
-" vira_skip_cert_verify
+" vira_skip_cert_verify {{{2
 let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')
 
 " vira_null_issue {{{2
@@ -47,7 +47,7 @@ let g:vira_filter_priorities = get(g:, 'vira_filter_priorities', '')
 let g:vira_filter_reporters = get(g:, 'vira_filter_reporters', '')
 
 " vira_filter_status {{{2
-let g:vira_filter_status = get(g:, 'vira_filter_status', ['"To Do"', '" In Progress"'])
+let g:vira_filter_status = get(g:, 'vira_filter_status', ['"To Do"', '"In Progress"'])
 
 " Commands {{{1
 " VIRA-8 - Changed any functions that are not returning values for use into commands
@@ -58,8 +58,8 @@ command! -nargs=0 -bang ViraEpics call vira#_menu("epics")
 command! -nargs=0 -bang ViraIssue call vira#_issue()
 command! -nargs=0 -bang ViraIssues call vira#_menu("issues")
 command! -nargs=0 -bang ViraQuit call vira#_quit()
-command! -nargs=0 -bang ViraReport call vira#_menu("report")
-command! -nargs=0 -bang ViraServers call vira#_menu("servers")
+command! -nargs=0 -bang ViraReport call vira#_report()
+command! -nargs=0 -bang ViraServers call vira#_servers()
 command! -nargs=0 -bang ViraTodo call vira#_todo()
 command! -nargs=0 -bang ViraTodos call vira#_todos()
 

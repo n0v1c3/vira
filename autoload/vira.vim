@@ -83,20 +83,11 @@ function! vira#_init() "{{{2
   if s:vira_is_init != 1
     let s:vira_is_init = 1
     silent! call vira#_update_virarc()
-    silent! call vira#_init_python()
+    call vira#_init_python()
   endif
 endfunction
 
-function! vira#_init_python() "{{{2
-  silent! python3 import sys
-  silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
-  silent! python3 import Vira
-
-  " Confirm a server has been selected, this can be done outside of this init
-  if (!exists('g:vira_serv') || g:vira_serv == '')
-    call vira#_menu("servers")
-  endif
-  
+function vira#_connect() "{{{2
   " User/password lookup
   let i = 0
   for serv in g:vira_srvs
@@ -110,7 +101,7 @@ function! vira#_init_python() "{{{2
     endif
     let i = i + 1
   endfor
-
+  
   " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
     " Load `py/vira.py` and connect to server
@@ -128,6 +119,17 @@ function! vira#_init_python() "{{{2
     " Clear password
     let s:vira_pass_input = ""
   endif
+endfunction
+
+function! vira#_init_python() "{{{2
+  silent! python3 import sys
+  silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
+  silent! python3 import Vira
+
+  " Confirm a server has been selected, this can be done outside of this init
+  " if (!exists('g:vira_serv') || g:vira_serv == '')
+    " call vira#_servers()
+  " endif
 endfunction
 
 function! vira#_issue() "{{{2
@@ -173,6 +175,11 @@ function! vira#_get_menu(type) " {{{2
   else
     return execute('python3 Vira.api.get_' . a:type . '()')
   endif
+endfunction
+
+function! vira#_servers()
+  call vira#_menu("servers")
+  " call vira#_init_python()
 endfunction
 
 function! vira#_menu(type) " {{{2
@@ -243,6 +250,9 @@ function! vira#_menu(type) " {{{2
         call vira#_menu(a:type)
       endif
     endif
+  else
+    silent! execute winnr .'wincmd q'
+    call vira#_servers()
   endif
 endfunction
 
@@ -273,6 +283,8 @@ endfunction
 function! vira#_set_servers() "{{{2
   execute 'normal 0<c-v>$y'
   let g:vira_serv = expand('<cWORD>')
+  call vira#_init_python()
+  call vira#_connect()
 endfunction
 
 function! vira#_todo() "{{{2
