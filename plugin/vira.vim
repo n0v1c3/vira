@@ -35,16 +35,16 @@ let g:vira_serv = get(g:, 'vira_serv', '')
 let g:vira_srvs = get(g:, 'vira_srvs', [])
 
 " vira_filter_assignees {{{2
-let g:vira_filter_assignees = get(g:, 'vira_filter_assigneees', '')
+let g:vira_filter_assignee = get(g:, 'vira_filter_assigneee', '')
 
 " vira_filter_issuetype {{{2
 let g:vira_filter_issuetype = get(g:, 'vira_filter_issuetype', '')
 
 " vira_filter_priorities {{{2
-let g:vira_filter_priorities = get(g:, 'vira_filter_priorities', '')
+let g:vira_filter_priority = get(g:, 'vira_filter_priority', '')
 
 " vira_filter_reporters {{{2
-let g:vira_filter_reporters = get(g:, 'vira_filter_reporters', '')
+let g:vira_filter_reporter = get(g:, 'vira_filter_reporter', '')
 
 " vira_filter_status {{{2
 let g:vira_filter_status = get(g:, 'vira_filter_status', ['To Do', 'In Progress'])
