@@ -217,14 +217,6 @@ class ViraAPI():
 
         return report
 
-    def get_servers(self):
-        '''
-        Get my issues with JQL
-        '''
-
-        for server in vim.eval("g:vira_srvs"):
-            print(server)
-
     def get_statuses(self):
         '''
         Get my issues with JQL
@@ -286,12 +278,5 @@ class ViraAPI():
         '''
 
         self.jira.transition_issue(issue, status)
-
-    def timestamp():
-        '''
-        Selected for Development
-        '''
-
-        return str(datetime.datetime.now())
 
 api = ViraAPI()
