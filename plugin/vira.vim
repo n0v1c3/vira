@@ -12,45 +12,28 @@ if !has('python3')
 endif
 
 " Global Variables {{{1
-" vira_virarc {{{2
+" virarc configuration path {{{2
 let g:vira_virarc = get(g:, 'vira_virarc', '.virarc')
 
-" vira_skip_cert_verify {{{2
+" Skip cert verify {{{2
 let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')
 
-" vira_null_issue {{{2
+" Null values {{{2
 let g:vira_null_issue = get(g:, 'vira_null_issue', 'None')
-
-" vira_null_project {{{2
 let g:vira_null_project = get(g:, 'vira_null_project', 'None')
-let g:vira_project = g:vira_null_project
 
-" vira_active_issue {{{2
+" Connections and filters {{{2
 let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
-
-" vira_serv {{{2
+let g:vira_filter_assignee = get(g:, 'vira_filter_assigneee', '')
+let g:vira_filter_issuetype = get(g:, 'vira_filter_issuetype', '')
+let g:vira_filter_priority = get(g:, 'vira_filter_priority', '')
+let g:vira_filter_reporter = get(g:, 'vira_filter_reporter', '')
+let g:vira_filter_status = get(g:, 'vira_filter_status', ['To Do', 'In Progress'])
+let g:vira_project = g:vira_null_project
 let g:vira_serv = get(g:, 'vira_serv', '')
-
-" vira_serv {{{2
 let g:vira_srvs = get(g:, 'vira_srvs', [])
 
-" vira_filter_assignees {{{2
-let g:vira_filter_assignee = get(g:, 'vira_filter_assigneee', '')
-
-" vira_filter_issuetype {{{2
-let g:vira_filter_issuetype = get(g:, 'vira_filter_issuetype', '')
-
-" vira_filter_priorities {{{2
-let g:vira_filter_priority = get(g:, 'vira_filter_priority', '')
-
-" vira_filter_reporters {{{2
-let g:vira_filter_reporter = get(g:, 'vira_filter_reporter', '')
-
-" vira_filter_status {{{2
-let g:vira_filter_status = get(g:, 'vira_filter_status', ['To Do', 'In Progress'])
-
 " Commands {{{1
-" VIRA-8 - Changed any functions that are not returning values for use into commands
 " Basics
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_comment()

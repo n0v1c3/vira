@@ -104,11 +104,6 @@ function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
 endfunction
 
-function! vira#_get_active_issue_desc() "{{{2
-  " TODO-TJG [190126] - Python function required for active issue description
-  return g:vira_active_issue
-endfunction
-
 function! vira#_get_menu(type) " {{{2
   if a:type == 'servers'
     return g:vira_srvs
@@ -268,9 +263,13 @@ function! vira#_quit() "{{{2
   endfor
 endfunction
 
-function! vira#_set_filter(variable, type)
-  execute 'normal 0'
+function! vira#_reset_filter(variable, type) "{{{2
+endfunction
 
+function! vira#_set_filter(variable, type) "{{{2
+  " TODO: VIRA-27 [191008] - New filter function remove old calls and replace with variables
+  execute 'normal 0'
+  
   if a:type == '<cWORD>'
     let value = expand('<cWORD>')
   else
