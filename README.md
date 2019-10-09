@@ -7,15 +7,22 @@ along with creating new issues on the go.
 
 ## Installation
 
-Add to your Vim Plugins:
+Add to your vim plugin list in your .vimrc:
 
 ```
 Plugin n0v1c3/vira
 ```
 
-Install required python3 Jira package:
+Example of vim-plug post-update hook to automatically install python dependencies along with vira:
+
 ```
-sudo python3 -m pip install jira
+Plug 'n0v1c3/vira', { 'do': './install.sh' }
+```
+
+Alternatively, manually install the python3 dependencies:
+
+```
+pip install --user jira
 ```
 
 ## Configuration
@@ -95,7 +102,7 @@ to be used to help configure Vira to work for you.
 - `ViraReport` - Get report for active issue.
 - `ViraServers` - Get and Set active Jira server.
 - `ViraTodo` - Make a **TODO** note for current issue.
-- `ViraTodos `- Get a list of the remaining TODOs.
+- `ViraTodos`- Get a list of the remaining TODOs.
 
 ### Functions
 
