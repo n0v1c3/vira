@@ -23,12 +23,22 @@ let g:vira_null_issue = get(g:, 'vira_null_issue', 'None')
 let g:vira_null_project = get(g:, 'vira_null_project', 'None')
 
 " Connections and filters {{{2
+" Config
+let g:vira_default_assignee = get(g:, 'vira_default_assigneee', '')
+let g:vira_default_issuetype = get(g:, 'vira_default_issuetype', '')
+let g:vira_default_priority = get(g:, 'vira_default_priority', '')
+let g:vira_default_reporter = get(g:, 'vira_default_reporter', '')
+let g:vira_default_status = get(g:, 'vira_default_status', ['To Do', 'In Progress'])
+
+" Active
+let g:vira_active_assignee = get(g:, 'vira_default_assigneee', '')
+let g:vira_active_issuetype = get(g:, 'vira_default_issuetype', '')
+let g:vira_active_priority = get(g:, 'vira_default_priority', '')
+let g:vira_active_reporter = get(g:, 'vira_default_reporter', '')
+let g:vira_active_status = get(g:, 'vira_default_status', ['To Do', 'In Progress'])
+
+" Connections
 let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
-let g:vira_filter_assignee = get(g:, 'vira_filter_assigneee', '')
-let g:vira_filter_issuetype = get(g:, 'vira_filter_issuetype', '')
-let g:vira_filter_priority = get(g:, 'vira_filter_priority', '')
-let g:vira_filter_reporter = get(g:, 'vira_filter_reporter', '')
-let g:vira_filter_status = get(g:, 'vira_filter_status', ['To Do', 'In Progress'])
 let g:vira_project = g:vira_null_project
 let g:vira_serv = get(g:, 'vira_serv', '')
 let g:vira_srvs = get(g:, 'vira_srvs', [])
@@ -47,6 +57,8 @@ command! -nargs=0 -bang ViraTodo call vira#_todo()
 command! -nargs=0 -bang ViraTodos call vira#_todos()
 
 " Filters
+command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
+
 command! -nargs=0 -bang ViraFilterAssignees call vira#_menu("assignees")
 command! -nargs=0 -bang ViraFilterPriorities call vira#_menu("priorities")
 command! -nargs=0 -bang ViraFilterProjects call vira#_menu("projects")

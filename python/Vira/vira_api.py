@@ -75,7 +75,7 @@ class ViraAPI():
         '''
 
         query = ''
-        evals = vim.eval('g:vira_filter_' + queryType)
+        evals = vim.eval('g:vira_active_' + queryType)
         if set(evals) and evals != '':
             if set(startQuery) and startQuery != '':
                 query = ' AND '

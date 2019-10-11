@@ -17,6 +17,8 @@ let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_todo_header = 'TODO'
 
+let s:vira_filters=['assignee', 'issuetype', 'priority', 'reporter', 'status']
+
 " Functions {{{1
 function! vira#_browse() "{{{2
   " Confirm an issue has been selected
@@ -97,7 +99,7 @@ function! vira#_connect() "{{{2
 endfunction
 
 function! vira#_filter(name) "{{{2
-  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_filter_' . a:type . '")'
+  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
 
 function! vira#_get_active_issue() "{{{2
@@ -263,7 +265,14 @@ function! vira#_quit() "{{{2
   endfor
 endfunction
 
-function! vira#_reset_filter(variable, type) "{{{2
+function! vira#_reset_filters() " {{{2
+  for vira_filter in s:vira_filters
+    silent! call vira#_reset_filter(vira_filter)
+  endfor
+endfunction
+
+function! vira#_reset_filter(variable) "{{{2
+  execute 'let g:vira_active_' . a:variable . ' = g:vira_default_' . a:variable . '"'
 endfunction
 
 function! vira#_set_filter(variable, type) "{{{2
@@ -295,23 +304,23 @@ function! vira#_set_servers() "{{{2
 endfunction
 
 function! vira#_set_statuses() "{{{2
-  call  vira#_set_filter('g:vira_filter_status', '.')
+  call  vira#_set_filter('g:vira_active_status', '.')
 endfunction
 
 function! vira#_set_assignees() "{{{2
-  call  vira#_set_filter('g:vira_filter_assignee', '.')
+  call  vira#_set_filter('g:vira_active_assignee', '.')
 endfunction
 
 function! vira#_set_priorities() "{{{2
-  call  vira#_set_filter('g:vira_filter_priority', '.')
+  call  vira#_set_filter('g:vira_active_priority', '.')
 endfunction
 
 function! vira#_set_reporters() "{{{2
-  call  vira#_set_filter('g:vira_filter_reporter', '.')
+  call  vira#_set_filter('g:vira_active_reporter', '.')
 endfunction
 
 function! vira#_set_issuetypes() "{{{2
-  call  vira#_set_filter('g:vira_filter_issuetype', '.')
+  call  vira#_set_filter('g:vira_active_issuetype', '.')
 endfunction
 
 function! vira#_todo() "{{{2

@@ -111,8 +111,30 @@ to be used to help configure Vira to work for you.
 
 ### Variables
 
+#### Nulls
+
 - `g:vira_null_issue` - Text used when there is no issue.
 - `g:vira_null_project` - Text used when there is no project.
+
+#### Filters
+
+Filters are used to display the results of matching Jira issues.
+The following variables are used for the **Default** vaules along with
+the **Active** values for the filters. The default values are the
+important ones to be set and insure that filters return to desired
+state upon reset.
+
+- `g:vira_default_assignee` - Default `assignee` filter
+- `g:vira_default_issuetype` - Default `issuetype` filter
+- `g:vira_default_priority` - Default `issuetype` filter
+- `g:vira_default_report` - Default `report` filter
+- `g:vira_default_status` - Default `status` filter
+
+- `g:vira_active_assignee` - Active `assignee` filter
+- `g:vira_active_issuetype` - Active `issuetype` filter
+- `g:vira_active_priority` - Active `issuetype` filter
+- `g:vira_active_report` - Active `report` filter
+- `g:vira_active_status` - Active `status` filter
 
 ### Examples:
 
@@ -128,13 +150,24 @@ nnoremap <silent> <leader>vr :ViraReport<cr>
 nnoremap <silent> <leader>vs :ViraServers<cr>
 nnoremap <silent> <leader>vt :ViraTodos<cr>
 
-" Search filters
+" Filter search
 nnoremap <silent> <leader>vfP :ViraFilterPriorities<cr>
 nnoremap <silent> <leader>vfa :ViraFilterAssignees<cr>
 nnoremap <silent> <leader>vfp :ViraFilterProjects<cr>
 nnoremap <silent> <leader>vfs :ViraFilterStatuses<cr>
-nnoremap <silent> <leader>vft :ViraFilterReset<cr>
+nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
+nnoremap <silent> <leader>vfR :ViraFilterReset<cr>
 nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
+
+" Filter reset
+nnoremap <silent> <leader>vfr :ViraFilterReset<cr>
+
+" Filters (.virarc project)
+let g:vira_default_assignee = ['']
+let g:vira_default_issuetype = ['']
+let g:vira_default_priority = ['']
+let g:vira_default_reporter = ['']
+let g:vira_default_status = ['To Do', 'In Progress']
 
 " Status
 statusline+=%{ViraStatusline()}
