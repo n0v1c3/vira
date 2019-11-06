@@ -133,7 +133,7 @@ class ViraAPI():
 
         #  issues = []
         for issue in self.query_issues():
-            print(issue["key"] + '  -  ' + issue["fields"]['summary'])
+            print(issue["key"] + "  -  " + issue["fields"]["summary"] + " | " + issue["fields"]["status"]["name"] + " |")
             #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
         #  return str(issues)
 
@@ -267,7 +267,7 @@ class ViraAPI():
 
         issues = self.jira.search_issues(
             query,
-            fields='summary,comment',
+            fields='summary,comment,status',
             json_result='True')
 
         return issues['issues']
