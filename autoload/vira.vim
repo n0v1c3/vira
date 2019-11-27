@@ -87,7 +87,7 @@ function! vira#_connect() "{{{2
     " Check if Vira connected to the server
     if (s:vira_is_init != 1)
       " Inform user with possible errors and reset unconfigured information
-      echo "\nNot logged in! Check configuration and CAPTCHA"
+      echoe "Could not log into jira! Check authentication details or try entering CAPTCHA through web interface."
     endif
   endif
 
