@@ -67,7 +67,7 @@ endfunction
 function! vira#_connect() "{{{2
   " User/password lookup
   let i = 0
-  for serv in g:vira_srvs 
+  for serv in g:vira_srvs
     if (serv == g:vira_serv)
       let g:vira_user = g:vira_usrs[i]
       if (!exists('g:vira_pass'))
@@ -78,7 +78,7 @@ function! vira#_connect() "{{{2
     endif
     let i = i + 1
   endfor
-  
+
   " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
     " Connect to server
@@ -108,7 +108,8 @@ endfunction
 
 function! vira#_get_menu(type) " {{{2
   if a:type == 'servers'
-    return g:vira_srvs
+    " TODO-MB [191128] - no if statement required
+    return execute('python3 Vira.get_' . a:type . '()')
   else
     return execute('python3 Vira.api.get_' . a:type . '()')
   endif
@@ -142,10 +143,11 @@ function! vira#_init() "{{{2
 endfunction
 
 function! vira#_init_python() "{{{2
-  " Load `py/vira.py`
+  " Load Vira python code and read user-configuration files
   silent! python3 import sys
   silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
   silent! python3 import Vira
+  silent! python3 exe 'python3 Vira.read_config("' . g:vira_config_servers_file . '")'
 endfunction
 
 function! vira#_issue() "{{{2
@@ -208,7 +210,7 @@ function! vira#_menu(type) " {{{2
       silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
       silent! redraw
       silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
-      
+
       " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type {{{
       " Remove folding and line numbers from the report
       silent! let &foldcolumn=0
@@ -259,7 +261,7 @@ function! vira#_quit() "{{{2
   let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
     let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
-    if (winnr > 0)                                          
+    if (winnr > 0)
         execute winnr .' wincmd q'
     endif
   endfor
@@ -278,14 +280,14 @@ endfunction
 function! vira#_set_filter(variable, type) "{{{2
   " TODO: VIRA-27 [191008] - New filter function remove old calls and replace with variables
   execute 'normal 0'
-  
+
   if a:type == '<cWORD>'
     let value = expand('<cWORD>')
   else
     let value = getline('.')
   endif
   execute 'let ' . a:variable . ' = "' . value . '"'
-  
+
   if a:variable == 'g:vira_serv'
     call vira#_connect()
   endif

@@ -15,6 +15,9 @@ endif
 " virarc configuration path {{{2
 let g:vira_virarc = get(g:, 'vira_virarc', '.virarc')
 
+let g:vira_config_projects_file = $HOME."/.config/vira/vira_projects.yaml"
+let g:vira_config_servers_file = $HOME."/.config/vira/vira_servers.yaml""
+
 " Skip cert verify {{{2
 let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')
 
