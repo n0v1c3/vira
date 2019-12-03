@@ -8,7 +8,7 @@ import vim
 from jira import JIRA
 import datetime
 import urllib3
-from Vira.helper import load_config
+from Vira.helper import load_config, run_command
 
 class ViraAPI():
     '''
@@ -70,19 +70,20 @@ class ViraAPI():
 
         # Get auth for current server
         username = self.vira_servers[server].get('username')
-        password = self.vira_servers[server].get('password')
+        password_cmd = self.vira_servers[server].get('password_cmd')
+        if password_cmd:
+            password = run_command(password_cmd)['stdout'].strip()
+        else:
+            password = self.vira_servers[server]['password']
 
-        try:
-            self.jira = JIRA(
-                options={
-                    'server': server,
-                    'verify': cert_verify
-                },
-                auth=(username, password),
-                timeout=5)
-            vim.command("let s:vira_is_init = 1")
-        except:
-            vim.command("let s:vira_is_init = 0")
+        # Connect to jira server
+        self.jira = JIRA(
+            options={
+                'server': server,
+                'verify': cert_verify
+            },
+            auth=(username, password),
+            timeout=5)
 
     def filter_str(self, startQuery, queryType):
         '''
@@ -148,7 +149,9 @@ class ViraAPI():
 
         #  issues = []
         for issue in self.query_issues():
-            print(issue["key"] + "  -  " + issue["fields"]["summary"] + " | " + issue["fields"]["status"]["name"] + " |")
+            print(
+                issue["key"] + "  -  " + issue["fields"]["summary"] + " | " +
+                issue["fields"]["status"]["name"] + " |")
             #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
         #  return str(issues)
 
@@ -282,16 +285,16 @@ class ViraAPI():
                 query += 'project in (' + vim.eval('g:vira_project') + ')'
         except:
             query += ''
-        queryTypes = ['assignee', 'status', 'issuetype', 'priority', 'reporter', 'assignee']
+        queryTypes = [
+            'assignee', 'status', 'issuetype', 'priority', 'reporter', 'assignee'
+        ]
         for queryType in queryTypes:
             query += self.filter_str(query, queryType)
 
         query += 'ORDER BY updated DESC'
 
         issues = self.jira.search_issues(
-            query,
-            fields='summary,comment,status',
-            json_result='True')
+            query, fields='summary,comment,status', json_result='True')
 
         return issues['issues']
 

@@ -10,13 +10,15 @@ These functions don't reference the jira API
 # TODO-MB [191128] - Make yaml optional
 import yaml
 import datetime
+import subprocess
 
-def timestamp():
+def load_config(file_path):
     '''
-    Selected for Development
+    Load user configuration file
     '''
 
-    return str(datetime.datetime.now())
+    # TODO-MB [191128] - Put json/yaml if statement here
+    return parse_yaml(file_path)
 
 def parse_yaml(file_path) -> dict:
     '''
@@ -32,13 +34,29 @@ def parse_yaml(file_path) -> dict:
 
     return config
 
-def load_config(file_path):
+def run_command(cmd_string):
     '''
-    Load user configuration file
+    Run bash command and return dictionary with the keys:
     '''
 
-    # TODO-MB [191128] - Put json/yaml if statement here
-    return parse_yaml(file_path)
+    # Run process
+    process = subprocess.Popen(
+        cmd_string.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+    output, error = process.communicate()
+
+    # Prepare output dictionary
+    return {
+        'stdout': output.decode('utf-8'),
+        'stderr': error.decode('utf-8'),
+        'exitcode': process.returncode,
+    }
+
+def timestamp():
+    '''
+    Selected for Development
+    '''
+
+    return str(datetime.datetime.now())
 
 if __name__ == '__main__':
     'For testing purposes'
