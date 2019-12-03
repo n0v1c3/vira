@@ -106,15 +106,6 @@ function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
 endfunction
 
-function! vira#_get_menu(type) " {{{2
-  if a:type == 'servers'
-    " TODO-MB [191128] - no if statement required
-    return execute('python3 Vira.get_' . a:type . '()')
-  else
-    return execute('python3 Vira.api.get_' . a:type . '()')
-  endif
-endfunction
-
 function! vira#_get_statusline() "{{{2
   return g:vira_active_issue
   python3 vim.exec("let s:vira_statusline = " . vira_statusline())
@@ -138,9 +129,6 @@ function! vira#_init_old() "{{{2
 
   " Init flag
   let s:vira_is_init = 1
-
-  " Init virarc
-  silent! call vira#_update_virarc()
 
   " Connect if vira_serv already set
   if exists('g:vira_serv') && g:vira_serv != ''
@@ -185,75 +173,71 @@ endfunction
 function! vira#_menu(type) " {{{2
   call vira#_init_old()
 
-  if a:type == 'servers' || s:vira_is_connect == 1
-    " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
-    if a:type == 'report'
-      let type = 'report'
-      let list = ''
+  " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
+  if a:type == 'report'
+    let type = 'report'
+    let list = ''
+  else
+    let type = 'menu'
+    echo a:type
+    let list = execute('python3 Vira.api.get_' . a:type . '()')
+  endif
+  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
+
+  " Toggle/create the report buffer
+  if (winnr < 0)
+    " Open buffer into a window
+    if type == 'report'
+      silent! execute 'botright vnew ' . fnameescape('vira_' . type)
     else
-      let type = 'menu'
-      echo a:type
-      let list = vira#_get_menu(a:type)
+      silent! execute 'botright new ' . fnameescape('vira_' . type)
+      silent! execute 'resize 7'
     endif
-    silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
+    silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
+    silent! redraw
+    silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
 
-    " Toggle/create the report buffer
-    if (winnr < 0)
-      " Open buffer into a window
-      if type == 'report'
-        silent! execute 'botright vnew ' . fnameescape('vira_' . type)
-      else
-        silent! execute 'botright new ' . fnameescape('vira_' . type)
-        silent! execute 'resize 7'
-      endif
-      silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
-      silent! redraw
-      silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
+    " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type {{{
+    " Remove folding and line numbers from the report
+    silent! let &foldcolumn=0
+    silent! set relativenumber!
+    silent! set nonumber
+    " }}}
 
-      " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type {{{
-      " Remove folding and line numbers from the report
-      silent! let &foldcolumn=0
-      silent! set relativenumber!
-      silent! set nonumber
-      " }}}
+    " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
+    " Key mapping
+    silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
+    silent! execute 'nnoremap <silent> <buffer> k gk'
+    silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
+    silent! execute 'vnoremap <silent> <buffer> j gj'
+    silent! execute 'vnoremap <silent> <buffer> k gk'
+    " }}}
 
-      " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
-      " Key mapping
-      silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
-      silent! execute 'nnoremap <silent> <buffer> k gk'
-      silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
-      silent! execute 'vnoremap <silent> <buffer> j gj'
-      silent! execute 'vnoremap <silent> <buffer> k gk'
-      " }}}
+    " Clean-up existing report buffer
+    silent! normal ggVGd
 
-      " Clean-up existing report buffer
-      silent! normal ggVGd
+    " Write report output into buffer
+    if type == 'menu'
+      call vira#_print_menu(list)
+    else
+      call vira#_print_report(list)
+    endif
 
-      " Write report output into buffer
-      if type == 'menu'
-        call vira#_print_menu(list)
-      else
-        call vira#_print_report(list)
-      endif
+    " Clean-up extra output and remove blank lines
+    silent! execute '%s/\^M//g'
+    silent! normal GV3kzogg
+    silent! execute 'g/^$/d'
 
-      " Clean-up extra output and remove blank lines
-      silent! execute '%s/\^M//g'
-      silent! normal GV3kzogg
-      silent! execute 'g/^$/d'
-
-      " Ensure wrap and linebreak are enabled
-      silent! execute 'set wrap'
-      silent! execute 'set linebreak'
+    " Ensure wrap and linebreak are enabled
+    silent! execute 'set wrap'
+    silent! execute 'set linebreak'
     else
       silent! execute winnr .'wincmd q'
       if type == 'menu'
         call vira#_menu(a:type)
       endif
     endif
-  else
-    silent! execute winnr .'wincmd q'
-    call vira#_menu("servers")
-  endif
+
 endfunction
 
 function! vira#_quit() "{{{2

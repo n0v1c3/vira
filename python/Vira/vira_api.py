@@ -23,6 +23,8 @@ class ViraAPI():
         self.vira_projects = load_config(vim.eval('g:vira_config_projects_file'))
         self.vira_servers = load_config(vim.eval('g:vira_config_servers_file'))
 
+        # TODO-MB [191202] - Set g:vira_serv here
+
     def add_comment(self, issue, comment):
         '''
         Comment on specified issue
