@@ -82,7 +82,7 @@ function! vira#_connect() "{{{2
   " Was a server chosen?
   if (exists('g:vira_serv') && g:vira_serv != '')
     " Connect to server
-    silent! python3 Vira.api.connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
+    silent! python3 Vira.api.connect(vim.eval("g:vira_serv"))
 
     " Check if Vira connected to the server
     if (s:vira_is_init != 1)
@@ -122,7 +122,8 @@ function! vira#_init_python() "{{{2
   silent! python3 import Vira
 endfunction
 
-function! vira#_init_old() "{{{2
+function! vira#_check_connection() "{{{2
+  " Connect to jira server if not connected already
   if s:vira_is_init == 1
     return
   endif
@@ -171,7 +172,7 @@ function! vira#_print_menu(list) " {{{2
 endfunction
 
 function! vira#_menu(type) " {{{2
-  call vira#_init_old()
+  call vira#_check_connection()
 
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
   if a:type == 'report'

@@ -56,17 +56,21 @@ class ViraAPI():
             comment=comment,
             started=earlier)
 
-    def connect(self, server, user, pw, skip_cert_verify):
+    def connect(self, server):
         '''
         Connect to Jira server with supplied auth details
         '''
 
         # Specify whether the server's TLS certificate needs to be verified
-        if skip_cert_verify == "1":
+        if self.vira_servers[server].get('skip_cert_verify'):
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             cert_verify = False
         else:
             cert_verify = True
+
+        # Get auth for current server
+        username = self.vira_servers[server].get('username')
+        password = self.vira_servers[server].get('password')
 
         try:
             self.jira = JIRA(
@@ -74,7 +78,7 @@ class ViraAPI():
                     'server': server,
                     'verify': cert_verify
                 },
-                auth=(user, pw),
+                auth=(username, password),
                 timeout=5)
             vim.command("let s:vira_is_init = 1")
         except:
