@@ -5,6 +5,11 @@
 " Version: 0.0.1
 
 " Initialization {{{1
+" Plugin Loaded {{{2
+if exists('g:vira_loaded')
+    finish
+endif
+
 " python check {{{2
 if !has('python3')
   echo 'vim has to be compiled with +python3 to run vira'
@@ -79,3 +84,7 @@ function! ViraStatusLine() "{{{2
   " Return formatted statusline string
   return vira#_get_statusline()
 endfunction
+
+" Load Vira Python Module {{{1
+call vira#_init_python()
+let g:vira_loaded = 1

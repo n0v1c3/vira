@@ -124,7 +124,7 @@ function! vira#_get_version() "{{{2
   return s:vira_version
 endfunction
 
-function! vira#_init() "{{{2
+function! vira#_init_python() "{{{2
   " Load Vira python code and read user-configuration files
   silent! python3 import sys
   silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
@@ -142,22 +142,11 @@ function! vira#_init_old() "{{{2
   " Init virarc
   silent! call vira#_update_virarc()
 
-  " Init python
-  call vira#_init_python()
-
   " Connect if vira_serv already set
   if exists('g:vira_serv') && g:vira_serv != ''
     call vira#_connect()
   endif
 
-endfunction
-
-function! vira#_init_python() "{{{2
-  " Load Vira python code and read user-configuration files
-  silent! python3 import sys
-  silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
-  silent! python3 import Vira
-  silent! python3 exe 'python3 Vira.read_config("' . g:vira_config_servers_file . '")'
 endfunction
 
 function! vira#_issue() "{{{2
