@@ -125,21 +125,31 @@ function! vira#_get_version() "{{{2
 endfunction
 
 function! vira#_init() "{{{2
-  if s:vira_is_init != 1
-    " Init flag
-    let s:vira_is_init = 1
+  " Load Vira python code and read user-configuration files
+  silent! python3 import sys
+  silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
+  silent! python3 import Vira
+endfunction
 
-    " Init virarc
-    silent! call vira#_update_virarc()
-
-    " Init python
-    call vira#_init_python()
-
-    " Connect if vira_serv already set
-    if exists('g:vira_serv') && g:vira_serv != ''
-      call vira#_connect()
-    endif
+function! vira#_init_old() "{{{2
+  if s:vira_is_init == 1
+    return
   endif
+
+  " Init flag
+  let s:vira_is_init = 1
+
+  " Init virarc
+  silent! call vira#_update_virarc()
+
+  " Init python
+  call vira#_init_python()
+
+  " Connect if vira_serv already set
+  if exists('g:vira_serv') && g:vira_serv != ''
+    call vira#_connect()
+  endif
+
 endfunction
 
 function! vira#_init_python() "{{{2
@@ -184,7 +194,7 @@ function! vira#_print_menu(list) " {{{2
 endfunction
 
 function! vira#_menu(type) " {{{2
-  call vira#_init()
+  call vira#_init_old()
 
   if a:type == 'servers' || s:vira_is_connect == 1
     " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===

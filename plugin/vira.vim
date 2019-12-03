@@ -5,7 +5,7 @@
 " Version: 0.0.1
 
 " Initialization {{{1
-" python3 {{{2
+" python check {{{2
 if !has('python3')
   echo 'vim has to be compiled with +python3 to run vira'
   finish
@@ -15,8 +15,8 @@ endif
 " virarc configuration path {{{2
 let g:vira_virarc = get(g:, 'vira_virarc', '.virarc')
 
-let g:vira_config_projects_file = $HOME."/.config/vira/vira_projects.yaml"
-let g:vira_config_servers_file = $HOME."/.config/vira/vira_servers.yaml""
+let g:vira_config_projects_file = $HOME.'/.config/vira/vira_projects.yaml'
+let g:vira_config_servers_file = $HOME.'/.config/vira/vira_servers.yaml'
 
 " Skip cert verify {{{2
 let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')

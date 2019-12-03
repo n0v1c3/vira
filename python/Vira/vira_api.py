@@ -8,11 +8,20 @@ import vim
 from jira import JIRA
 import datetime
 import urllib3
+from Vira.helper import load_config
 
 class ViraAPI():
     '''
     This class gets imported by __init__.py
     '''
+
+    def __init__(self):
+        '''
+        Initialize vira
+        '''
+
+        self.vira_projects = load_config(vim.eval('g:vira_config_projects_file'))
+        self.vira_servers = load_config(vim.eval('g:vira_config_servers_file'))
 
     def add_comment(self, issue, comment):
         '''
@@ -217,6 +226,14 @@ class ViraAPI():
 
         return report
 
+    def get_servers(self):
+        '''
+        Get list of servers
+        '''
+
+        for server in self.vira_servers.keys():
+            print(server)
+
     def get_statuses(self):
         '''
         Get my issues with JQL
@@ -278,5 +295,3 @@ class ViraAPI():
         '''
 
         self.jira.transition_issue(issue, status)
-
-api = ViraAPI()

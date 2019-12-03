@@ -11,15 +11,6 @@ These functions don't reference the jira API
 import yaml
 import datetime
 
-def get_servers():
-    '''
-    Get my issues with JQL
-    '''
-
-    # __import__('pprint').pprint(config)
-    for server in config.keys():
-        print(server)
-
 def timestamp():
     '''
     Selected for Development
@@ -41,17 +32,14 @@ def parse_yaml(file_path) -> dict:
 
     return config
 
-def read_config(file_path):
+def load_config(file_path):
     '''
-    Read vira from configuration file
+    Load user configuration file
     '''
 
     # TODO-MB [191128] - Put json/yaml if statement here
-    global config
-    config = parse_yaml(file_path)
+    return parse_yaml(file_path)
 
 if __name__ == '__main__':
-    # For testing purposes
-    file_path = '/home/mike/.config/vira/vira_servers.yaml'
-    read_config(file_path)
-    get_servers()
+    'For testing purposes'
+    pass
