@@ -2,6 +2,7 @@
 " Description: Internals and API functions for vira
 " Authors:
 "   n0v1c3 (Travis Gall) <https://github.com/n0v1c3>
+"   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 " Version: 0.0.1
 
 " Variables {{{1
@@ -193,12 +194,12 @@ function! vira#_menu(type) abort" {{{2
     " Ensure wrap and linebreak are enabled
     silent! execute 'set wrap'
     silent! execute 'set linebreak'
-    else
-      silent! execute winnr .'wincmd q'
-      if type == 'menu'
-        call vira#_menu(a:type)
-      endif
+  else
+    silent! execute winnr .'wincmd q'
+    if type == 'menu'
+      call vira#_menu(a:type)
     endif
+  endif
 
 endfunction
 

@@ -23,9 +23,6 @@ let g:vira_virarc = get(g:, 'vira_virarc', '.virarc')
 let g:vira_config_projects_file = $HOME.'/.config/vira/vira_projects.yaml'
 let g:vira_config_servers_file = $HOME.'/.config/vira/vira_servers.yaml'
 
-" Skip cert verify {{{2
-let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')
-
 " Null values {{{2
 let g:vira_null_issue = get(g:, 'vira_null_issue', 'None')
 let g:vira_null_project = get(g:, 'vira_null_project', 'None')
