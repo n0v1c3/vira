@@ -30,8 +30,7 @@ def parse_json(file_path) -> dict:
         with open(file_path, 'r') as file:
             config = json.load(file)
     except OSError as e:
-        print(e)
-        return
+        raise e
 
     return config
 
@@ -45,8 +44,7 @@ def parse_yaml(file_path) -> dict:
         with open(file_path, 'r') as file:
             config = yaml.load(file, Loader=yaml.FullLoader)
     except OSError as e:
-        print(e)
-        return
+        raise e
 
     return config
 

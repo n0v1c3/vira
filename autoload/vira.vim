@@ -134,6 +134,12 @@ function! vira#_print_menu(list) " {{{2
 endfunction
 
 function! vira#_menu(type) abort" {{{2
+
+  " User to select jira server and connect to it if not done already
+  if !exists('g:vira_serv') || g:vira_serv == '' && a:type != 'servers'
+    call vira#_menu('servers')
+    return
+  endif
   call vira#_connect()
 
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
@@ -196,9 +202,6 @@ function! vira#_menu(type) abort" {{{2
     silent! execute 'set linebreak'
   else
     silent! execute winnr .'wincmd q'
-    if type == 'menu'
-      call vira#_menu(a:type)
-    endif
   endif
 
 endfunction
@@ -248,6 +251,8 @@ function! vira#_set_projects() "{{{2
 endfunction
 
 function! vira#_set_servers() "{{{2
+  " Reset connection before selecting new server
+  let s:vira_connected = 0
   call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction
 
