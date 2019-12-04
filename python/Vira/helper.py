@@ -7,8 +7,7 @@ These functions don't reference the jira API
 # dev: let b:startfile = "%"
 # dev: let b:startargs = ""
 
-# TODO-MB [191128] - Make yaml optional
-import yaml
+import json
 import datetime
 import subprocess
 
@@ -17,17 +16,34 @@ def load_config(file_path):
     Load user configuration file
     '''
 
-    # TODO-MB [191128] - Put json/yaml if statement here
-    return parse_yaml(file_path)
+    if 'json' in file_path.lower():
+        return parse_json(file_path)
+    else:
+        return parse_yaml(file_path)
+
+def parse_json(file_path) -> dict:
+    '''
+    Load configuration from json file into dictionary
+    '''
+
+    try:
+        with open(file_path, 'r') as file:
+            config = json.load(file)
+    except OSError as e:
+        print(e)
+        return
+
+    return config
 
 def parse_yaml(file_path) -> dict:
     '''
     Load configuration from yaml file into dictionary
     '''
 
+    import yaml
     try:
-        with open(file_path, 'r') as yamlFile:
-            config = yaml.load(yamlFile, Loader=yaml.FullLoader)
+        with open(file_path, 'r') as file:
+            config = yaml.load(file, Loader=yaml.FullLoader)
     except OSError as e:
         print(e)
         return
