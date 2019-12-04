@@ -6,6 +6,7 @@ Internals and API functions for vira
 from __future__ import print_function, unicode_literals
 import vim
 from jira import JIRA
+from jira.exceptions import JIRAError
 import datetime
 import urllib3
 from Vira.helper import load_config, run_command
@@ -77,13 +78,20 @@ class ViraAPI():
             password = self.vira_servers[server]['password']
 
         # Connect to jira server
-        self.jira = JIRA(
-            options={
-                'server': server,
-                'verify': cert_verify
-            },
-            auth=(username, password),
-            timeout=5)
+        try:
+            self.jira = JIRA(
+                options={
+                    'server': server,
+                    'verify': cert_verify
+                },
+                auth=(username, password),
+                timeout=5)
+            vim.command('echo "Connection to jira server was successful"')
+        except JIRAError as e:
+            if 'CAPTCHA' in str(e):
+                vim.command('echo "Could not log into jira! Check authentication details and log in from web browser to enter mandatory CAPTCHA."')
+            else:
+                raise e
 
     def filter_str(self, startQuery, queryType):
         '''
