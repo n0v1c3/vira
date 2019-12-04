@@ -154,55 +154,56 @@ function! vira#_menu(type) abort" {{{2
   silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
 
   " Toggle/create the report buffer
-  if (winnr < 0)
-    " Open buffer into a window
-    if type == 'report'
-      silent! execute 'botright vnew ' . fnameescape('vira_' . type)
-    else
-      silent! execute 'botright new ' . fnameescape('vira_' . type)
-      silent! execute 'resize 7'
-    endif
-    silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
-    silent! redraw
-    silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
-
-    " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type {{{
-    " Remove folding and line numbers from the report
-    silent! let &foldcolumn=0
-    silent! set relativenumber!
-    silent! set nonumber
-    " }}}
-
-    " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
-    " Key mapping
-    silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
-    silent! execute 'nnoremap <silent> <buffer> k gk'
-    silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
-    silent! execute 'vnoremap <silent> <buffer> j gj'
-    silent! execute 'vnoremap <silent> <buffer> k gk'
-    " }}}
-
-    " Clean-up existing report buffer
-    silent! normal ggVGd
-
-    " Write report output into buffer
-    if type == 'menu'
-      call vira#_print_menu(list)
-    else
-      call vira#_print_report(list)
-    endif
-
-    " Clean-up extra output and remove blank lines
-    silent! execute '%s/\^M//g'
-    silent! normal GV3kzogg
-    silent! execute 'g/^$/d'
-
-    " Ensure wrap and linebreak are enabled
-    silent! execute 'set wrap'
-    silent! execute 'set linebreak'
-  else
+  if (winnr >= 0)
     silent! execute winnr .'wincmd q'
+    return
   endif
+
+  " Open buffer into a window
+  if type == 'report'
+    silent! execute 'botright vnew ' . fnameescape('vira_' . type)
+  else
+    silent! execute 'botright new ' . fnameescape('vira_' . type)
+    silent! execute 'resize 7'
+  endif
+  silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
+  silent! redraw
+  silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
+
+  " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type {{{
+  " Remove folding and line numbers from the report
+  silent! let &foldcolumn=0
+  silent! set relativenumber!
+  silent! set nonumber
+  " }}}
+
+  " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
+  " Key mapping
+  silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
+  silent! execute 'nnoremap <silent> <buffer> k gk'
+  silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
+  silent! execute 'vnoremap <silent> <buffer> j gj'
+  silent! execute 'vnoremap <silent> <buffer> k gk'
+  " }}}
+
+  " Clean-up existing report buffer
+  silent! normal ggVGd
+
+  " Write report output into buffer
+  if type == 'menu'
+    call vira#_print_menu(list)
+  else
+    call vira#_print_report(list)
+  endif
+
+  " Clean-up extra output and remove blank lines
+  silent! execute '%s/\^M//g'
+  silent! normal GV3kzogg
+  silent! execute 'g/^$/d'
+
+  " Ensure wrap and linebreak are enabled
+  silent! execute 'set wrap'
+  silent! execute 'set linebreak'
 
 endfunction
 
