@@ -24,14 +24,14 @@ let g:vira_null_project = get(g:, 'vira_null_project', 'None')
 
 " Connections and filters {{{2
 " Config
-let g:vira_default_assignee = get(g:, 'vira_default_assigneee', '')
+let g:vira_default_assignee = get(g:, 'vira_default_assignee', '')
 let g:vira_default_issuetype = get(g:, 'vira_default_issuetype', '')
 let g:vira_default_priority = get(g:, 'vira_default_priority', '')
 let g:vira_default_reporter = get(g:, 'vira_default_reporter', '')
 let g:vira_default_status = get(g:, 'vira_default_status', ['To Do', 'In Progress'])
 
 " Active
-let g:vira_active_assignee = get(g:, 'vira_default_assigneee', '')
+let g:vira_active_assignee = get(g:, 'vira_default_assignee', '')
 let g:vira_active_issuetype = get(g:, 'vira_default_issuetype', '')
 let g:vira_active_priority = get(g:, 'vira_default_priority', '')
 let g:vira_active_reporter = get(g:, 'vira_default_reporter', '')
