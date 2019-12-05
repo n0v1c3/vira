@@ -314,25 +314,25 @@ class ViraAPI():
         if project:
             vim.command(f'let g:vira_project = "{project}"')
 
-        active_status = self.vira_projects.get(repo, {}).get('active_status')
-        if active_status:
-            vim.command(f'let g:vira_active_status = "{active_status}"')
+        status = self.vira_projects.get(repo, {}).get('status')
+        if status:
+            vim.command(f'let g:vira_active_status = "{status}"')
 
-        active_assignee = self.vira_projects.get(repo, {}).get('active_assignee')
-        if active_assignee:
-            vim.command(f'let g:vira_active_assignee = "{active_assignee}"')
+        assignee = self.vira_projects.get(repo, {}).get('assignee')
+        if assignee:
+            vim.command(f'let g:vira_active_assignee = "{assignee}"')
 
-        active_priority = self.vira_projects.get(repo, {}).get('active_priority')
-        if active_priority:
-            vim.command(f'let g:vira_active_priority = "{active_priority}"')
+        reporter = self.vira_projects.get(repo, {}).get('reporter')
+        if reporter:
+            vim.command(f'let g:vira_active_reporter = "{reporter}"')
 
-        active_reporter = self.vira_projects.get(repo, {}).get('active_reporter')
-        if active_reporter:
-            vim.command(f'let g:vira_active_reporter = "{active_reporter}"')
+        priority = self.vira_projects.get(repo, {}).get('priority')
+        if priority:
+            vim.command(f'let g:vira_active_priority = "{priority}"')
 
-        active_issuetype = self.vira_projects.get(repo, {}).get('active_issuetype')
-        if active_issuetype:
-            vim.command(f'let g:vira_active_issuetype = "{active_issuetype}"')
+        issuetype = self.vira_projects.get(repo, {}).get('issuetype')
+        if issuetype:
+            vim.command(f'let g:vira_active_issuetype = "{issuetype}"')
 
     def query_issues(self):
         '''

@@ -27,43 +27,102 @@ pip install --user jira
 
 ## Configuration
 
-### Required
+### Jira servers (required)
 
-Add the following lines to your `$HOME/.vimrc` or `$HOME/.virarc`
+The configuration for your jira server(s) needs to be done in a json or yaml file.
+The default file file-type is json, because it comes with the python standard library. The default file location is `~/.config/vira/vira_servers.json`
 
+The following is an example of a typical `vira_servers.json` configuration:
+
+```json
+{
+  "https://jira.site.com": {
+    "username": "user1",
+    "password_cmd": "lpass show --password account",
+    "skip_cert_verify": true
+  },
+  "https://jira.othersite.com": {
+    "username": "user2",
+    "password": "SuperSecretPassword"
+  }
+}
 ```
-let g:vira_srvs = ['https://jira.website.com', 'https://jira.othersite.com']
-let g:vira_usrs = ['username_website', 'username_othersite']
-let g:vira_pass = ['pass jira/website/n0v1c3', 'lpass show --password account']
+
+For each jira server, the following configuration variables are available:
+
+- `username` - Jira server username
+- `password_cmd` - Run a CLI password manager such as `pass` or `lpass` to retrieve the jira server password.
+- `password` - Enter jira server password in plain text. This is not recommended for security reasons, but we're not going to tell you how to live your life.
+- `skip_cert_verify` - This option can be set in order to connect to a sever that is using self-signed TLS certificates.
+
+If you can bear to install one additional python pip dependency, `PyYAML`, you can configure your settings in yaml:
+
+```yaml
+https://jira.site.com:
+  username: user1
+  password_cmd: lpass show --password account
+  skip_cert_verify: true
+https://jira.othersite.com:
+  username: user2
+  password: SuperSecretPassword
 ```
 
-These lists should be of equal length with at least **one** entry each
-and represent the address of the JIRA site along with the user
-names being used to log in.
+In order for vira to use the previous yaml example, set the following variable in your .vimrc:
+`let g:vira_config_file_servers = $HOME.'/vira_servers.yaml'`
 
-Passwords are calls to external commands such as `pass` and `lpass`. If you do not
-use software as mentioned you can remove the `g:vira_pass` variable and manually
-enter the password when connecting. An `echo` could be used as a workaround in
-the `g:vira_pass` however, this is not recommened for your security.
+### Jira projects
 
-You will be propted for your password only **once for each vim session**
-on the first usage.
+The configuration for your jira project(s) needs to be done in a json or yaml file.
+Similar to jira servers, default file file-type is json. The default file location is `~/.config/vira/vira_projects.json`
 
-### .virarc
+The following is an example of a typical `vira_project.json` configuration:
 
-The `.virarc` file(s) can be used to load the required settings for all
-projects. Currently there will be a `.virarc` file searched for in user's
-\$HOME directory along with the current `git` directory `root`.
-
-These files are the recomended places for storing your custom
-configurations. The default setting that you require saved in your
-\$HOME directory and any project specific modifications.
-
-Use a different filename:
-
+```json
+{
+  "vira": {
+    "server": "https://jira.site.com",
+    "project": "VIRA",
+    "assignee": "Mike Boiko",
+    "priority": [
+      "High",
+      "Highest"
+    ]
+  },
+  "OtherProject": {
+    "server": "https://jira.othersite.com",
+    "project": "MAIN",
+    "assignee": "Travis Gall",
+    "status": "In-Progress"
+  }
+}
 ```
-let g:vira_virarc = '.virarc'
+
+When you're in a git repo, vira will auto-load your pre-defined settings by matching the local repo name from file path.
+For each jira project, the following configuration variables are available:
+- `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml)
+- `project` - Filter these projects. Can be a single item or list.
+- `status` - Filter these statuses. Can be a single item or list.
+- `assignee` - Filter these assignees. Can be a single item or list.
+- `reporter` - Filter these reporters. Can be a single item or list.
+- `priority` - Filter these priorities. Can be a single item or list.
+- `issuetype` - Filter these issuetypes. Can be a single item or list.
+
+The following is an example of the same configuration in yaml:
+```yaml
+vira:
+  server: https://jira.site.com
+  project: VIRA
+  assignee: Mike Boiko
+  priority: High, Highest
+OtherProject:
+  server: https://jira.othersite.com
+  project: MAIN
+  assignee: Travis Gall
+  status: In-Progress
 ```
+
+In order for vira to use the previous yaml example, set the following variable in your .vimrc:
+`let g:vira_config_file_projects = $HOME.'/vira_projects.yaml'`
 
 ### Browser
 
@@ -71,14 +130,6 @@ The default browser used for :ViraBrowse is the environment variable \$BROWSER. 
 
 ```
 let g:vira_browser = 'chromium'
-```
-
-### TLS Certificate Verification
-
-The following option can be set in order to connect to a sever that is using self-signed TLS certificates.
-
-```
-let g:vira_skip_cert_verify = 1
 ```
 
 ## Usage

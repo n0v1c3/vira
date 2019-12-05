@@ -261,11 +261,11 @@ function! vira#_set_filter(variable, type) "{{{2
 endfunction
 
 function! vira#_set_issues() "{{{2
-  call  vira#_set_filter('g:vira_active_issue', '<cWORD>')
+  call vira#_set_filter('g:vira_active_issue', '<cWORD>')
 endfunction
 
 function! vira#_set_projects() "{{{2
-  call  vira#_set_filter('g:vira_project', '<cWORD>')
+  call vira#_set_filter('g:vira_project', '<cWORD>')
 endfunction
 
 function! vira#_set_servers() "{{{2
@@ -275,23 +275,23 @@ function! vira#_set_servers() "{{{2
 endfunction
 
 function! vira#_set_statuses() "{{{2
-  call  vira#_set_filter('g:vira_active_status', '.')
+  call vira#_set_filter('g:vira_active_status', '.')
 endfunction
 
 function! vira#_set_assignees() "{{{2
-  call  vira#_set_filter('g:vira_active_assignee', '.')
+  call vira#_set_filter('g:vira_active_assignee', '.')
 endfunction
 
 function! vira#_set_priorities() "{{{2
-  call  vira#_set_filter('g:vira_active_priority', '.')
+  call vira#_set_filter('g:vira_active_priority', '.')
 endfunction
 
 function! vira#_set_reporters() "{{{2
-  call  vira#_set_filter('g:vira_active_reporter', '.')
+  call vira#_set_filter('g:vira_active_reporter', '.')
 endfunction
 
 function! vira#_set_issuetypes() "{{{2
-  call  vira#_set_filter('g:vira_active_issuetype', '.')
+  call vira#_set_filter('g:vira_active_issuetype', '.')
 endfunction
 
 function! vira#_todo() "{{{2
