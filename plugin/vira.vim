@@ -17,9 +17,7 @@ if !has('python3')
 endif
 
 " Global Variables {{{1
-" virarc configuration path {{{2
-let g:vira_virarc = get(g:, 'vira_virarc', '.virarc')
-
+" user-configuration files {{{2
 let g:vira_config_file_projects = get(g:, 'vira_config_file_projects', $HOME.'/.config/vira/vira_projects.json')
 let g:vira_config_file_servers = get(g:, 'vira_config_file_servers', $HOME.'/.config/vira/vira_servers.json')
 

@@ -93,7 +93,9 @@ class ViraAPI():
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
             if 'CAPTCHA' in str(e):
-                vim.command('echo "Could not log into jira! Check authentication details and log in from web browser to enter mandatory CAPTCHA."')
+                vim.command(
+                    'echo "Could not log into jira! Check authentication details and log in from web browser to enter mandatory CAPTCHA."'
+                )
             else:
                 raise e
 
@@ -300,10 +302,37 @@ class ViraAPI():
         if not getattr(self, 'vira_projects', None):
             return
 
-        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split('/')[-1]
-        vira_serv = self.vira_projects.get(repo, {}).get('server')
-        if vira_serv:
-            vim.command(f'let g:vira_serv = "{vira_serv}"')
+        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split(
+            '/')[-1]
+
+        # TODO-MB [191205] - It would be more elegant to store state in python self object rather than vim global variables
+        server = self.vira_projects.get(repo, {}).get('server')
+        if server:
+            vim.command(f'let g:vira_serv = "{server}"')
+
+        project = self.vira_projects.get(repo, {}).get('project')
+        if project:
+            vim.command(f'let g:vira_project = "{project}"')
+
+        active_status = self.vira_projects.get(repo, {}).get('active_status')
+        if active_status:
+            vim.command(f'let g:vira_active_status = "{active_status}"')
+
+        active_assignee = self.vira_projects.get(repo, {}).get('active_assignee')
+        if active_assignee:
+            vim.command(f'let g:vira_active_assignee = "{active_assignee}"')
+
+        active_priority = self.vira_projects.get(repo, {}).get('active_priority')
+        if active_priority:
+            vim.command(f'let g:vira_active_priority = "{active_priority}"')
+
+        active_reporter = self.vira_projects.get(repo, {}).get('active_reporter')
+        if active_reporter:
+            vim.command(f'let g:vira_active_reporter = "{active_reporter}"')
+
+        active_issuetype = self.vira_projects.get(repo, {}).get('active_issuetype')
+        if active_issuetype:
+            vim.command(f'let g:vira_active_issuetype = "{active_issuetype}"')
 
     def query_issues(self):
         '''

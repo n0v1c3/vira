@@ -136,7 +136,7 @@ endfunction
 function! vira#_load_project_config() " {{{2
 
   " Save current directory and switch to file direcotry
-  let s:current_dir = execute("pwd")
+  let s:current_dir = getcwd()
   cd %:p:h
 
   " Load project configuration for the current git repo
@@ -333,24 +333,3 @@ function! vira#_timestamp() "{{{2
   python3 Vira.timestamp()
 endfunction
 
-function! vira#_update_virarc() "{{{2
-  " virarc home directory
-  if filereadable(expand('~/' . g:vira_virarc))
-    exec 'source ~/' . g:vira_virarc
-  endif
-
-  " Save current directory and switch to file direcotry
-  let s:current_dir = execute("pwd")
-  cd %:p:h
-
-  " Find git root directory
-  let s:vira_gitroot = system("git rev-parse --show-toplevel | tr -d '\\n'") . '/' . g:vira_virarc
-
-  " Return to current directory
-  cd `=s:current_dir`
-
-  " Source when found
-  if filereadable(expand(s:vira_gitroot))
-    exec 'source ' . s:vira_gitroot
-  endif
-endfunction
