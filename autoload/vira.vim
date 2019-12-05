@@ -133,7 +133,24 @@ function! vira#_print_menu(list) " {{{2
   endif
 endfunction
 
-function! vira#_menu(type) abort" {{{2
+function! vira#_load_project_config() " {{{2
+
+  " Save current directory and switch to file direcotry
+  let s:current_dir = execute("pwd")
+  cd %:p:h
+
+  " Load project configuration for the current git repo
+  python3 Vira.api.load_project_config()
+
+  " Return to current directory
+  cd `=s:current_dir`
+
+endfunction
+
+function! vira#_menu(type) abort " {{{2
+
+  " Load config from user-defined file (if it exists)
+  call vira#_load_project_config()
 
   " User to select jira server and connect to it if not done already
   if !exists('g:vira_serv') || g:vira_serv == '' && a:type != 'servers'

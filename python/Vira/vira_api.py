@@ -24,8 +24,6 @@ class ViraAPI():
         self.vira_projects = load_config(vim.eval('g:vira_config_file_projects'))
         self.vira_servers = load_config(vim.eval('g:vira_config_file_servers'))
 
-        # TODO-MB [191202] - Set g:vira_serv here
-
     def add_comment(self, issue, comment):
         '''
         Comment on specified issue
@@ -280,6 +278,15 @@ class ViraAPI():
         '''
 
         self.get_users()
+
+    def load_project_config(self):
+        '''
+        Load project configuration for the current git repo
+        '''
+
+        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split('/')[-1]
+        vira_serv = self.vira_projects[repo].get('server')
+        vim.command(f'let g:vira_serv = "{vira_serv}"')
 
     def query_issues(self):
         '''
