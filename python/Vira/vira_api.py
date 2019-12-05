@@ -21,8 +21,14 @@ class ViraAPI():
         Initialize vira
         '''
 
-        self.vira_projects = load_config(vim.eval('g:vira_config_file_projects'))
-        self.vira_servers = load_config(vim.eval('g:vira_config_file_servers'))
+        # Load user-defined config files
+        file_servers = vim.eval('g:vira_config_file_servers')
+        file_projects = vim.eval('g:vira_config_file_projects')
+        try:
+            self.vira_servers = load_config(file_servers)
+            self.vira_projects = load_config(file_projects)
+        except:
+            print(f'Could not load {file_servers} or {file_projects}')
 
     def add_comment(self, issue, comment):
         '''
@@ -282,11 +288,22 @@ class ViraAPI():
     def load_project_config(self):
         '''
         Load project configuration for the current git repo
+
+        For example, an entry in projects.yaml may be:
+
+        vira:
+          server: https://jira.tgall.ca
+          project_name: VIRA
         '''
 
+        # Only proceed if projects file parsed successfully
+        if not getattr(self, 'vira_projects', None):
+            return
+
         repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split('/')[-1]
-        vira_serv = self.vira_projects[repo].get('server')
-        vim.command(f'let g:vira_serv = "{vira_serv}"')
+        vira_serv = self.vira_projects.get(repo, {}).get('server')
+        if vira_serv:
+            vim.command(f'let g:vira_serv = "{vira_serv}"')
 
     def query_issues(self):
         '''
