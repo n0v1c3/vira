@@ -5,18 +5,21 @@
 " Version: 0.0.1
 
 " Initialization {{{1
-" python3 {{{2
+" Plugin Loaded {{{2
+if exists('g:vira_loaded')
+    finish
+endif
+
+" python check {{{2
 if !has('python3')
   echo 'vim has to be compiled with +python3 to run vira'
   finish
 endif
 
 " Global Variables {{{1
-" virarc configuration path {{{2
-let g:vira_virarc = get(g:, 'vira_virarc', '.virarc')
-
-" Skip cert verify {{{2
-let g:vira_skip_cert_verify = get(g:, 'vira_skip_cert_verify', '0')
+" user-configuration files {{{2
+let g:vira_config_file_projects = get(g:, 'vira_config_file_projects', $HOME.'/.config/vira/vira_projects.json')
+let g:vira_config_file_servers = get(g:, 'vira_config_file_servers', $HOME.'/.config/vira/vira_servers.json')
 
 " Null values {{{2
 let g:vira_null_issue = get(g:, 'vira_null_issue', 'None')
@@ -40,8 +43,6 @@ let g:vira_active_status = get(g:, 'vira_default_status', ['To Do', 'In Progress
 " Connections
 let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
 let g:vira_project = g:vira_null_project
-let g:vira_serv = get(g:, 'vira_serv', '')
-let g:vira_srvs = get(g:, 'vira_srvs', [])
 
 " Commands {{{1
 " Basics
@@ -76,3 +77,7 @@ function! ViraStatusLine() "{{{2
   " Return formatted statusline string
   return vira#_get_statusline()
 endfunction
+
+" Load Vira Python Module {{{1
+call vira#_init_python()
+let g:vira_loaded = 1

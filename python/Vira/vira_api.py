@@ -6,13 +6,29 @@ Internals and API functions for vira
 from __future__ import print_function, unicode_literals
 import vim
 from jira import JIRA
+from jira.exceptions import JIRAError
 import datetime
 import urllib3
+from Vira.helper import load_config, run_command
 
 class ViraAPI():
     '''
     This class gets imported by __init__.py
     '''
+
+    def __init__(self):
+        '''
+        Initialize vira
+        '''
+
+        # Load user-defined config files
+        file_servers = vim.eval('g:vira_config_file_servers')
+        file_projects = vim.eval('g:vira_config_file_projects')
+        try:
+            self.vira_servers = load_config(file_servers)
+            self.vira_projects = load_config(file_projects)
+        except:
+            print(f'Could not load {file_servers} or {file_projects}')
 
     def add_comment(self, issue, comment):
         '''
@@ -45,29 +61,43 @@ class ViraAPI():
             comment=comment,
             started=earlier)
 
-    def connect(self, server, user, pw, skip_cert_verify):
+    def connect(self, server):
         '''
         Connect to Jira server with supplied auth details
         '''
 
         # Specify whether the server's TLS certificate needs to be verified
-        if skip_cert_verify == "1":
+        if self.vira_servers[server].get('skip_cert_verify'):
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             cert_verify = False
         else:
             cert_verify = True
 
+        # Get auth for current server
+        username = self.vira_servers[server].get('username')
+        password_cmd = self.vira_servers[server].get('password_cmd')
+        if password_cmd:
+            password = run_command(password_cmd)['stdout'].strip()
+        else:
+            password = self.vira_servers[server]['password']
+
+        # Connect to jira server
         try:
             self.jira = JIRA(
                 options={
                     'server': server,
                     'verify': cert_verify
                 },
-                auth=(user, pw),
+                auth=(username, password),
                 timeout=5)
-            vim.command("let s:vira_is_init = 1")
-        except:
-            vim.command("let s:vira_is_init = 0")
+            vim.command('echo "Connection to jira server was successful"')
+        except JIRAError as e:
+            if 'CAPTCHA' in str(e):
+                vim.command(
+                    'echo "Could not log into jira! Check authentication details and log in from web browser to enter mandatory CAPTCHA."'
+                )
+            else:
+                raise e
 
     def filter_str(self, startQuery, queryType):
         '''
@@ -133,7 +163,9 @@ class ViraAPI():
 
         #  issues = []
         for issue in self.query_issues():
-            print(issue["key"] + "  -  " + issue["fields"]["summary"] + " | " + issue["fields"]["status"]["name"] + " |")
+            print(
+                issue["key"] + "  -  " + issue["fields"]["summary"] + " | " +
+                issue["fields"]["status"]["name"] + " |")
             #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
         #  return str(issues)
 
@@ -217,6 +249,14 @@ class ViraAPI():
 
         return report
 
+    def get_servers(self):
+        '''
+        Get list of servers
+        '''
+
+        for server in self.vira_servers.keys():
+            print(server)
+
     def get_statuses(self):
         '''
         Get my issues with JQL
@@ -247,6 +287,53 @@ class ViraAPI():
 
         self.get_users()
 
+    def load_project_config(self):
+        '''
+        Load project configuration for the current git repo
+
+        For example, an entry in projects.yaml may be:
+
+        vira:
+          server: https://jira.tgall.ca
+          project_name: VIRA
+        '''
+
+        # Only proceed if projects file parsed successfully
+        if not getattr(self, 'vira_projects', None):
+            return
+
+        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split(
+            '/')[-1]
+
+        # TODO-MB [191205] - It would be more elegant to store state in python self object rather than vim global variables
+        server = self.vira_projects.get(repo, {}).get('server')
+        if server:
+            vim.command(f'let g:vira_serv = "{server}"')
+
+        project = self.vira_projects.get(repo, {}).get('project')
+        if project:
+            vim.command(f'let g:vira_project = "{project}"')
+
+        status = self.vira_projects.get(repo, {}).get('status')
+        if status:
+            vim.command(f'let g:vira_active_status = "{status}"')
+
+        assignee = self.vira_projects.get(repo, {}).get('assignee')
+        if assignee:
+            vim.command(f'let g:vira_active_assignee = "{assignee}"')
+
+        reporter = self.vira_projects.get(repo, {}).get('reporter')
+        if reporter:
+            vim.command(f'let g:vira_active_reporter = "{reporter}"')
+
+        priority = self.vira_projects.get(repo, {}).get('priority')
+        if priority:
+            vim.command(f'let g:vira_active_priority = "{priority}"')
+
+        issuetype = self.vira_projects.get(repo, {}).get('issuetype')
+        if issuetype:
+            vim.command(f'let g:vira_active_issuetype = "{issuetype}"')
+
     def query_issues(self):
         '''
         Query issues based on current filters
@@ -259,16 +346,16 @@ class ViraAPI():
                 query += 'project in (' + vim.eval('g:vira_project') + ')'
         except:
             query += ''
-        queryTypes = ['assignee', 'status', 'issuetype', 'priority', 'reporter', 'assignee']
+        queryTypes = [
+            'assignee', 'status', 'issuetype', 'priority', 'reporter', 'assignee'
+        ]
         for queryType in queryTypes:
             query += self.filter_str(query, queryType)
 
         query += 'ORDER BY updated DESC'
 
         issues = self.jira.search_issues(
-            query,
-            fields='summary,comment,status',
-            json_result='True')
+            query, fields='summary,comment,status', json_result='True')
 
         return issues['issues']
 
@@ -278,5 +365,3 @@ class ViraAPI():
         '''
 
         self.jira.transition_issue(issue, status)
-
-api = ViraAPI()

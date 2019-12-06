@@ -2,12 +2,12 @@
 " Description: Internals and API functions for vira
 " Authors:
 "   n0v1c3 (Travis Gall) <https://github.com/n0v1c3>
+"   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 " Version: 0.0.1
 
 " Variables {{{1
 let s:vira_version = '0.0.1'
-let s:vira_is_init = 0
-let s:vira_is_connect = 0
+let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
@@ -64,38 +64,16 @@ function! vira#_comment() "{{{2
   endif
 endfunction
 
-function! vira#_connect() "{{{2
-  " User/password lookup
-  let i = 0
-  for serv in g:vira_srvs 
-    if (serv == g:vira_serv)
-      let g:vira_user = g:vira_usrs[i]
-      if (!exists('g:vira_pass'))
-        let s:vira_pass_input = inputsecret('Enter password: ')
-      else
-        let s:vira_pass_input = system(g:vira_pass[i])[:-2]
-      endif
-    endif
-    let i = i + 1
-  endfor
-  
-  " Was a server chosen?
-  if (exists('g:vira_serv') && g:vira_serv != '')
-    " Connect to server
-    silent! python3 Vira.api.connect(vim.eval("g:vira_serv"), vim.eval("g:vira_user"), vim.eval("s:vira_pass_input"), vim.eval("g:vira_skip_cert_verify"))
+function! vira#_connect() abort "{{{2
+  " Connect to jira server if not connected already
 
-    " Check if Vira connected to the server
-    if (s:vira_is_init != 1)
-      " Inform user with possible errors and reset unconfigured information
-      echoe "Could not log into jira! Check authentication details or try entering CAPTCHA through web interface."
-    endif
+  if (!exists('g:vira_serv') || g:vira_serv == '' || s:vira_connected == 1)
+    return
   endif
 
-  " Clear password
-  let s:vira_pass_input = ""
+  python3 Vira.api.connect(vim.eval("g:vira_serv"))
+  let s:vira_connected = 1
 
-  " Set connection state
-  let s:vira_is_connect = 1
 endfunction
 
 function! vira#_filter(name) "{{{2
@@ -104,14 +82,6 @@ endfunction
 
 function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
-endfunction
-
-function! vira#_get_menu(type) " {{{2
-  if a:type == 'servers'
-    return g:vira_srvs
-  else
-    return execute('python3 Vira.api.get_' . a:type . '()')
-  endif
 endfunction
 
 function! vira#_get_statusline() "{{{2
@@ -123,26 +93,8 @@ function! vira#_get_version() "{{{2
   return s:vira_version
 endfunction
 
-function! vira#_init() "{{{2
-  if s:vira_is_init != 1
-    " Init flag
-    let s:vira_is_init = 1
-
-    " Init virarc
-    silent! call vira#_update_virarc()
-
-    " Init python
-    call vira#_init_python()
-
-    " Connect if vira_serv already set
-    if exists('g:vira_serv') && g:vira_serv != ''
-      call vira#_connect()
-    endif
-  endif
-endfunction
-
 function! vira#_init_python() "{{{2
-  " Load `py/vira.py`
+  " Load Vira python code and read user-configuration files
   silent! python3 import sys
   silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
   silent! python3 import Vira
@@ -181,85 +133,102 @@ function! vira#_print_menu(list) " {{{2
   endif
 endfunction
 
-function! vira#_menu(type) " {{{2
-  call vira#_init()
+function! vira#_load_project_config() " {{{2
 
-  if a:type == 'servers' || s:vira_is_connect == 1
-    " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
-    if a:type == 'report'
-      let type = 'report'
-      let list = ''
-    else
-      let type = 'menu'
-      echo a:type
-      let list = vira#_get_menu(a:type)
-    endif
-    silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
+  " Save current directory and switch to file direcotry
+  let s:current_dir = getcwd()
+  cd %:p:h
 
-    " Toggle/create the report buffer
-    if (winnr < 0)
-      " Open buffer into a window
-      if type == 'report'
-        silent! execute 'botright vnew ' . fnameescape('vira_' . type)
-      else
-        silent! execute 'botright new ' . fnameescape('vira_' . type)
-        silent! execute 'resize 7'
-      endif
-      silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
-      silent! redraw
-      silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
-      
-      " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type {{{
-      " Remove folding and line numbers from the report
-      silent! let &foldcolumn=0
-      silent! set relativenumber!
-      silent! set nonumber
-      " }}}
+  " Load project configuration for the current git repo
+  python3 Vira.api.load_project_config()
 
-      " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
-      " Key mapping
-      silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
-      silent! execute 'nnoremap <silent> <buffer> k gk'
-      silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
-      silent! execute 'vnoremap <silent> <buffer> j gj'
-      silent! execute 'vnoremap <silent> <buffer> k gk'
-      " }}}
+  " Return to current directory
+  cd `=s:current_dir`
 
-      " Clean-up existing report buffer
-      silent! normal ggVGd
+endfunction
 
-      " Write report output into buffer
-      if type == 'menu'
-        call vira#_print_menu(list)
-      else
-        call vira#_print_report(list)
-      endif
+function! vira#_menu(type) abort " {{{2
 
-      " Clean-up extra output and remove blank lines
-      silent! execute '%s/\^M//g'
-      silent! normal GV3kzogg
-      silent! execute 'g/^$/d'
+  " Load config from user-defined file (if it exists)
+  call vira#_load_project_config()
 
-      " Ensure wrap and linebreak are enabled
-      silent! execute 'set wrap'
-      silent! execute 'set linebreak'
-    else
-      silent! execute winnr .'wincmd q'
-      if type == 'menu'
-        call vira#_menu(a:type)
-      endif
-    endif
-  else
-    silent! execute winnr .'wincmd q'
-    call vira#_menu("servers")
+  " User to select jira server and connect to it if not done already
+  if !exists('g:vira_serv') || g:vira_serv == '' && a:type != 'servers'
+    call vira#_menu('servers')
+    return
   endif
+  call vira#_connect()
+
+  " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
+  if a:type == 'report'
+    let type = 'report'
+    let list = ''
+  else
+    let type = 'menu'
+    echo a:type
+    let list = execute('python3 Vira.api.get_' . a:type . '()')
+  endif
+  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
+
+  " Toggle/create the report buffer
+  if (winnr >= 0)
+    silent! execute winnr .'wincmd q'
+    return
+  endif
+
+  " Open buffer into a window
+  if type == 'report'
+    silent! execute 'botright vnew ' . fnameescape('vira_' . type)
+  else
+    silent! execute 'botright new ' . fnameescape('vira_' . type)
+    silent! execute 'resize 7'
+  endif
+  silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
+  silent! redraw
+  silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
+
+  " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type {{{
+  " Remove folding and line numbers from the report
+  silent! let &foldcolumn=0
+  silent! set relativenumber!
+  silent! set nonumber
+  " }}}
+
+  " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
+  " Key mapping
+  silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
+  silent! execute 'nnoremap <silent> <buffer> k gk'
+  silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
+  silent! execute 'vnoremap <silent> <buffer> j gj'
+  silent! execute 'vnoremap <silent> <buffer> k gk'
+  " }}}
+
+  " Clean-up existing report buffer
+  silent! normal ggVGd
+
+  " Write report output into buffer
+  if type == 'menu'
+    call vira#_print_menu(list)
+  else
+    call vira#_print_report(list)
+  endif
+
+  " Clean-up extra output and remove blank lines
+  silent! execute '%s/\^M//g'
+  silent! normal GV3kzogg
+  silent! execute 'g/^$/d'
+
+  " Ensure wrap and linebreak are enabled
+  silent! execute 'set wrap'
+  silent! execute 'set linebreak'
+
 endfunction
 
 function! vira#_quit() "{{{2
   let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
     let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
-    if (winnr > 0)                                          
+    if (winnr > 0)
         execute winnr .' wincmd q'
     endif
   endfor
@@ -278,49 +247,51 @@ endfunction
 function! vira#_set_filter(variable, type) "{{{2
   " TODO: VIRA-27 [191008] - New filter function remove old calls and replace with variables
   execute 'normal 0'
-  
+
   if a:type == '<cWORD>'
     let value = expand('<cWORD>')
   else
     let value = getline('.')
   endif
   execute 'let ' . a:variable . ' = "' . value . '"'
-  
+
   if a:variable == 'g:vira_serv'
     call vira#_connect()
   endif
 endfunction
 
 function! vira#_set_issues() "{{{2
-  call  vira#_set_filter('g:vira_active_issue', '<cWORD>')
+  call vira#_set_filter('g:vira_active_issue', '<cWORD>')
 endfunction
 
 function! vira#_set_projects() "{{{2
-  call  vira#_set_filter('g:vira_project', '<cWORD>')
+  call vira#_set_filter('g:vira_project', '<cWORD>')
 endfunction
 
 function! vira#_set_servers() "{{{2
-  call  vira#_set_filter('g:vira_serv', '<cWORD>')
+  " Reset connection before selecting new server
+  let s:vira_connected = 0
+  call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction
 
 function! vira#_set_statuses() "{{{2
-  call  vira#_set_filter('g:vira_active_status', '.')
+  call vira#_set_filter('g:vira_active_status', '.')
 endfunction
 
 function! vira#_set_assignees() "{{{2
-  call  vira#_set_filter('g:vira_active_assignee', '.')
+  call vira#_set_filter('g:vira_active_assignee', '.')
 endfunction
 
 function! vira#_set_priorities() "{{{2
-  call  vira#_set_filter('g:vira_active_priority', '.')
+  call vira#_set_filter('g:vira_active_priority', '.')
 endfunction
 
 function! vira#_set_reporters() "{{{2
-  call  vira#_set_filter('g:vira_active_reporter', '.')
+  call vira#_set_filter('g:vira_active_reporter', '.')
 endfunction
 
 function! vira#_set_issuetypes() "{{{2
-  call  vira#_set_filter('g:vira_active_issuetype', '.')
+  call vira#_set_filter('g:vira_active_issuetype', '.')
 endfunction
 
 function! vira#_todo() "{{{2
@@ -362,24 +333,3 @@ function! vira#_timestamp() "{{{2
   python3 Vira.timestamp()
 endfunction
 
-function! vira#_update_virarc() "{{{2
-  " virarc home directory
-  if filereadable(expand('~/' . g:vira_virarc))
-    exec 'source ~/' . g:vira_virarc
-  endif
-
-  " Save current directory and switch to file direcotry
-  let s:current_dir = execute("pwd")
-  cd %:p:h
-
-  " Find git root directory
-  let s:vira_gitroot = system("git rev-parse --show-toplevel | tr -d '\\n'") . '/' . g:vira_virarc
-
-  " Return to current directory
-  cd `=s:current_dir`
-
-  " Source when found
-  if filereadable(expand(s:vira_gitroot))
-    exec 'source ' . s:vira_gitroot
-  endif
-endfunction
