@@ -209,34 +209,34 @@ class ViraAPI():
             json_result='True')
 
         # Print issue content
-        report = issue + ': ' + f"{issues['issues'][0]['fields']['summary']}"
+        report = issue + ': ' + issues['issues'][0]['fields']['summary']
         report += '\nDetails {{' + '{1'
         report += "\nStory Points  :  "
-        report += f"{issues['issues'][0]['fields']['customfield_10106']}"
+        report += issues['issues'][0]['fields'].get('customfield_10106', '')
         report += "\n     Created  :  "
-        report += f"{issues['issues'][0]['fields']['created'][0:10]}"
-        report += ' ' + f"{issues['issues'][0]['fields']['created'][11:16]}"
+        report += issues['issues'][0]['fields']['created'][0:10]
+        report += ' ' + issues['issues'][0]['fields']['created'][11:16]
         report += "\n     Updated  :  "
-        report += f"{issues['issues'][0]['fields']['updated'][0:10]}"
-        report += ' ' + f"{issues['issues'][0]['fields']['updated'][11:16]}"
+        report += issues['issues'][0]['fields']['updated'][0:10]
+        report += ' ' + issues['issues'][0]['fields']['updated'][11:16]
         report += "\n        Type  :  "
-        report += f"{issues['issues'][0]['fields']['issuetype']['name']}"
+        report += issues['issues'][0]['fields']['issuetype']['name']
         report += "\n      Status  :  "
-        report += f"{issues['issues'][0]['fields']['status']['name']}"
+        report += issues['issues'][0]['fields']['status']['name']
         report += "\n    Priority  :  "
-        report += f"{issues['issues'][0]['fields']['priority']['name']}"
+        report += issues['issues'][0]['fields']['priority']['name']
 
         report += "\n    Assignee  :  "
         try:
-            report += f"{issues['issues'][0]['fields']['assignee']['displayName']}"
+            report += issues['issues'][0]['fields']['assignee']['displayName']
         except:
             report += "Unassigned"
 
         report += "\n    Reporter  :  "
-        report += f"{issues['issues'][0]['fields']['reporter']['displayName']}"
+        report += issues['issues'][0]['fields']['reporter']['displayName']
         report += '\n}}' + '}'
-        report += '\nDescription {{' + '{1'
-        report += f"\n{issues['issues'][0]['fields']['description']}"
+        report += '\nDescription {{' + '{1\n'
+        report += issues['issues'][0]['fields']['description']
         report += '\n}}' + '}'
         report += "\nComments {" + "{{1"
         for comment in issues['issues'][0]['fields']['comment']['comments']:

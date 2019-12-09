@@ -153,7 +153,7 @@ function! vira#_menu(type) abort " {{{2
   call vira#_load_project_config()
 
   " User to select jira server and connect to it if not done already
-  if !exists('g:vira_serv') || g:vira_serv == '' && a:type != 'servers'
+  if (!exists('g:vira_serv') || g:vira_serv == '') && a:type != 'servers'
     call vira#_menu('servers')
     return
   endif
