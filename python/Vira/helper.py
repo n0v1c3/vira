@@ -51,6 +51,7 @@ def parse_yaml(file_path) -> dict:
 def run_command(cmd_string):
     '''
     Run bash command and return dictionary with the keys:
+    {'stdout', 'stderr', 'exitcode'}
     '''
 
     # Run process
