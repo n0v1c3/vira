@@ -212,7 +212,7 @@ class ViraAPI():
         report = issue + ': ' + issues['issues'][0]['fields']['summary']
         report += '\nDetails {{' + '{1'
         report += "\nStory Points  :  "
-        report += issues['issues'][0]['fields'].get('customfield_10106', '')
+        report += str(issues['issues'][0]['fields'].get('customfield_10106', ''))
         report += "\n     Created  :  "
         report += issues['issues'][0]['fields']['created'][0:10]
         report += ' ' + issues['issues'][0]['fields']['created'][11:16]
