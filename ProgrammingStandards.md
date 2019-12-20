@@ -19,20 +19,64 @@ Refer to the example of VIRA-111:
 
 # Linters
 
-## Markdown
-
 ## Python
 
+Install `flake8` and `pyls` linters:
+
+`pip install --user flake8 python-language-server`
+
 ## Vimscript
+
+Install `vint` linter:
+
+`pip install --user vim-vint`
 
 # Auto-formatters
 
-## General
-
 ## Markdown
+
+Prettier requires `npm` to be installed. Install `prettier`:
+
+`npm install --global prettier`
 
 ## Python
 
-## Vimscript
+Install `yapf` linter:
 
-# Vim ALE Plugin (Optional)
+`pip install --user yapf`
+
+## YAML
+
+Prettier requires `npm` to be installed. Install `prettier`:
+
+`npm install --global prettier`
+
+# ALE (Vim Plugin) - Optional
+
+ALE (Asynchronous Lint Engine) is a great Vim plugin for performing linting and auto-formatting of code. Follow the instructions to install/configure it: https://github.com/dense-analysis/ale
+
+ALE is also an LSP (Language Server Protocol) client. Read more about LSP and why it's awesome at https://langserver.org
+
+The following the recommended `.vimrc` configuration for ALE:
+
+```
+let g:ale_fixers = {
+            \ '*': ['remove_trailing_lines', 'trim_whitespace'],
+            \ 'markdown': ['prettier'],
+            \ 'python': ['yapf'],
+            \ 'yaml': ['prettier']
+            \ }
+let g:ale_linters = {
+            \ 'python': ['flake8', 'pyls'],
+            \ 'vim': ['vint']
+            \ }
+let g:ale_python_pyls_config = {
+                          \   'pyls': {
+                          \     'plugins': {
+                          \       'pycodestyle': {
+                          \         'enabled': v:false
+                          \       }
+                          \     }
+                          \   },
+                          \ }
+```
