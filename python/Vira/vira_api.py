@@ -305,6 +305,13 @@ class ViraAPI():
         repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split(
             '/')[-1]
 
+        # If curren't repo doesn't exist, use __default__ project config if it exists
+        if not self.vira_projects.get(repo):
+            if self.vira_projects.get('__default__'):
+                repo = '__default__'
+            else:
+                return
+
         # TODO-MB [191205] - It would be more elegant to store state in python self object rather than vim global variables
         server = self.vira_projects.get(repo, {}).get('server')
         if server:
