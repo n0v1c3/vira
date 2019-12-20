@@ -124,6 +124,18 @@ OtherProject:
 In order for vira to use the previous yaml example, set the following variable in your .vimrc:
 `let g:vira_config_file_projects = $HOME.'/vira_projects.yaml'`
 
+#### Default Project Config
+
+If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file. Refer to the yaml example below.
+
+```yaml
+__default__:
+  server: https://jira.site.com
+  project: VIRA
+  assignee: Mike Boiko
+  priority: High, Highest
+```
+
 ### Browser
 
 The default browser used for :ViraBrowse is the environment variable \$BROWSER. Override this by setting g:vira_browser.
