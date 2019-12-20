@@ -21,9 +21,11 @@ Refer to the example of VIRA-111:
 
 ## Python
 
-Install `flake8` and `pyls` linters:
+Install `flake8`:
 
-`pip install --user flake8 python-language-server`
+`pip install --user flake8`
+
+The `flake8` configuration is found in python/setup.cfg
 
 ## Vimscript
 
@@ -44,6 +46,8 @@ Prettier requires `npm` to be installed. Install `prettier`:
 Install `yapf` linter:
 
 `pip install --user yapf`
+
+The `yapf` configuration is found in python/setup.cfg
 
 ## YAML
 
@@ -67,16 +71,7 @@ let g:ale_fixers = {
             \ 'yaml': ['prettier']
             \ }
 let g:ale_linters = {
-            \ 'python': ['flake8', 'pyls'],
+            \ 'python': ['flake8'],
             \ 'vim': ['vint']
             \ }
-let g:ale_python_pyls_config = {
-                          \   'pyls': {
-                          \     'plugins': {
-                          \       'pycodestyle': {
-                          \         'enabled': v:false
-                          \       }
-                          \     }
-                          \   },
-                          \ }
 ```
