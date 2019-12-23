@@ -83,10 +83,7 @@ The following is an example of a typical `vira_project.json` configuration:
     "server": "https://jira.site.com",
     "project": "VIRA",
     "assignee": "Mike Boiko",
-    "priority": [
-      "High",
-      "Highest"
-    ]
+    "priority": ["High", "Highest"]
   },
   "OtherProject": {
     "server": "https://jira.othersite.com",
@@ -99,6 +96,7 @@ The following is an example of a typical `vira_project.json` configuration:
 
 When you're in a git repo, vira will auto-load your pre-defined settings by matching the local repo name from file path.
 For each jira project, the following configuration variables are available:
+
 - `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml)
 - `project` - Filter these projects. Can be a single item or list.
 - `status` - Filter these statuses. Can be a single item or list.
@@ -108,6 +106,7 @@ For each jira project, the following configuration variables are available:
 - `issuetype` - Filter these issuetypes. Can be a single item or list.
 
 The following is an example of the same configuration in yaml:
+
 ```yaml
 vira:
   server: https://jira.site.com
@@ -123,6 +122,8 @@ OtherProject:
 
 In order for vira to use the previous yaml example, set the following variable in your .vimrc:
 `let g:vira_config_file_projects = $HOME.'/vira_projects.yaml'`
+
+Note: Vira will only load the vira_projects.json/yaml configuration automatically once per vim session. You can, however, manually switch servers and filters as many times as you want after that.
 
 #### Default Project Config
 

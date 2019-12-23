@@ -43,6 +43,7 @@ let g:vira_active_status = get(g:, 'vira_default_status', ['To Do', 'In Progress
 " Connections
 let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
 let g:vira_project = g:vira_null_project
+let g:vira_load_project_enabled = 1
 
 " Commands {{{1
 " Basics

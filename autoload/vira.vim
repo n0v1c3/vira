@@ -145,12 +145,17 @@ function! vira#_load_project_config() " {{{2
   " Return to current directory
   cd `=s:current_dir`
 
+  " Disable loading of project config
+  let g:vira_load_project_enabled = 0
+
 endfunction
 
 function! vira#_menu(type) abort " {{{2
 
-  " Load config from user-defined file (if it exists)
-  call vira#_load_project_config()
+  " Load config from user-defined file
+  if (g:vira_load_project_enabled == 1)
+    call vira#_load_project_config()
+  endif
 
   " User to select jira server and connect to it if not done already
   if (!exists('g:vira_serv') || g:vira_serv == '') && a:type != 'servers'
@@ -269,7 +274,9 @@ function! vira#_set_projects() "{{{2
 endfunction
 
 function! vira#_set_servers() "{{{2
-  " Reset connection before selecting new server
+  " Reset connection and clear filters before selecting new server
+  call vira#_reset_filters()
+  let g:vira_project = 0
   let s:vira_connected = 0
   call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction
