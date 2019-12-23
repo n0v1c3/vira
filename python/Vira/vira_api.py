@@ -236,7 +236,7 @@ class ViraAPI():
         report += issues['issues'][0]['fields']['reporter']['displayName']
         report += '\n}}' + '}'
         report += '\nDescription {{' + '{1\n'
-        report += issues['issues'][0]['fields']['description']
+        report += str(issues['issues'][0]['fields'].get('description'))
         report += '\n}}' + '}'
         report += "\nComments {" + "{{1"
         for comment in issues['issues'][0]['fields']['comment']['comments']:
