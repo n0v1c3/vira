@@ -282,7 +282,8 @@ function! vira#_set_servers() "{{{2
 endfunction
 
 function! vira#_set_statuses() "{{{2
-  call vira#_set_filter('g:vira_active_status', '.')
+  let active_status = execute('python3 print(Vira.api.vim_filters["status"])')
+  call vira#_set_filter('active_status', '.')
 endfunction
 
 function! vira#_set_assignees() "{{{2

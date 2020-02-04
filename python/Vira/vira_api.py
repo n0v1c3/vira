@@ -30,6 +30,8 @@ class ViraAPI():
         except:
             print(f'Could not load {file_servers} or {file_projects}')
 
+        self.vim_filters = {'status': ['To Do', 'In Progress']}
+
     def add_comment(self, issue, comment):
         '''
         Comment on specified issue
@@ -99,7 +101,23 @@ class ViraAPI():
             else:
                 raise e
 
-    def filter_str(self, startQuery, queryType):
+    def filter_str(self, filterType):
+        '''
+        Build a filter string to add to a JQL query
+        '''
+
+        query = ''
+        if self.vim_filters.get(filterType, '') == '':
+            print('nope')
+            return ''
+
+        # TODO-MB [200204] - handly for non-list, single values
+        query += f'AND status in {tuple(self.vim_filters[filterType])}'
+        # query += f'AND status in (\'{self.vim_filters["active_status"]}\')'
+
+        return query
+
+    def filter_str_old(self, startQuery, queryType):
         '''
         Build a filter string to add to a JQL query
         '''
@@ -323,7 +341,7 @@ class ViraAPI():
 
         status = self.vira_projects.get(repo, {}).get('status')
         if status:
-            vim.command(f'let g:vira_active_status = "{status}"')
+            self.vim_filters['status'] = status
 
         assignee = self.vira_projects.get(repo, {}).get('assignee')
         if assignee:
@@ -353,13 +371,23 @@ class ViraAPI():
                 query += 'project in (' + vim.eval('g:vira_project') + ')'
         except:
             query += ''
-        queryTypes = [
-            'assignee', 'status', 'issuetype', 'priority', 'reporter', 'assignee'
+        # TODO-MB [200204] - Convert from vim variables
+        queryTypesOld = [
+            'assignee', 'issuetype', 'priority', 'reporter', 'assignee'
         ]
-        for queryType in queryTypes:
-            query += self.filter_str(query, queryType)
+        for queryType in queryTypesOld:
+            query += self.filter_str_old(query, queryType)
 
-        query += 'ORDER BY updated DESC'
+        filterTypes = [
+            'status'
+        ]
+        for filterType in filterTypes:
+            query += self.filter_str(filterType)
+
+        query += ' ORDER BY updated DESC'
+
+        # TODO-MB [200204] - TEST
+        print(query)
 
         issues = self.jira.search_issues(
             query, fields='summary,comment,status', json_result='True')
