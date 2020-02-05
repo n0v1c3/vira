@@ -314,7 +314,6 @@ class ViraAPI():
             else:
                 return
 
-        # TODO-MB [191205] - It would be more elegant to store state in python self object rather than vim global variables
         server = self.vira_projects.get(repo, {}).get('server')
         if server:
             vim.command(f'let g:vira_serv = "{server}"')
@@ -323,28 +322,10 @@ class ViraAPI():
         if project:
             vim.command(f'let g:vira_project = "{project}"')
 
-        # TODO-MB [200204] - re-factor this whole section with DRY principles
-        # Use keys from self.vim_filters
-
-        assignee = self.vira_projects.get(repo, {}).get('assignee')
-        if assignee:
-            self.vim_filters['assignee'] = assignee
-
-        issuetype = self.vira_projects.get(repo, {}).get('issuetype')
-        if issuetype:
-            self.vim_filters['issuetype'] = issuetype
-
-        priority = self.vira_projects.get(repo, {}).get('priority')
-        if priority:
-            self.vim_filters['priority'] = priority
-
-        reporter = self.vira_projects.get(repo, {}).get('reporter')
-        if reporter:
-            self.vim_filters['reporter'] = reporter
-
-        status = self.vira_projects.get(repo, {}).get('status')
-        if status:
-            self.vim_filters['status'] = status
+        for filterType in self.vim_filters.keys():
+            filterValue = self.vira_projects.get(repo, {}).get(filterType)
+            if filterValue:
+                self.vim_filters[filterType] = filterValue
 
     def query_issues(self):
         '''
