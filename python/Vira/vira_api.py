@@ -116,13 +116,13 @@ class ViraAPI():
         '''
 
         if self.vim_filters.get(filterType, '') == '':
-            return ''
+            return
 
         selection = str(self.vim_filters[filterType]).strip('[]') if type(
             self.vim_filters[filterType]
         ) == list else "'" + self.vim_filters[filterType] + "'"
 
-        return f" AND {filterType} in ({selection})"
+        return f"{filterType} in ({selection})"
 
     def get_comments(self, issue):
         '''
@@ -336,15 +336,17 @@ class ViraAPI():
         project = vim.eval('g:vira_project')
         try:
             if (project != '' and project != vim.eval('g:vira_null_project')):
-                query += 'project in (' + vim.eval('g:vira_project') + ')'
+                query += 'project in (' + vim.eval('g:vira_project') + ') AND '
         except:
             query += ''
 
-        filterTypes = ['assignee', 'issuetype', 'priority', 'reporter', 'status']
-        for filterType in filterTypes:
-            query += self.filter_str(filterType)
+        q = []
+        for filterType in self.vim_filters.keys():
+            filter_str = self.filter_str(filterType)
+            if filter_str:
+                q.append(filter_str)
 
-        query += ' ORDER BY updated DESC'
+        query += ' AND '.join(q)
 
         # TODO-MB [200204] - TEST
         print(query)
