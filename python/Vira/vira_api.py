@@ -110,16 +110,19 @@ class ViraAPI():
     def filter_str(self, filterType):
         '''
         Build a filter string to add to a JQL query
+        The string will look similar to one of these:
+            AND status in ('In Progress')
+            AND status in ('In Progress', 'To Do')
         '''
 
         if self.vim_filters.get(filterType, '') == '':
             return ''
 
-        selection = tuple(self.vim_filters[filterType]) if type(
+        selection = str(self.vim_filters[filterType]).strip('[]') if type(
             self.vim_filters[filterType]
-        ) == list else "('" + self.vim_filters[filterType] + "')"
+        ) == list else "'" + self.vim_filters[filterType] + "'"
 
-        return f' AND {filterType} in {selection}'
+        return f" AND {filterType} in ({selection})"
 
     def get_comments(self, issue):
         '''

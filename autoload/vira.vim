@@ -246,11 +246,11 @@ function! vira#_reset_filters() " {{{2
 endfunction
 
 function! vira#_reset_filter(variable) "{{{2
+  " TODO-MB [200205] - Fix
   execute 'let g:vira_active_' . a:variable . ' = g:vira_default_' . a:variable . '"'
 endfunction
 
 function! vira#_set_filter(variable, type) "{{{2
-  " TODO: VIRA-27 [191008] - New filter function remove old calls and replace with variables
   execute 'normal 0'
 
   if a:type == '<cWORD>'
@@ -258,7 +258,7 @@ function! vira#_set_filter(variable, type) "{{{2
   else
     let value = getline('.')
   endif
-  execute 'let ' . a:variable . ' = "' . value . '"'
+  execute 'python3 Vira.api.vim_filters["' . a:variable . '"] = "'. value .'"'
 
   if a:variable == 'g:vira_serv'
     call vira#_connect()
@@ -282,28 +282,23 @@ function! vira#_set_servers() "{{{2
 endfunction
 
 function! vira#_set_statuses() "{{{2
-  let active_status = execute('python3 print(Vira.api.vim_filters["status"])')
-  call vira#_set_filter('active_status', '.')
+  call vira#_set_filter('status', '.')
 endfunction
 
 function! vira#_set_assignees() "{{{2
-  let active_assignee = execute('python3 print(Vira.api.vim_filters["assignee"])')
-  call vira#_set_filter('active_assignee', '.')
+  call vira#_set_filter('assignee', '.')
 endfunction
 
 function! vira#_set_priorities() "{{{2
-  let active_priority = execute('python3 print(Vira.api.vim_filters["priority"])')
-  call vira#_set_filter('active_priority', '.')
+  call vira#_set_filter('priority', '.')
 endfunction
 
 function! vira#_set_reporters() "{{{2
-  let active_reporter = execute('python3 print(Vira.api.vim_filters["reporter"])')
-  call vira#_set_filter('active_reporter', '.')
+  call vira#_set_filter('reporter', '.')
 endfunction
 
 function! vira#_set_issuetypes() "{{{2
-  let active_issuetype = execute('python3 print(Vira.api.vim_filters["issuetype"])')
-  call vira#_set_filter('active_issuetype', '.')
+  call vira#_set_filter('issuetype', '.')
 endfunction
 
 function! vira#_todo() "{{{2
