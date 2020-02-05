@@ -17,8 +17,6 @@ let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_todo_header = 'TODO'
 
-let s:vira_filters=['assignee', 'issuetype', 'priority', 'reporter', 'status']
-
 " Functions {{{1
 function! vira#_browse() "{{{2
   " Confirm an issue has been selected
@@ -244,14 +242,7 @@ function! vira#_quit() "{{{2
 endfunction
 
 function! vira#_reset_filters() " {{{2
-  for vira_filter in s:vira_filters
-    silent! call vira#_reset_filter(vira_filter)
-  endfor
-endfunction
-
-function! vira#_reset_filter(variable) "{{{2
-  " TODO-MB [200205] - Fix
-  execute 'let g:vira_active_' . a:variable . ' = g:vira_default_' . a:variable . '"'
+  python3 Vira.api.reset_filters()
 endfunction
 
 function! vira#_set_filter(variable, type) "{{{2

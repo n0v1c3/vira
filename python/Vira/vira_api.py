@@ -30,7 +30,7 @@ class ViraAPI():
         except:
             print(f'Could not load {file_servers} or {file_projects}')
 
-        self.vim_filters = {
+        self.vim_filters_default = {
             'assignee': '',
             'issuetype': '',
             'priority': '',
@@ -38,6 +38,7 @@ class ViraAPI():
             'reporter': '',
             'status': ['To Do', 'In Progress']
         }
+        self.reset_filters()
 
     def add_comment(self, issue, comment):
         '''
@@ -344,6 +345,13 @@ class ViraAPI():
             query, fields='summary,comment,status', json_result='True')
 
         return issues['issues']
+
+    def reset_filters(self):
+        '''
+        Reset filters to their default values
+        '''
+
+        self.vim_filters = dict(self.vim_filters_default)
 
     def set_status(self, issue, status):
         '''
