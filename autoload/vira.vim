@@ -287,19 +287,23 @@ function! vira#_set_statuses() "{{{2
 endfunction
 
 function! vira#_set_assignees() "{{{2
-  call vira#_set_filter('g:vira_active_assignee', '.')
+  let active_assignee = execute('python3 print(Vira.api.vim_filters["assignee"])')
+  call vira#_set_filter('active_assignee', '.')
 endfunction
 
 function! vira#_set_priorities() "{{{2
-  call vira#_set_filter('g:vira_active_priority', '.')
+  let active_priority = execute('python3 print(Vira.api.vim_filters["priority"])')
+  call vira#_set_filter('active_priority', '.')
 endfunction
 
 function! vira#_set_reporters() "{{{2
-  call vira#_set_filter('g:vira_active_reporter', '.')
+  let active_reporter = execute('python3 print(Vira.api.vim_filters["reporter"])')
+  call vira#_set_filter('active_reporter', '.')
 endfunction
 
 function! vira#_set_issuetypes() "{{{2
-  call vira#_set_filter('g:vira_active_issuetype', '.')
+  let active_issuetype = execute('python3 print(Vira.api.vim_filters["issuetype"])')
+  call vira#_set_filter('active_issuetype', '.')
 endfunction
 
 function! vira#_todo() "{{{2

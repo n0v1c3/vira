@@ -30,7 +30,13 @@ class ViraAPI():
         except:
             print(f'Could not load {file_servers} or {file_projects}')
 
-        self.vim_filters = {'status': ['To Do', 'In Progress']}
+        self.vim_filters = {
+            'assignee': '',
+            'issuetype': '',
+            'priority': '',
+            'reporter': '',
+            'status': ['To Do', 'In Progress']
+        }
 
     def add_comment(self, issue, comment):
         '''
@@ -106,39 +112,14 @@ class ViraAPI():
         Build a filter string to add to a JQL query
         '''
 
-        query = ''
         if self.vim_filters.get(filterType, '') == '':
-            print('nope')
             return ''
 
-        # TODO-MB [200204] - handly for non-list, single values
-        query += f'AND status in {tuple(self.vim_filters[filterType])}'
-        # query += f'AND status in (\'{self.vim_filters["active_status"]}\')'
+        selection = tuple(self.vim_filters[filterType]) if type(
+            self.vim_filters[filterType]
+        ) == list else "('" + self.vim_filters[filterType] + "')"
 
-        return query
-
-    def filter_str_old(self, startQuery, queryType):
-        '''
-        Build a filter string to add to a JQL query
-        '''
-
-        query = ''
-        evals = vim.eval('g:vira_active_' + queryType)
-        if set(evals) and evals != '':
-            if set(startQuery) and startQuery != '':
-                query = ' AND '
-            else:
-                query = ''
-
-            query += queryType + ' in ('
-            if isinstance(evals, list):
-                query += ','.join("'{0}'".format(e) for e in evals)
-            else:
-                query += "'" + evals + "'"
-
-            query += ')'
-
-        return query
+        return f' AND {filterType} in {selection}'
 
     def get_comments(self, issue):
         '''
@@ -339,25 +320,28 @@ class ViraAPI():
         if project:
             vim.command(f'let g:vira_project = "{project}"')
 
-        status = self.vira_projects.get(repo, {}).get('status')
-        if status:
-            self.vim_filters['status'] = status
+        # TODO-MB [200204] - re-factor this whole section with DRY principles
+        # Use keys from self.vim_filters
 
         assignee = self.vira_projects.get(repo, {}).get('assignee')
         if assignee:
-            vim.command(f'let g:vira_active_assignee = "{assignee}"')
-
-        reporter = self.vira_projects.get(repo, {}).get('reporter')
-        if reporter:
-            vim.command(f'let g:vira_active_reporter = "{reporter}"')
-
-        priority = self.vira_projects.get(repo, {}).get('priority')
-        if priority:
-            vim.command(f'let g:vira_active_priority = "{priority}"')
+            self.vim_filters['assignee'] = assignee
 
         issuetype = self.vira_projects.get(repo, {}).get('issuetype')
         if issuetype:
-            vim.command(f'let g:vira_active_issuetype = "{issuetype}"')
+            self.vim_filters['issuetype'] = issuetype
+
+        priority = self.vira_projects.get(repo, {}).get('priority')
+        if priority:
+            self.vim_filters['priority'] = priority
+
+        reporter = self.vira_projects.get(repo, {}).get('reporter')
+        if reporter:
+            self.vim_filters['reporter'] = reporter
+
+        status = self.vira_projects.get(repo, {}).get('status')
+        if status:
+            self.vim_filters['status'] = status
 
     def query_issues(self):
         '''
@@ -371,16 +355,8 @@ class ViraAPI():
                 query += 'project in (' + vim.eval('g:vira_project') + ')'
         except:
             query += ''
-        # TODO-MB [200204] - Convert from vim variables
-        queryTypesOld = [
-            'assignee', 'issuetype', 'priority', 'reporter', 'assignee'
-        ]
-        for queryType in queryTypesOld:
-            query += self.filter_str_old(query, queryType)
 
-        filterTypes = [
-            'status'
-        ]
+        filterTypes = ['assignee', 'issuetype', 'priority', 'reporter', 'status']
         for filterType in filterTypes:
             query += self.filter_str(filterType)
 
