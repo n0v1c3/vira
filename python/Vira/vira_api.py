@@ -34,6 +34,7 @@ class ViraAPI():
             'assignee': '',
             'issuetype': '',
             'priority': '',
+            'project': '',
             'reporter': '',
             'status': ['To Do', 'In Progress']
         }
@@ -45,13 +46,13 @@ class ViraAPI():
 
         self.jira.add_comment(issue, comment)
 
-    def add_issue(self, project, summary, description, issuetype):
+    def add_issue(self, summary, description, issuetype):
         '''
         Get single issue by isuue id
         '''
 
         self.jira.create_issue(
-            project={'key': project},
+            project={'key': self.vim_filters['project']},
             summary=summary,
             description=description,
             issuetype={'name': issuetype})
@@ -318,10 +319,6 @@ class ViraAPI():
         if server:
             vim.command(f'let g:vira_serv = "{server}"')
 
-        project = self.vira_projects.get(repo, {}).get('project')
-        if project:
-            vim.command(f'let g:vira_project = "{project}"')
-
         for filterType in self.vim_filters.keys():
             filterValue = self.vira_projects.get(repo, {}).get(filterType)
             if filterValue:
@@ -332,21 +329,13 @@ class ViraAPI():
         Query issues based on current filters
         '''
 
-        query = ''
-        project = vim.eval('g:vira_project')
-        try:
-            if (project != '' and project != vim.eval('g:vira_null_project')):
-                query += 'project in (' + vim.eval('g:vira_project') + ') AND '
-        except:
-            query += ''
-
         q = []
         for filterType in self.vim_filters.keys():
             filter_str = self.filter_str(filterType)
             if filter_str:
                 q.append(filter_str)
 
-        query += ' AND '.join(q)
+        query = ' AND '.join(q) + ' ORDER BY updated DESC'
 
         # TODO-MB [200204] - TEST
         print(query)

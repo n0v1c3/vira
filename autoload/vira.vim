@@ -102,15 +102,19 @@ endfunction
 
 function! vira#_issue() "{{{2
   " Add issue only if a project has been selected
-  if !(g:vira_project == g:vira_null_project || g:vira_project == "")
-    let summary = input(g:vira_project . " - Issue Summary: ")
-    if !(summary == "")
-      let description = input(g:vira_project . " - Issue Description: ")
-      python3 Vira.api.add_issue(vim.eval('g:vira_project'), vim.eval('summary'), vim.eval('description'), "Bug")
-    else
-      echo "\nSummary should not be blank"
-    endif
+  let active_project = execute('python3 print(Vira.api.vim_filters["project"])')
+  if (active_project == "")
+    return
   endif
+
+  let summary = input(active_project . " - Issue Summary: ")
+  if !(summary == "")
+    let description = input(active_project . " - Issue Description: ")
+    python3 Vira.api.add_issue(vim.eval('summary'), vim.eval('description'), "Bug")
+  else
+    echo "\nSummary should not be blank"
+  endif
+
 endfunction
 
 function! vira#_print_report(list) " {{{2
@@ -270,13 +274,13 @@ function! vira#_set_issues() "{{{2
 endfunction
 
 function! vira#_set_projects() "{{{2
-  call vira#_set_filter('g:vira_project', '<cWORD>')
+  call vira#_set_filter('project', '<cWORD>')
 endfunction
 
 function! vira#_set_servers() "{{{2
   " Reset connection and clear filters before selecting new server
   call vira#_reset_filters()
-  let g:vira_project = 0
+  python3 Vira.api.vim_filters["project"] = ""
   let s:vira_connected = 0
   call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction
