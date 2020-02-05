@@ -262,7 +262,13 @@ function! vira#_set_filter(variable, type) "{{{2
   else
     let value = getline('.')
   endif
-  execute 'python3 Vira.api.vim_filters["' . a:variable . '"] = "'. value .'"'
+
+  " This function is used to set vim and python variables
+  if a:variable[:1] == 'g:'
+    execute 'let ' . a:variable . ' = "' . value . '"'
+  else
+    execute 'python3 Vira.api.vim_filters["' . a:variable . '"] = "'. value .'"'
+  endif
 
   if a:variable == 'g:vira_serv'
     call vira#_connect()
