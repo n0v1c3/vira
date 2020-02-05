@@ -100,8 +100,9 @@ endfunction
 
 function! vira#_issue() "{{{2
   " Add issue only if a project has been selected
-  let active_project = execute('python3 print(Vira.api.vim_filters["project"])')
+  let active_project = execute('python3 print(Vira.api.vim_filters["project"])')[1:]
   if (active_project == "")
+    echo "Please select project before adding a new issue."
     return
   endif
 
