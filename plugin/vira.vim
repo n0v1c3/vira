@@ -21,28 +21,9 @@ endif
 let g:vira_config_file_projects = get(g:, 'vira_config_file_projects', $HOME.'/.config/vira/vira_projects.json')
 let g:vira_config_file_servers = get(g:, 'vira_config_file_servers', $HOME.'/.config/vira/vira_servers.json')
 
-" Null values {{{2
+" Config variables {{{2
 let g:vira_null_issue = get(g:, 'vira_null_issue', 'None')
-let g:vira_null_project = get(g:, 'vira_null_project', 'None')
-
-" Connections and filters {{{2
-" Config
-let g:vira_default_assignee = get(g:, 'vira_default_assignee', '')
-let g:vira_default_issuetype = get(g:, 'vira_default_issuetype', '')
-let g:vira_default_priority = get(g:, 'vira_default_priority', '')
-let g:vira_default_reporter = get(g:, 'vira_default_reporter', '')
-let g:vira_default_status = get(g:, 'vira_default_status', ['To Do', 'In Progress'])
-
-" Active
-let g:vira_active_assignee = get(g:, 'vira_default_assignee', '')
-let g:vira_active_issuetype = get(g:, 'vira_default_issuetype', '')
-let g:vira_active_priority = get(g:, 'vira_default_priority', '')
-let g:vira_active_reporter = get(g:, 'vira_default_reporter', '')
-let g:vira_active_status = get(g:, 'vira_default_status', ['To Do', 'In Progress'])
-
-" Connections
 let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
-let g:vira_project = g:vira_null_project
 let g:vira_load_project_enabled = 1
 
 " Commands {{{1

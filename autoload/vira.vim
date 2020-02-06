@@ -84,7 +84,7 @@ endfunction
 
 function! vira#_get_statusline() "{{{2
   return g:vira_active_issue
-  python3 vim.exec("let s:vira_statusline = " . vira_statusline())
+  " python3 vim.exec("let s:vira_statusline = " . vira_statusline())
 endfunction
 
 function! vira#_get_version() "{{{2
