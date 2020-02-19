@@ -30,6 +30,16 @@ class ViraAPI():
         except:
             print(f'Could not load {file_servers} or {file_projects}')
 
+        self.vim_filters_default = {
+            'assignee': '',
+            'issuetype': '',
+            'priority': '',
+            'project': '',
+            'reporter': '',
+            'status': ['To Do', 'In Progress']
+        }
+        self.reset_filters()
+
     def add_comment(self, issue, comment):
         '''
         Comment on specified issue
@@ -37,13 +47,13 @@ class ViraAPI():
 
         self.jira.add_comment(issue, comment)
 
-    def add_issue(self, project, summary, description, issuetype):
+    def add_issue(self, summary, description, issuetype):
         '''
         Get single issue by isuue id
         '''
 
         self.jira.create_issue(
-            project={'key': project},
+            project={'key': self.vim_filters['project']},
             summary=summary,
             description=description,
             issuetype={'name': issuetype})
@@ -99,28 +109,22 @@ class ViraAPI():
             else:
                 raise e
 
-    def filter_str(self, startQuery, queryType):
+    def filter_str(self, filterType):
         '''
         Build a filter string to add to a JQL query
+        The string will look similar to one of these:
+            AND status in ('In Progress')
+            AND status in ('In Progress', 'To Do')
         '''
 
-        query = ''
-        evals = vim.eval('g:vira_active_' + queryType)
-        if set(evals) and evals != '':
-            if set(startQuery) and startQuery != '':
-                query = ' AND '
-            else:
-                query = ''
+        if self.vim_filters.get(filterType, '') == '':
+            return
 
-            query += queryType + ' in ('
-            if isinstance(evals, list):
-                query += ','.join("'{0}'".format(e) for e in evals)
-            else:
-                query += "'" + evals + "'"
+        selection = str(self.vim_filters[filterType]).strip('[]') if type(
+            self.vim_filters[filterType]
+        ) == list else "'" + self.vim_filters[filterType] + "'"
 
-            query += ')'
-
-        return query
+        return f"{filterType} in ({selection})"
 
     def get_comments(self, issue):
         '''
@@ -312,59 +316,39 @@ class ViraAPI():
             else:
                 return
 
-        # TODO-MB [191205] - It would be more elegant to store state in python self object rather than vim global variables
         server = self.vira_projects.get(repo, {}).get('server')
         if server:
             vim.command(f'let g:vira_serv = "{server}"')
 
-        project = self.vira_projects.get(repo, {}).get('project')
-        if project:
-            vim.command(f'let g:vira_project = "{project}"')
-
-        status = self.vira_projects.get(repo, {}).get('status')
-        if status:
-            vim.command(f'let g:vira_active_status = "{status}"')
-
-        assignee = self.vira_projects.get(repo, {}).get('assignee')
-        if assignee:
-            vim.command(f'let g:vira_active_assignee = "{assignee}"')
-
-        reporter = self.vira_projects.get(repo, {}).get('reporter')
-        if reporter:
-            vim.command(f'let g:vira_active_reporter = "{reporter}"')
-
-        priority = self.vira_projects.get(repo, {}).get('priority')
-        if priority:
-            vim.command(f'let g:vira_active_priority = "{priority}"')
-
-        issuetype = self.vira_projects.get(repo, {}).get('issuetype')
-        if issuetype:
-            vim.command(f'let g:vira_active_issuetype = "{issuetype}"')
+        for filterType in self.vim_filters.keys():
+            filterValue = self.vira_projects.get(repo, {}).get(filterType)
+            if filterValue:
+                self.vim_filters[filterType] = filterValue
 
     def query_issues(self):
         '''
         Query issues based on current filters
         '''
 
-        query = ''
-        project = vim.eval('g:vira_project')
-        try:
-            if (project != '' and project != vim.eval('g:vira_null_project')):
-                query += 'project in (' + vim.eval('g:vira_project') + ')'
-        except:
-            query += ''
-        queryTypes = [
-            'assignee', 'status', 'issuetype', 'priority', 'reporter', 'assignee'
-        ]
-        for queryType in queryTypes:
-            query += self.filter_str(query, queryType)
+        q = []
+        for filterType in self.vim_filters.keys():
+            filter_str = self.filter_str(filterType)
+            if filter_str:
+                q.append(filter_str)
 
-        query += 'ORDER BY updated DESC'
+        query = ' AND '.join(q) + ' ORDER BY updated DESC'
 
         issues = self.jira.search_issues(
             query, fields='summary,comment,status', json_result='True')
 
         return issues['issues']
+
+    def reset_filters(self):
+        '''
+        Reset filters to their default values
+        '''
+
+        self.vim_filters = dict(self.vim_filters_default)
 
     def set_status(self, issue, status):
         '''

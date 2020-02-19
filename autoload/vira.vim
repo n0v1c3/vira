@@ -17,8 +17,6 @@ let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_todo_header = 'TODO'
 
-let s:vira_filters=['assignee', 'issuetype', 'priority', 'reporter', 'status']
-
 " Functions {{{1
 function! vira#_browse() "{{{2
   " Confirm an issue has been selected
@@ -86,7 +84,7 @@ endfunction
 
 function! vira#_get_statusline() "{{{2
   return g:vira_active_issue
-  python3 vim.exec("let s:vira_statusline = " . vira_statusline())
+  " python3 vim.exec("let s:vira_statusline = " . vira_statusline())
 endfunction
 
 function! vira#_get_version() "{{{2
@@ -102,15 +100,20 @@ endfunction
 
 function! vira#_issue() "{{{2
   " Add issue only if a project has been selected
-  if !(g:vira_project == g:vira_null_project || g:vira_project == "")
-    let summary = input(g:vira_project . " - Issue Summary: ")
-    if !(summary == "")
-      let description = input(g:vira_project . " - Issue Description: ")
-      python3 Vira.api.add_issue(vim.eval('g:vira_project'), vim.eval('summary'), vim.eval('description'), "Bug")
-    else
-      echo "\nSummary should not be blank"
-    endif
+  let active_project = execute('python3 print(Vira.api.vim_filters["project"])')[1:]
+  if (active_project == "")
+    echo "Please select project before adding a new issue."
+    return
   endif
+
+  let summary = input(active_project . " - Issue Summary: ")
+  if !(summary == "")
+    let description = input(active_project . " - Issue Description: ")
+    python3 Vira.api.add_issue(vim.eval('summary'), vim.eval('description'), "Bug")
+  else
+    echo "\nSummary should not be blank"
+  endif
+
 endfunction
 
 function! vira#_print_report(list) " {{{2
@@ -240,17 +243,10 @@ function! vira#_quit() "{{{2
 endfunction
 
 function! vira#_reset_filters() " {{{2
-  for vira_filter in s:vira_filters
-    silent! call vira#_reset_filter(vira_filter)
-  endfor
-endfunction
-
-function! vira#_reset_filter(variable) "{{{2
-  execute 'let g:vira_active_' . a:variable . ' = g:vira_default_' . a:variable . '"'
+  python3 Vira.api.reset_filters()
 endfunction
 
 function! vira#_set_filter(variable, type) "{{{2
-  " TODO: VIRA-27 [191008] - New filter function remove old calls and replace with variables
   execute 'normal 0'
 
   if a:type == '<cWORD>'
@@ -258,7 +254,13 @@ function! vira#_set_filter(variable, type) "{{{2
   else
     let value = getline('.')
   endif
-  execute 'let ' . a:variable . ' = "' . value . '"'
+
+  " This function is used to set vim and python variables
+  if a:variable[:1] == 'g:'
+    execute 'let ' . a:variable . ' = "' . value . '"'
+  else
+    execute 'python3 Vira.api.vim_filters["' . a:variable . '"] = "'. value .'"'
+  endif
 
   if a:variable == 'g:vira_serv'
     call vira#_connect()
@@ -270,35 +272,35 @@ function! vira#_set_issues() "{{{2
 endfunction
 
 function! vira#_set_projects() "{{{2
-  call vira#_set_filter('g:vira_project', '<cWORD>')
+  call vira#_set_filter('project', '<cWORD>')
 endfunction
 
 function! vira#_set_servers() "{{{2
   " Reset connection and clear filters before selecting new server
   call vira#_reset_filters()
-  let g:vira_project = 0
+  python3 Vira.api.vim_filters["project"] = ""
   let s:vira_connected = 0
   call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction
 
 function! vira#_set_statuses() "{{{2
-  call vira#_set_filter('g:vira_active_status', '.')
+  call vira#_set_filter('status', '.')
 endfunction
 
 function! vira#_set_assignees() "{{{2
-  call vira#_set_filter('g:vira_active_assignee', '.')
+  call vira#_set_filter('assignee', '.')
 endfunction
 
 function! vira#_set_priorities() "{{{2
-  call vira#_set_filter('g:vira_active_priority', '.')
+  call vira#_set_filter('priority', '.')
 endfunction
 
 function! vira#_set_reporters() "{{{2
-  call vira#_set_filter('g:vira_active_reporter', '.')
+  call vira#_set_filter('reporter', '.')
 endfunction
 
 function! vira#_set_issuetypes() "{{{2
-  call vira#_set_filter('g:vira_active_issuetype', '.')
+  call vira#_set_filter('issuetype', '.')
 endfunction
 
 function! vira#_todo() "{{{2
