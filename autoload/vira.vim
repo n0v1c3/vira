@@ -1,7 +1,3 @@
-" dev: let b:startapp = 'vim "+Vader! ~/test1.vader"'
-" dev: let b:startfile = ''
-" dev: let b:startargs = ''
-
 " File: autoload/vira.vim {{{1
 " Description: Internals and API functions for vira
 " Authors:
@@ -66,10 +62,7 @@ function! vira#_prompt_start(type) "{{{2
     endif
   endif
 
-  " TODO-MB [200227] - Use python to generate prompt buffer template
-  " python can have a string that uses \n for commented prompt instructions
-  " later, the entire string can be replaced with "" to strip that stuff out
-  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[:-2]
+  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'top 10 sp ' . s:vira_prompt_file
   1
@@ -80,14 +73,12 @@ endfunction
 function! vira#_prompt_end() "{{{2
   " Write contents of the prompt buffer to jira server
 
-  let input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
-  let g:input_text = vira#_get_active_issue()
+  let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
 
-  if (input_text == "")
+  if (g:vira_input_text  == "")
     redraw | echo "No vira actions performed"
   else
-    " TODO-MB [200227] - Change add_comment() to generic function
-    python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('input_text'))
+    python3 Vira.api.write_jira()
   endif
 
 endfunction
@@ -126,24 +117,6 @@ function! vira#_init_python() "{{{2
   silent! python3 import sys
   silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
   silent! python3 import Vira
-endfunction
-
-function! vira#_issue() "{{{2
-  " TODO-MB [200227] - delete this function
-  " Add issue only if a project has been selected
-  if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
-    echo "Please select project before adding a new issue."
-    return
-  endif
-
-  let summary = input(active_project . " - Issue Summary: ")
-  if !(summary == "")
-    let description = input(active_project . " - Issue Description: ")
-    python3 Vira.api.add_issue(vim.eval('summary'), vim.eval('description'), "Bug")
-  else
-    echo "\nSummary should not be blank"
-  endif
-
 endfunction
 
 function! vira#_print_report(list) " {{{2
