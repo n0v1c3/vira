@@ -45,7 +45,9 @@ class ViraAPI():
         Comment on specified issue
         '''
 
-        self.jira.add_comment(issue, comment)
+        comment_stripped = comment.replace(self.prompt_text.strip(), '').strip()
+        print(self.prompt_text)
+        self.jira.add_comment(issue, comment_stripped)
 
     def add_issue(self, summary, description, issuetype):
         '''
@@ -188,6 +190,20 @@ class ViraAPI():
 
         for priority in self.jira.priorities():
             print(priority)
+
+    def get_prompt_text(self, prompt_type):
+        '''
+        Get prompt text used for inputting text into jira
+        '''
+
+        users = [user.key for user in self.jira.search_users(".")]
+        self.prompt_text = f'''# Please enter the {prompt_type} above this line
+# Lines starting with '#' will be ignored. An empty message will abort the opertaion.
+#
+# You can tag the following users: {users}
+'''
+
+        return self.prompt_text
 
     def get_projects(self):
         '''

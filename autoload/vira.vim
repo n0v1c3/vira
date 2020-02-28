@@ -1,3 +1,7 @@
+" dev: let b:startapp = 'vim "+Vader! ~/test1.vader"'
+" dev: let b:startfile = ''
+" dev: let b:startargs = ''
+
 " File: autoload/vira.vim {{{1
 " Description: Internals and API functions for vira
 " Authors:
@@ -65,9 +69,10 @@ function! vira#_prompt_start(type) "{{{2
   " TODO-MB [200227] - Use python to generate prompt buffer template
   " python can have a string that uses \n for commented prompt instructions
   " later, the entire string can be replaced with "" to strip that stuff out
-  let prompt_text = ""
+  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[:-2]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'top 10 sp ' . s:vira_prompt_file
+  1
   au BufWinLeave <buffer> call vira#_prompt_end()
 
 endfunction
@@ -75,12 +80,13 @@ endfunction
 function! vira#_prompt_end() "{{{2
   " Write contents of the prompt buffer to jira server
 
-  let input_text = join(readfile(s:vira_prompt_file), "\n")
+  let input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
+  let g:input_text = vira#_get_active_issue()
 
-  " TODO-MB [200227] - Check for trimmed version
   if (input_text == "")
     redraw | echo "No vira actions performed"
   else
+    " TODO-MB [200227] - Change add_comment() to generic function
     python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('input_text'))
   endif
 
