@@ -16,6 +16,7 @@ let s:vira_end_time = 0
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_todo_header = 'TODO'
+let s:vira_prompt_file = '/tmp/vira_prompt'
 
 " Functions {{{1
 function! vira#_browse() "{{{2
@@ -46,7 +47,7 @@ function! vira#_browse() "{{{2
 
 endfunction
 
-function! vira#_comment() "{{{2
+function! vira#_comment_pre() "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
     " User can select an issue now
@@ -55,11 +56,24 @@ function! vira#_comment() "{{{2
 
   " Final chance to have a selected issue
   if !(vira#_get_active_issue() == g:vira_null_issue)
-    let comment = input(vira#_get_active_issue() . ": ")
-    if !(comment == "")
-      python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
-    endif
+    " TODO-MB [200227] - Use python to generate prompt buffer template
+    " python can have a string that uses \n for commented prompt instructions
+    " later, the entire string can be replaced with "" to strip that stuff out
+    let prompt_comment = ""
+    call writefile(split(prompt_comment, "\n", 1), s:vira_prompt_file)
+    execute 'top 10 sp ' . s:vira_prompt_file
+    au BufWinLeave <buffer> call vira#_comment_post()
   endif
+endfunction
+
+function! vira#_comment_post() "{{{2
+
+  let comment = join(readfile(s:vira_prompt_file), "\n")
+
+  if !(comment == "")
+    python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
+  endif
+
 endfunction
 
 function! vira#_connect() abort "{{{2
@@ -341,4 +355,3 @@ endfunction
 function! vira#_timestamp() "{{{2
   python3 Vira.timestamp()
 endfunction
-
