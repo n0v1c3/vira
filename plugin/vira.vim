@@ -29,7 +29,7 @@ let g:vira_load_project_enabled = 1
 " Commands {{{1
 " Basics
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
-command! -nargs=0 -bang ViraComment call vira#_comment()
+command! -nargs=0 -bang ViraComment call vira#_prompt_start('comment')
 command! -nargs=0 -bang ViraEpics call vira#_menu("epics")
 command! -nargs=0 -bang ViraIssue call vira#_issue()
 command! -nargs=0 -bang ViraIssues call vira#_menu("issues")

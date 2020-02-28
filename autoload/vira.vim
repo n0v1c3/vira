@@ -22,8 +22,8 @@ let s:vira_prompt_file = '/tmp/vira_prompt'
 function! vira#_browse() "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
-    " User can select an issue now
-    silent! call vira#_set_issue()
+      echo "Please select an issue first"
+      return
   endif
 
   " Create url path from server and issue key
@@ -47,31 +47,41 @@ function! vira#_browse() "{{{2
 
 endfunction
 
-function! vira#_comment_pre() "{{{2
-  " Confirm an issue has been selected
-  if (vira#_get_active_issue() == g:vira_null_issue)
-    " User can select an issue now
-    call vira#_set_issue()
+function! vira#_prompt_start(type) "{{{2
+
+  " Make sure vira has all the required inputs selected
+  if a:type == 'comment'
+    if (vira#_get_active_issue() == g:vira_null_issue)
+      echo "Please select an issue before commenting"
+      return
+    endif
+  elseif a:type == 'issue'
+    if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
+      echo "Please select project before adding a new issue."
+      return
+    endif
   endif
 
-  " Final chance to have a selected issue
-  if !(vira#_get_active_issue() == g:vira_null_issue)
-    " TODO-MB [200227] - Use python to generate prompt buffer template
-    " python can have a string that uses \n for commented prompt instructions
-    " later, the entire string can be replaced with "" to strip that stuff out
-    let prompt_comment = ""
-    call writefile(split(prompt_comment, "\n", 1), s:vira_prompt_file)
-    execute 'top 10 sp ' . s:vira_prompt_file
-    au BufWinLeave <buffer> call vira#_comment_post()
-  endif
+  " TODO-MB [200227] - Use python to generate prompt buffer template
+  " python can have a string that uses \n for commented prompt instructions
+  " later, the entire string can be replaced with "" to strip that stuff out
+  let prompt_text = ""
+  call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
+  execute 'top 10 sp ' . s:vira_prompt_file
+  au BufWinLeave <buffer> call vira#_prompt_end()
+
 endfunction
 
-function! vira#_comment_post() "{{{2
+function! vira#_prompt_end() "{{{2
+  " Write contents of the prompt buffer to jira server
 
-  let comment = join(readfile(s:vira_prompt_file), "\n")
+  let input_text = join(readfile(s:vira_prompt_file), "\n")
 
-  if !(comment == "")
-    python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
+  " TODO-MB [200227] - Check for trimmed version
+  if (input_text == "")
+    redraw | echo "No vira actions performed"
+  else
+    python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('input_text'))
   endif
 
 endfunction
@@ -113,9 +123,9 @@ function! vira#_init_python() "{{{2
 endfunction
 
 function! vira#_issue() "{{{2
+  " TODO-MB [200227] - delete this function
   " Add issue only if a project has been selected
-  let active_project = execute('python3 print(Vira.api.vim_filters["project"])')[1:]
-  if (active_project == "")
+  if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
     echo "Please select project before adding a new issue."
     return
   endif
