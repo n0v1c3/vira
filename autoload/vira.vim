@@ -66,7 +66,11 @@ function! vira#_prompt_start(type) "{{{2
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'top 10 sp ' . s:vira_prompt_file
   1
-  au BufWinLeave <buffer> call vira#_prompt_end()
+
+  augroup ViraPrompt
+    autocmd!
+    autocmd BufWinLeave <buffer> call vira#_prompt_end()
+  augroup END
 
 endfunction
 
