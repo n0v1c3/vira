@@ -40,23 +40,30 @@ class ViraAPI():
         }
         self.reset_filters()
 
-    def add_comment(self, issue, comment):
+    def create_issue(self, input_stripped):
         '''
-        Comment on specified issue
-        '''
-
-        self.jira.add_comment(issue, comment)
-
-    def add_issue(self, summary, description, issuetype):
-        '''
-        Get single issue by isuue id
+        Create new issue in jira
         '''
 
-        self.jira.create_issue(
+        issuetype = 'Bug'
+
+        summary = input_stripped[input_stripped.find('[Summary]') +
+                                 9:input_stripped.find('[Description]')].strip().replace(
+                                     '\n', ' ')
+        description = input_stripped[input_stripped.find('[Description]') + 13:].strip()
+
+        # Check if summary was entered by user
+        if summary == '':
+            return
+
+        issue_key = self.jira.create_issue(
             project={'key': self.vim_filters['project']},
             summary=summary,
             description=description,
             issuetype={'name': issuetype})
+
+        jira_server = vim.eval('g:vira_serv')
+        print(f'Added {jira_server}/browse/{issue_key}')
 
     def add_worklog(self, issue, timeSpentSeconds, comment):
         '''
@@ -188,6 +195,25 @@ class ViraAPI():
 
         for priority in self.jira.priorities():
             print(priority)
+
+    def get_prompt_text(self, prompt_type):
+        '''
+        Get prompt text used for inputting text into jira
+        '''
+
+        users = [user.key for user in self.jira.search_users(".")]
+        self.prompt_type = prompt_type
+        self.prompt_text_commented = f'''\n# Please enter the {prompt_type} above this line
+# Lines starting with '#' will be ignored. An empty message will abort the opertaion.
+#
+# You can tag the following users: {users}
+'''
+        if self.prompt_type == 'issue':
+            text = '[Summary]\n\n[Description]\n' + self.prompt_text_commented
+        else:
+            text = self.prompt_text_commented
+
+        return text
 
     def get_projects(self):
         '''
@@ -356,3 +382,23 @@ class ViraAPI():
         '''
 
         self.jira.transition_issue(issue, status)
+
+    def write_jira(self):
+        '''
+        Write to jira
+        Can be issue name, description, comment, etc...
+        '''
+
+        # User input
+        issue = vim.eval('g:vira_active_issue')
+        input_stripped = vim.eval('g:vira_input_text').replace(
+            self.prompt_text_commented.strip(), '').strip()
+
+        # Check if anything was actually entered by user
+        if input_stripped == '':
+            return
+
+        if self.prompt_type == 'comment':
+            self.jira.add_comment(issue, input_stripped)
+        elif self.prompt_type == 'issue':
+            self.create_issue(input_stripped)

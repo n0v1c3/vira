@@ -16,13 +16,14 @@ let s:vira_end_time = 0
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_todo_header = 'TODO'
+let s:vira_prompt_file = '/tmp/vira_prompt'
 
 " Functions {{{1
 function! vira#_browse() "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
-    " User can select an issue now
-    silent! call vira#_set_issue()
+      echo "Please select an issue first"
+      return
   endif
 
   " Create url path from server and issue key
@@ -46,20 +47,44 @@ function! vira#_browse() "{{{2
 
 endfunction
 
-function! vira#_comment() "{{{2
-  " Confirm an issue has been selected
-  if (vira#_get_active_issue() == g:vira_null_issue)
-    " User can select an issue now
-    call vira#_set_issue()
-  endif
+function! vira#_prompt_start(type) "{{{2
 
-  " Final chance to have a selected issue
-  if !(vira#_get_active_issue() == g:vira_null_issue)
-    let comment = input(vira#_get_active_issue() . ": ")
-    if !(comment == "")
-      python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('comment'))
+  " Make sure vira has all the required inputs selected
+  if a:type == 'comment'
+    if (vira#_get_active_issue() == g:vira_null_issue)
+      echo "Please select an issue before commenting"
+      return
+    endif
+  elseif a:type == 'issue'
+    if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
+      echo "Please select project before adding a new issue."
+      return
     endif
   endif
+
+  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]
+  call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
+  execute 'top 10 sp ' . s:vira_prompt_file
+  1
+
+  augroup ViraPrompt
+    autocmd!
+    autocmd BufWinLeave <buffer> call vira#_prompt_end()
+  augroup END
+
+endfunction
+
+function! vira#_prompt_end() "{{{2
+  " Write contents of the prompt buffer to jira server
+
+  let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
+
+  if (g:vira_input_text  == "")
+    redraw | echo "No vira actions performed"
+  else
+    python3 Vira.api.write_jira()
+  endif
+
 endfunction
 
 function! vira#_connect() abort "{{{2
@@ -96,24 +121,6 @@ function! vira#_init_python() "{{{2
   silent! python3 import sys
   silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
   silent! python3 import Vira
-endfunction
-
-function! vira#_issue() "{{{2
-  " Add issue only if a project has been selected
-  let active_project = execute('python3 print(Vira.api.vim_filters["project"])')[1:]
-  if (active_project == "")
-    echo "Please select project before adding a new issue."
-    return
-  endif
-
-  let summary = input(active_project . " - Issue Summary: ")
-  if !(summary == "")
-    let description = input(active_project . " - Issue Description: ")
-    python3 Vira.api.add_issue(vim.eval('summary'), vim.eval('description'), "Bug")
-  else
-    echo "\nSummary should not be blank"
-  endif
-
 endfunction
 
 function! vira#_print_report(list) " {{{2
@@ -341,4 +348,3 @@ endfunction
 function! vira#_timestamp() "{{{2
   python3 Vira.timestamp()
 endfunction
-
