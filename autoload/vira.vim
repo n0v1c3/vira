@@ -18,6 +18,13 @@ let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
 
+" AutoCommands {{{1
+
+augroup ViraPrompt
+  autocmd!
+  exe 'autocmd BufWinLeave ' . s:vira_prompt_file . ' call vira#_prompt_end()'
+augroup END
+
 " Functions {{{1
 function! vira#_browse() "{{{2
   " Confirm an issue has been selected
@@ -66,11 +73,6 @@ function! vira#_prompt_start(type) "{{{2
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'top 10 sp ' . s:vira_prompt_file
   1
-
-  augroup ViraPrompt
-    autocmd!
-    autocmd BufWinLeave <buffer> call vira#_prompt_end()
-  augroup END
 
 endfunction
 
