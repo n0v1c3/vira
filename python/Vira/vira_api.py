@@ -201,10 +201,12 @@ class ViraAPI():
         Get prompt text used for inputting text into jira
         '''
 
-        users = [user.key for user in self.jira.search_users(".")]
+        # Only show users which you are allowed to tag
+        users = [user.key for user in self.jira.search_users(".") if not user.key.startswith('JIRAUSER')]
+
         self.prompt_type = prompt_type
         self.prompt_text_commented = f'''\n# Please enter the {prompt_type} above this line
-# Lines starting with '#' will be ignored. An empty message will abort the opertaion.
+# Lines starting with '#' will be ignored. An empty message will abort the operation.
 #
 # You can tag the following users: {users}
 '''
