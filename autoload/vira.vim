@@ -252,6 +252,11 @@ function! vira#_quit() "{{{2
   endfor
 endfunction
 
+function! vira#_refresh() " {{{2
+  call vira#_menu('report')
+  call vira#_menu('report')
+endfunction
+
 function! vira#_reset_filters() " {{{2
   python3 Vira.api.reset_filters()
 endfunction
