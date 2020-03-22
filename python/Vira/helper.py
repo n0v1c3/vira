@@ -11,15 +11,35 @@ import json
 import datetime
 import subprocess
 
-def load_config(file_path):
+def load_config(file_path) -> dict:
     '''
     Load user configuration file
     '''
 
     if 'json' in file_path.lower():
-        return parse_json(file_path)
+        config = parse_json(file_path)
     else:
-        return parse_yaml(file_path)
+        config = parse_yaml(file_path)
+
+    return load_templates(config)
+
+def load_templates(config) -> dict:
+    '''
+    Replace template key with template values
+    If the user defined a key on a project level that already existed on a
+    template level, the project key will override the template key.
+    '''
+
+    # Create copy of original dictionary
+    template_config = dict(config)
+
+    for key, value in config.items():
+        if value.get('template'):
+            template = dict(config[value.get('template')])
+            template.update(template_config[key])
+            template_config[key].update(template)
+
+    return template_config
 
 def parse_json(file_path) -> dict:
     '''

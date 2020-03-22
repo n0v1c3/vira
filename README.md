@@ -125,9 +125,29 @@ In order for vira to use the previous yaml example, set the following variable i
 
 Note: Vira will only load the vira_projects.json/yaml configuration automatically once per vim session. You can, however, manually switch servers and filters as many times as you want after that.
 
-#### Default Project Config
+#### Project Templates
 
-If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file. Refer to the yaml example below.
+Templates can be defined in the same way that projects are defined. These templates can be referenced for multiple projects, by using the template key.
+Any name can be used for a template, but it is recommended to use the pythonic syntax of `__name__` in order to make a distinction from a project.
+Refer to the yaml example below. Note that the priority in `repo2` will override the `__maintemplate__` priority.
+
+```yaml
+__maintemplate__:
+  server: https://jira.site.com
+  project: VIRA
+  assignee: Travis Gall
+  priority: [High, Highest]
+repo1:
+  template: __maintemplate__
+repo2:
+  template: __maintemplate__
+  priority: High
+```
+
+#### Default Project Template
+
+If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file.
+Refer to the yaml example below.
 
 ```yaml
 __default__:

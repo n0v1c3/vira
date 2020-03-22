@@ -172,13 +172,13 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        #  issues = []
+        # issues = []
         for issue in self.query_issues():
             print(
                 issue["key"] + "  -  " + issue["fields"]["summary"] + " | " +
                 issue["fields"]["status"]["name"] + " |")
             #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
-        #  return str(issues)
+        # return str(issues)
 
     def get_issuetypes(self):
         '''
@@ -202,7 +202,11 @@ class ViraAPI():
         '''
 
         # Only show users which you are allowed to tag
-        users = [user.key for user in self.jira.search_users(".") if not user.key.startswith('JIRAUSER')]
+        users = [
+            user.key
+            for user in self.jira.search_users(".")
+            if not user.key.startswith('JIRAUSER')
+        ]
 
         self.prompt_type = prompt_type
         self.prompt_text_commented = f'''\n# Please enter the {prompt_type} above this line
