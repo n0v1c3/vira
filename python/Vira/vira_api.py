@@ -129,9 +129,9 @@ class ViraAPI():
 
         selection = str(self.vim_filters[filterType]).strip('[]') if type(
             self.vim_filters[filterType]
-        ) == list else "'" + self.vim_filters[filterType] + "'"
+        ) == list else '"' + self.vim_filters[filterType] + '"'
 
-        return f"{filterType} in ({selection})"
+        return f'{filterType} in ({selection})'
 
     def get_comments(self, issue):
         '''
@@ -144,7 +144,7 @@ class ViraAPI():
 
         # Loop through all of the comments
         comments = ''
-        for comment in issues["issues"][0]["fields"]["comment"]["comments"]:
+        for comment in issues['issues'][0]['fields']['comment']['comments']:
             comments += (
                 f"{comment['author']['displayName']}" + ' | ',
                 f"{comment['updated'][0:10]}" + ' @ ',
@@ -157,8 +157,8 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        for issue in self.query_issues(issuetypes="Epic"):
-            print(issue["key"] + '  -  ' + issue["fields"]['summary'])
+        for issue in self.query_issues(issuetypes='Epic'):
+            print(issue['key'] + '  -  ' + issue['fields']['summary'])
 
     def get_issue(self, issue):
         '''
@@ -175,9 +175,9 @@ class ViraAPI():
         # issues = []
         for issue in self.query_issues():
             print(
-                issue["key"] + "  -  " + issue["fields"]["summary"] + " | " +
-                issue["fields"]["status"]["name"] + " |")
-            #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
+                issue['key'] + '  -  ' + issue['fields']['summary'] + ' | ' +
+                issue['fields']['status']['name'] + ' |')
+            #  issues.append(issue['key'] + '  -  ' + issue['fields']['summary'])
         # return str(issues)
 
     def get_issuetypes(self):
@@ -204,7 +204,7 @@ class ViraAPI():
         # Only show users which you are allowed to tag
         users = [
             user.key
-            for user in self.jira.search_users(".")
+            for user in self.jira.search_users('.')
             if not user.key.startswith('JIRAUSER')
         ]
 
@@ -236,7 +236,7 @@ class ViraAPI():
 
         # Get passed issue content
 
-        issue = vim.eval("g:vira_active_issue")
+        issue = vim.eval('g:vira_active_issue')
         issues = self.jira.search_issues(
             'issue = "' + issue + '"',
             #  fields='*',
@@ -247,41 +247,41 @@ class ViraAPI():
         # Print issue content
         report = issue + ': ' + issues['issues'][0]['fields']['summary']
         report += '\nDetails {{' + '{1'
-        report += "\nStory Points  :  "
+        report += '\nStory Points  :  '
         report += str(issues['issues'][0]['fields'].get('customfield_10106', ''))
-        report += "\n     Created  :  "
+        report += '\n     Created  :  '
         report += issues['issues'][0]['fields']['created'][0:10]
         report += ' ' + issues['issues'][0]['fields']['created'][11:16]
-        report += "\n     Updated  :  "
+        report += '\n     Updated  :  '
         report += issues['issues'][0]['fields']['updated'][0:10]
         report += ' ' + issues['issues'][0]['fields']['updated'][11:16]
-        report += "\n        Type  :  "
+        report += '\n        Type  :  '
         report += issues['issues'][0]['fields']['issuetype']['name']
-        report += "\n      Status  :  "
+        report += '\n      Status  :  '
         report += issues['issues'][0]['fields']['status']['name']
-        report += "\n    Priority  :  "
+        report += '\n    Priority  :  '
         report += issues['issues'][0]['fields']['priority']['name']
 
-        report += "\n    Assignee  :  "
+        report += '\n    Assignee  :  '
         try:
             report += issues['issues'][0]['fields']['assignee']['displayName']
         except:
-            report += "Unassigned"
+            report += 'Unassigned'
 
-        report += "\n    Reporter  :  "
+        report += '\n    Reporter  :  '
         report += issues['issues'][0]['fields']['reporter']['displayName']
         report += '\n}}' + '}'
         report += '\nDescription {{' + '{1\n'
         report += str(issues['issues'][0]['fields'].get('description'))
         report += '\n}}' + '}'
-        report += "\nComments {" + "{{1"
+        report += '\nComments {' + '{{1'
         for comment in issues['issues'][0]['fields']['comment']['comments']:
             report += f"\n{comment['author']['displayName']}" + ' @ '
             report += f"{comment['updated'][0:10]}" + ' '
             report += f"{comment['updated'][11:16]}" + ' {' + '{{2'
             report += f"\n{comment['body']}"
             report += '\n}}' + '}'
-        report += "\n}}" + "}"
+        report += '\n}}' + '}'
 
         return report
 
@@ -306,7 +306,7 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        for user in self.jira.search_users("."):
+        for user in self.jira.search_users('.'):
             print(user)
 
     def get_assignees(self):

@@ -29,7 +29,7 @@ augroup END
 function! vira#_browse() "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
-      echo "Please select an issue first"
+      echo 'Please select an issue first'
       return
   endif
 
@@ -59,18 +59,18 @@ function! vira#_prompt_start(type) "{{{2
   " Make sure vira has all the required inputs selected
   if a:type == 'comment'
     if (vira#_get_active_issue() == g:vira_null_issue)
-      echo "Please select an issue before commenting"
+      echo 'Please select an issue before commenting'
       return
     endif
   elseif a:type == 'issue'
-    if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
-      echo "Please select project before adding a new issue."
+    if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == '')
+      echo 'Please select project before adding a new issue.'
       return
     endif
   endif
 
   let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]
-  call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
+  call writefile(split(prompt_text, '\n', 1), s:vira_prompt_file)
   execute 'top 10 sp ' . s:vira_prompt_file
   silent! setlocal spell
   1
@@ -80,10 +80,10 @@ endfunction
 function! vira#_prompt_end() "{{{2
   " Write contents of the prompt buffer to jira server
 
-  let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
+  let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), '\n'))
 
-  if (g:vira_input_text  == "")
-    redraw | echo "No vira actions performed"
+  if (g:vira_input_text  == '')
+    redraw | echo 'No vira actions performed'
   else
     python3 Vira.api.write_jira()
   endif
@@ -97,7 +97,7 @@ function! vira#_connect() abort "{{{2
     return
   endif
 
-  python3 Vira.api.connect(vim.eval("g:vira_serv"))
+  python3 Vira.api.connect(vim.eval('g:vira_serv'))
   let s:vira_connected = 1
 
 endfunction
@@ -136,13 +136,12 @@ endfunction
 
 function! vira#_print_menu(list) " {{{2
   " Write menu output
-  " execute ':normal! o' . list . "\<esc>"
   if (a:list->type() == type([]))
     for line in a:list
-      execute ':normal! o' . line . "\<esc>"
+      execute ':normal! o' . line . '\<esc>'
     endfor
   else
-    execute ':normal! o' . a:list . "\<esc>"
+    execute ':normal! o' . a:list . '\<esc>'
   endif
 endfunction
 
@@ -293,7 +292,7 @@ endfunction
 function! vira#_set_servers() "{{{2
   " Reset connection and clear filters before selecting new server
   call vira#_reset_filters()
-  python3 Vira.api.vim_filters["project"] = ""
+  python3 Vira.api.vim_filters['project'] = ''
   let s:vira_connected = 0
   call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction
@@ -322,24 +321,24 @@ function! vira#_todo() "{{{2
   " Build default or issue header
   let comment_header = s:vira_todo_header
   if !(vira#_get_active_issue() == g:vira_null_issue)
-    let comment_header .=  ": " . vira#_get_active_issue()
+    let comment_header .=  ': ' . vira#_get_active_issue()
   endif
-  let comment_header .= " [" . strftime('%y%m%d') . "] - "
+  let comment_header .= ' [' . strftime('%y%m%d') . '] - '
 
   " Comment entry from user
   let comment = input(comment_header)
 
   " Post existing comments in the file and on the issue if selected
-  if !(comment == "")
+  if !(comment == '')
     " Jira comment
-    let file_path = "{code}\n" . @% . "\n{code}"
+    let file_path = '{code}\n' . @% . '\n{code}'
     if !(vira#_get_active_issue() == g:vira_null_issue)
       python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
     endif
 
     " Vim comment
-    execute "normal mmO" . comment_header . comment . "\<esc>mn"
-    call NERDComment(0, "Toggle")
+    execute 'normal mmO' . comment_header . comment . '\<esc>mn'
+    call NERDComment(0, 'Toggle')
     normal `m
   endif
 endfunction
