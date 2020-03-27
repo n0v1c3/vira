@@ -36,7 +36,7 @@ class ViraAPI():
             'priority': '',
             'project': '',
             'reporter': '',
-            'status': ['To Do', 'In Progress', 'Selected for Development', 'Backlog']
+            'statusCategory': ['To Do', 'In Progress']
         }
         self.reset_filters()
 
