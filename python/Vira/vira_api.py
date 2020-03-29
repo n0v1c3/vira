@@ -369,9 +369,8 @@ class ViraAPI():
                 q.append(filter_str)
 
         query = ' AND '.join(q) + ' ORDER BY updated DESC'
-
         issues = self.jira.search_issues(
-            query, fields='summary,comment,status', json_result='True', maxResults=-1)
+            query, fields='summary,comment,status,statusCategory', json_result='True', maxResults=-1)
 
         return issues['issues']
 
