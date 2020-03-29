@@ -274,6 +274,9 @@ function! vira#_set_filter(variable, type) "{{{2
   if a:variable[:1] == 'g:'
     execute 'let ' . a:variable . ' = "' . value . '"'
   else
+    if a:variable == 'status'
+      execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
+    endif
     execute 'python3 Vira.api.vim_filters["' . a:variable . '"] = "'. value .'"'
   endif
 
