@@ -299,6 +299,10 @@ function! vira#_set_servers() "{{{2
 endfunction
 
 function! vira#_set_statuses() "{{{2
+  call vira#_set_filter('status', '.')
+endfunction
+
+function! vira#_set_statusCategories() "{{{2
   call vira#_set_filter('statusCategory', '.')
 endfunction
 
