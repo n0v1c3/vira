@@ -87,6 +87,7 @@ function! vira#_prompt_end() "{{{2
   else
     python3 Vira.api.write_jira()
   endif
+  call vira#_refresh()
 
 endfunction
 
@@ -214,7 +215,7 @@ function! vira#_menu(type) abort " {{{2
 
   " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
   " Key mapping
-  silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
+  silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>:call vira#_refresh()<cr>'
   silent! execute 'nnoremap <silent> <buffer> k gk'
   silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
   silent! execute 'vnoremap <silent> <buffer> j gj'
@@ -287,6 +288,7 @@ endfunction
 
 function! vira#_set_issues() "{{{2
   call vira#_set_filter('g:vira_active_issue', '<cWORD>')
+  " call vira#_refresh()
 endfunction
 
 function! vira#_set_projects() "{{{2
