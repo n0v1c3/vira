@@ -15,10 +15,10 @@ let s:vira_end_time = 0
 
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
+let s:vira_menu_type = ''
+
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
-
-let s:vira__menu_type = ''
 
 " AutoCommands {{{1
 
