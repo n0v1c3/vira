@@ -15,6 +15,8 @@ let s:vira_end_time = 0
 
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
+let s:vira_menu_type = ''
+
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
 
@@ -86,8 +88,8 @@ function! vira#_prompt_end() "{{{2
     redraw | echo "No vira actions performed"
   else
     python3 Vira.api.write_jira()
+    call vira#_refresh()
   endif
-  call vira#_refresh()
 
 endfunction
 
@@ -187,8 +189,11 @@ function! vira#_menu(type) abort " {{{2
     echo a:type
     let list = execute('python3 Vira.api.get_' . a:type . '()')
   endif
-  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
 
+  " Save current menu type
+  let s:vira_menu_type = a:type
+
+  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
   " Toggle/create the report buffer
   if (winnr >= 0)
     silent! execute winnr .'wincmd q'
@@ -211,15 +216,6 @@ function! vira#_menu(type) abort " {{{2
   silent! let &foldcolumn=0
   silent! set relativenumber!
   silent! set nonumber
-  " }}}
-
-  " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
-  " Key mapping
-  silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>:call vira#_refresh()<cr>'
-  silent! execute 'nnoremap <silent> <buffer> k gk'
-  silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
-  silent! execute 'vnoremap <silent> <buffer> j gj'
-  silent! execute 'vnoremap <silent> <buffer> k gk'
   " }}}
 
   " Clean-up existing report buffer
@@ -262,6 +258,10 @@ function! vira#_reset_filters() " {{{2
   python3 Vira.api.reset_filters()
 endfunction
 
+function! vira#_set() "{{{2
+  silent! execut 'call vira#_set_' . s:vira_menu_type . '()'
+endfunction
+
 function! vira#_set_filter(variable, type) "{{{2
   execute 'normal 0'
 
@@ -288,7 +288,6 @@ endfunction
 
 function! vira#_set_issues() "{{{2
   call vira#_set_filter('g:vira_active_issue', '<cWORD>')
-  " call vira#_refresh()
 endfunction
 
 function! vira#_set_projects() "{{{2
