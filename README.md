@@ -104,6 +104,7 @@ For each jira project, the following configuration variables are available:
 - `reporter` - Filter these reporters. Can be a single item or list.
 - `priority` - Filter these priorities. Can be a single item or list.
 - `issuetype` - Filter these issuetypes. Can be a single item or list.
+- `fixVersion` - Filter these versions. Can be a single item or list.
 
 The following is an example of the same configuration in yaml:
 
@@ -113,6 +114,7 @@ vira:
   project: VIRA
   assignee: Mike Boiko
   priority: [High, Highest]
+  fixVersion: [1.1.1, 1.1.2]
 OtherProject:
   server: https://jira.othersite.com
   project: MAIN
@@ -181,6 +183,7 @@ to be used to help configure Vira to work for you.
 - `ViraFilterReset` - Reset filter to default.
 - `ViraFilterStatuses` - Add statuses to filter.
 - `ViraFilterTypes` - Add issuetypes to filter.
+- `ViraFilterVersions` - Add versions to filter.
 - `ViraIssue` - Create a new **issue**.
 - `ViraIssues` - Get and Set the active **issue**.
 - `ViraReport` - Get report for active issue.
