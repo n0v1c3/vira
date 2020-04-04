@@ -235,7 +235,7 @@ class ViraAPI():
         '''
         Build a vim popup menu for a list of projects
         '''
-        for version in self.jira.project_versions('AC'):
+        for version in self.jira.project_versions(self.vim_filters['project']):
             print(version.name)
 
     def get_report(self):
