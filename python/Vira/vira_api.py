@@ -37,6 +37,7 @@ class ViraAPI():
             'project': '',
             'reporter': '',
             'status': '',
+            'fixVersion': '',
             'statusCategory': ['To Do', 'In Progress']
         }
         self.reset_filters()
@@ -229,6 +230,13 @@ class ViraAPI():
 
         for project in self.jira.projects():
             print(project)
+
+    def get_versions(self):
+        '''
+        Build a vim popup menu for a list of projects
+        '''
+        for version in self.jira.project_versions(self.vim_filters['project']):
+            print(version.name)
 
     def get_report(self):
         '''

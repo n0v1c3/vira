@@ -275,10 +275,13 @@ function! vira#_set_filter(variable, type) "{{{2
   if a:variable[:1] == 'g:'
     execute 'let ' . a:variable . ' = "' . value . '"'
   else
+    let variable = a:variable
     if a:variable == 'status'
       execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
+    elseif a:variable == 'versions'
+      let variable = 'fixVersion'
     endif
-    execute 'python3 Vira.api.vim_filters["' . a:variable . '"] = "'. value .'"'
+    execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
   endif
 
   if a:variable == 'g:vira_serv'
@@ -312,6 +315,10 @@ endfunction
 
 function! vira#_set_assignees() "{{{2
   call vira#_set_filter('assignee', '.')
+endfunction
+
+function! vira#_set_versions() "{{{2
+  call vira#_set_filter('versions', '.')
 endfunction
 
 function! vira#_set_priorities() "{{{2
