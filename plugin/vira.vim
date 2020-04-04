@@ -43,12 +43,13 @@ command! -nargs=0 -bang ViraTodos call vira#_todos()
 " Filters
 command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
 
-command! -nargs=0 -bang ViraFilterAssignees call vira#_menu("assignees")
-command! -nargs=0 -bang ViraFilterPriorities call vira#_menu("priorities")
-command! -nargs=0 -bang ViraFilterProjects call vira#_menu("projects")
-command! -nargs=0 -bang ViraFilterReporters call vira#_menu("reporters")
-command! -nargs=0 -bang ViraFilterStatuses call vira#_menu("statuses")
-command! -nargs=0 -bang ViraFilterTypes call vira#_menu("issuetypes")
+command! -nargs=0 -bang ViraFilterAssignees call vira#_menu('assignees')
+command! -nargs=0 -bang ViraFilterPriorities call vira#_menu('priorities')
+command! -nargs=0 -bang ViraFilterProjects call vira#_menu('projects')
+command! -nargs=0 -bang ViraFilterReporters call vira#_menu('reporters')
+command! -nargs=0 -bang ViraFilterStatuses call vira#_menu('statuses')
+command! -nargs=0 -bang ViraFilterTypes call vira#_menu('issuetypes')
+command! -nargs=0 -bang ViraFilterVersions call vira#_menu('versions')
 
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2

@@ -314,6 +314,10 @@ function! vira#_set_assignees() "{{{2
   call vira#_set_filter('assignee', '.')
 endfunction
 
+function! vira#_set_versions() "{{{2
+  call vira#_set_filter('versions', '.')
+endfunction
+
 function! vira#_set_priorities() "{{{2
   call vira#_set_filter('priority', '.')
 endfunction

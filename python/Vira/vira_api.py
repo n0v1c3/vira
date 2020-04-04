@@ -230,6 +230,13 @@ class ViraAPI():
         for project in self.jira.projects():
             print(project)
 
+    def get_versions(self):
+        '''
+        Build a vim popup menu for a list of projects
+        '''
+        for version in self.jira.project_versions('AC'):
+            print(version.name)
+
     def get_report(self):
         '''
         Print a report for the given issue
