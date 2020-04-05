@@ -99,12 +99,13 @@ For each jira project, the following configuration variables are available:
 
 - `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml)
 - `project` - Filter these projects. Can be a single item or list.
-- `status` - Filter these statuses. Can be a single item or list.
 - `assignee` - Filter these assignees. Can be a single item or list.
-- `reporter` - Filter these reporters. Can be a single item or list.
-- `priority` - Filter these priorities. Can be a single item or list.
-- `issuetype` - Filter these issuetypes. Can be a single item or list.
+- `component` - Filter these components. Can be a single item or list.
 - `fixVersion` - Filter these versions. Can be a single item or list.
+- `issuetype` - Filter these issuetypes. Can be a single item or list.
+- `priority` - Filter these priorities. Can be a single item or list.
+- `reporter` - Filter these reporters. Can be a single item or list.
+- `status` - Filter these statuses. Can be a single item or list.
 
 The following is an example of the same configuration in yaml:
 
@@ -178,6 +179,7 @@ to be used to help configure Vira to work for you.
 - `ViraComment` - Insert a comment for active issue.
 - `ViraEpics` - Get and Set Project(s) epic issues.
 - `ViraFilterAssignees` - Add assignees to filter.
+- `ViraFilterComponents` - Add components to filter.
 - `ViraFilterPriorities` - Add priorities to filter.
 - `ViraFilterProjects` - Add projects to filter.
 - `ViraFilterReset` - Reset filter to default.
