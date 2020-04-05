@@ -93,6 +93,22 @@ function! vira#_prompt_end() "{{{2
 
 endfunction
 
+function! vira#_check_project(type) abort "{{{2
+  " Check if project was selected for
+  " components and versions
+
+  if a:type != 'components' && a:type != 'versions'
+    return 1
+  endif
+
+  if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
+    return 0
+  endif
+
+  return 1
+
+endfunction
+
 function! vira#_connect() abort "{{{2
   " Connect to jira server if not connected already
 
@@ -185,6 +201,10 @@ function! vira#_menu(type) abort " {{{2
     let type = 'report'
     let list = ''
   else
+    if !vira#_check_project(a:type)
+      echo 'Please select a project before applying this filter.'
+      return
+    endif
     let type = 'menu'
     echo a:type
     let list = execute('python3 Vira.api.get_' . a:type . '()')
@@ -262,6 +282,14 @@ function! vira#_set() "{{{2
   silent! execut 'call vira#_set_' . s:vira_menu_type . '()'
 endfunction
 
+function! vira#_set_assignees() "{{{2
+  call vira#_set_filter('assignee', '.')
+endfunction
+
+function! vira#_set_components() "{{{2
+  call vira#_set_filter('component', '.')
+endfunction
+
 function! vira#_set_filter(variable, type) "{{{2
   execute 'normal 0'
 
@@ -293,8 +321,20 @@ function! vira#_set_issues() "{{{2
   call vira#_set_filter('g:vira_active_issue', '<cWORD>')
 endfunction
 
+function! vira#_set_issuetypes() "{{{2
+  call vira#_set_filter('issuetype', '.')
+endfunction
+
+function! vira#_set_priorities() "{{{2
+  call vira#_set_filter('priority', '.')
+endfunction
+
 function! vira#_set_projects() "{{{2
   call vira#_set_filter('project', '<cWORD>')
+endfunction
+
+function! vira#_set_reporters() "{{{2
+  call vira#_set_filter('reporter', '.')
 endfunction
 
 function! vira#_set_servers() "{{{2
@@ -305,32 +345,16 @@ function! vira#_set_servers() "{{{2
   call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction
 
-function! vira#_set_statuses() "{{{2
-  call vira#_set_filter('status', '.')
-endfunction
-
 function! vira#_set_statusCategories() "{{{2
   call vira#_set_filter('statusCategory', '.')
 endfunction
 
-function! vira#_set_assignees() "{{{2
-  call vira#_set_filter('assignee', '.')
+function! vira#_set_statuses() "{{{2
+  call vira#_set_filter('status', '.')
 endfunction
 
 function! vira#_set_versions() "{{{2
   call vira#_set_filter('versions', '.')
-endfunction
-
-function! vira#_set_priorities() "{{{2
-  call vira#_set_filter('priority', '.')
-endfunction
-
-function! vira#_set_reporters() "{{{2
-  call vira#_set_filter('reporter', '.')
-endfunction
-
-function! vira#_set_issuetypes() "{{{2
-  call vira#_set_filter('issuetype', '.')
 endfunction
 
 function! vira#_todo() "{{{2

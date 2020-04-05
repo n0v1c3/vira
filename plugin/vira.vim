@@ -44,6 +44,7 @@ command! -nargs=0 -bang ViraTodos call vira#_todos()
 command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
 
 command! -nargs=0 -bang ViraFilterAssignees call vira#_menu('assignees')
+command! -nargs=0 -bang ViraFilterComponents call vira#_menu('components')
 command! -nargs=0 -bang ViraFilterPriorities call vira#_menu('priorities')
 command! -nargs=0 -bang ViraFilterProjects call vira#_menu('projects')
 command! -nargs=0 -bang ViraFilterReporters call vira#_menu('reporters')
