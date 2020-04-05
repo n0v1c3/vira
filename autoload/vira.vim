@@ -93,6 +93,22 @@ function! vira#_prompt_end() "{{{2
 
 endfunction
 
+function! vira#_check_project(type) abort "{{{2
+  " Check if project was selected for
+  " components and versions
+
+  if a:type != 'components' && a:type != 'versions'
+    return 1
+  endif
+
+  if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
+    return 0
+  endif
+
+  return 1
+
+endfunction
+
 function! vira#_connect() abort "{{{2
   " Connect to jira server if not connected already
 
@@ -185,6 +201,10 @@ function! vira#_menu(type) abort " {{{2
     let type = 'report'
     let list = ''
   else
+    if !vira#_check_project(a:type)
+      echo 'Please select a project before applying this filter.'
+      return
+    endif
     let type = 'menu'
     echo a:type
     let list = execute('python3 Vira.api.get_' . a:type . '()')
