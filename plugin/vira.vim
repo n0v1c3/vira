@@ -50,6 +50,7 @@ command! -nargs=0 -bang ViraFilterReporters call vira#_menu('reporters')
 command! -nargs=0 -bang ViraFilterStatuses call vira#_menu('statuses')
 command! -nargs=0 -bang ViraFilterTypes call vira#_menu('issuetypes')
 command! -nargs=0 -bang ViraFilterVersions call vira#_menu('versions')
+command! -nargs=0 -bang ViraFilterComponents call vira#_menu('components')
 
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2

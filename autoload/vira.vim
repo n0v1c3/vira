@@ -118,6 +118,10 @@ function! vira#_get_statusline() "{{{2
   " python3 vim.exec("let s:vira_statusline = " . vira_statusline())
 endfunction
 
+function! vira#_get_component() "{{{2
+  return s:vira_component
+endfunction
+
 function! vira#_get_version() "{{{2
   return s:vira_version
 endfunction
@@ -315,6 +319,10 @@ endfunction
 
 function! vira#_set_assignees() "{{{2
   call vira#_set_filter('assignee', '.')
+endfunction
+
+function! vira#_set_components() "{{{2
+  call vira#_set_filter('component', '.')
 endfunction
 
 function! vira#_set_versions() "{{{2

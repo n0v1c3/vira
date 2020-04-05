@@ -35,6 +35,7 @@ class ViraAPI():
             'issuetype': '',
             'priority': '',
             'project': '',
+            'component': '',
             'reporter': '',
             'status': '',
             'fixVersion': '',
@@ -231,10 +232,19 @@ class ViraAPI():
         for project in self.jira.projects():
             print(project)
 
+    def get_components(self):
+        '''
+        Build a vim popup menu for a list of components
+        '''
+
+        for component in self.jira.project_components(self.vim_filters['project']):
+            print(component.name)
+
     def get_versions(self):
         '''
-        Build a vim popup menu for a list of projects
+        Build a vim popup menu for a list of versions
         '''
+
         for version in self.jira.project_versions(self.vim_filters['project']):
             print(version.name)
 
@@ -379,7 +389,10 @@ class ViraAPI():
 
         query = ' AND '.join(q) + ' ORDER BY updated DESC'
         issues = self.jira.search_issues(
-            query, fields='summary,comment,status,statusCategory', json_result='True', maxResults=-1)
+            query,
+            fields='summary,comment,status,statusCategory',
+            json_result='True',
+            maxResults=-1)
 
         return issues['issues']
 
