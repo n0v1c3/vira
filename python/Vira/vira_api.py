@@ -32,13 +32,13 @@ class ViraAPI():
 
         self.vim_filters_default = {
             'assignee': '',
+            'component': '',
+            'fixVersion': '',
             'issuetype': '',
             'priority': '',
             'project': '',
-            'component': '',
             'reporter': '',
             'status': '',
-            'fixVersion': '',
             'statusCategory': ['To Do', 'In Progress']
         }
         self.reset_filters()
@@ -136,6 +136,13 @@ class ViraAPI():
 
         return f"{filterType} in ({selection})"
 
+    def get_assignees(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_users()
+
     def get_comments(self, issue):
         '''
         Get all the comments for an issue
@@ -154,6 +161,14 @@ class ViraAPI():
                 f"{comment['updated'][11:16]}" + ' | ', f"{comment['body']} + '\n'")
 
         return comments
+
+    def get_components(self):
+        '''
+        Build a vim popup menu for a list of components
+        '''
+
+        for component in self.jira.project_components(self.vim_filters['project']):
+            print(component.name)
 
     def get_epics(self):
         '''
@@ -199,6 +214,14 @@ class ViraAPI():
         for priority in self.jira.priorities():
             print(priority)
 
+    def get_projects(self):
+        '''
+        Build a vim popup menu for a list of projects
+        '''
+
+        for project in self.jira.projects():
+            print(project)
+
     def get_prompt_text(self, prompt_type):
         '''
         Get prompt text used for inputting text into jira
@@ -223,30 +246,6 @@ class ViraAPI():
             text = self.prompt_text_commented
 
         return text
-
-    def get_projects(self):
-        '''
-        Build a vim popup menu for a list of projects
-        '''
-
-        for project in self.jira.projects():
-            print(project)
-
-    def get_components(self):
-        '''
-        Build a vim popup menu for a list of components
-        '''
-
-        for component in self.jira.project_components(self.vim_filters['project']):
-            print(component.name)
-
-    def get_versions(self):
-        '''
-        Build a vim popup menu for a list of versions
-        '''
-
-        for version in self.jira.project_versions(self.vim_filters['project']):
-            print(version.name)
 
     def get_report(self):
         '''
@@ -304,6 +303,13 @@ class ViraAPI():
 
         return report
 
+    def get_reporters(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_users()
+
     def get_servers(self):
         '''
         Get list of servers
@@ -328,19 +334,13 @@ class ViraAPI():
         for user in self.jira.search_users("."):
             print(user)
 
-    def get_assignees(self):
+    def get_versions(self):
         '''
-        Get my issues with JQL
-        '''
-
-        self.get_users()
-
-    def get_reporters(self):
-        '''
-        Get my issues with JQL
+        Build a vim popup menu for a list of versions
         '''
 
-        self.get_users()
+        for version in self.jira.project_versions(self.vim_filters['project']):
+            print(version.name)
 
     def load_project_config(self):
         '''
