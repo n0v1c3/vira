@@ -410,6 +410,13 @@ class ViraAPI():
 
         self.jira.transition_issue(issue, status)
 
+    def assign_issue(self, issue, assignee):
+        '''
+        Assign an issue to a user
+        '''
+
+        self.jira.assign_issue(issue, assignee)
+
     def write_jira(self):
         '''
         Write to jira

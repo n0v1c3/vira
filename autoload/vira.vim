@@ -353,6 +353,11 @@ function! vira#_set_statuses() "{{{2
   call vira#_set_filter('status', '.')
 endfunction
 
+function! vira#_assign_issue() "{{{2
+  " Assign current issue to a user
+  python3 Vira.api.assign_issue(vim.eval("g:vira_active_issue"), vira_servers[server].get('username'))
+endfunction
+
 function! vira#_set_versions() "{{{2
   call vira#_set_filter('versions', '.')
 endfunction
