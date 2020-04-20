@@ -136,6 +136,13 @@ class ViraAPI():
 
         return f"{filterType} in ({selection})"
 
+    def get_assign_issue(self):
+        '''
+        Menu to select users
+        '''
+
+        self.get_users()
+
     def get_assignees(self):
         '''
         Get my issues with JQL
@@ -331,7 +338,12 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        for user in self.jira.search_users("."):
+        users = [
+            user.key
+            for user in self.jira.search_users(".")
+            if not user.key.startswith('JIRAUSER')
+        ]
+        for user in users:
             print(user)
 
     def get_versions(self):

@@ -121,10 +121,6 @@ function! vira#_connect() abort "{{{2
 
 endfunction
 
-function! vira#_filter(name) "{{{2
-  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
-endfunction
-
 function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
 endfunction
@@ -200,13 +196,16 @@ function! vira#_menu(type) abort " {{{2
   if a:type == 'report'
     let type = 'report'
     let list = ''
+  elseif a:type == 'assign_issue'
+    let type = a:type
+    let list = execute('python3 Vira.api.get_' . a:type . '()')
   else
     if !vira#_check_project(a:type)
       echo 'Please select a project before applying this filter.'
       return
     endif
     let type = 'menu'
-    echo a:type
+    " echo a:type
     let list = execute('python3 Vira.api.get_' . a:type . '()')
   endif
 
@@ -244,6 +243,8 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     call vira#_print_menu(list)
+  elseif type == 'assign_issue'
+    call vira#_print_menu(list)
   else
     call vira#_print_report(list)
   endif
@@ -276,6 +277,50 @@ endfunction
 
 function! vira#_reset_filters() " {{{2
   python3 Vira.api.reset_filters()
+endfunction
+
+function! vira#_todo() "{{{2
+  " Build default or issue header
+  let comment_header = s:vira_todo_header
+  if !(vira#_get_active_issue() == g:vira_null_issue)
+    let comment_header .=  ": " . vira#_get_active_issue()
+  endif
+  let comment_header .= " [" . strftime('%y%m%d') . "] - "
+
+  " Comment entry from user
+  let comment = input(comment_header)
+
+  " Post existing comments in the file and on the issue if selected
+  if !(comment == "")
+    " Jira comment
+    let file_path = "{code}\n" . @% . "\n{code}"
+    if !(vira#_get_active_issue() == g:vira_null_issue)
+      python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
+    endif
+
+    " Vim comment
+    execute "normal mmO" . comment_header . comment . "\<esc>mn"
+    call NERDComment(0, "Toggle")
+    normal `m
+  endif
+endfunction
+
+function! vira#_todos() "{{{2
+  " Binary files that can be ignored
+  set wildignore+=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
+  " Seacrch the CWD to find all of your current TODOs
+  vimgrep /TODO.*\[\d\{6}]/ **/* **/.* | cw 5
+  " Un-ignore the binary files
+  set wildignore-=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
+endfunction
+
+function! vira#_timestamp() "{{{2
+  python3 Vira.timestamp()
+endfunction
+
+" Filter {{{1
+function! vira#_filter(name) "{{{2
+  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
 
 function! vira#_set() "{{{2
@@ -353,50 +398,29 @@ function! vira#_set_statuses() "{{{2
   call vira#_set_filter('status', '.')
 endfunction
 
-function! vira#_assign_issue() "{{{2
-  " Assign current issue to a user
-  python3 Vira.api.assign_issue(vim.eval("g:vira_active_issue"), vira_servers[server].get('username'))
-endfunction
-
 function! vira#_set_versions() "{{{2
   call vira#_set_filter('versions', '.')
 endfunction
 
-function! vira#_todo() "{{{2
-  " Build default or issue header
-  let comment_header = s:vira_todo_header
-  if !(vira#_get_active_issue() == g:vira_null_issue)
-    let comment_header .=  ": " . vira#_get_active_issue()
+" " Write {{{1
+function! vira#_write(variable, type) "{{{2
+  execute 'normal 0'
+
+  if a:type == '<cWORD>'
+    let value = expand('<cWORD>')
+  else
+    let value = getline('.')
   endif
-  let comment_header .= " [" . strftime('%y%m%d') . "] - "
 
-  " Comment entry from user
-  let comment = input(comment_header)
-
-  " Post existing comments in the file and on the issue if selected
-  if !(comment == "")
-    " Jira comment
-    let file_path = "{code}\n" . @% . "\n{code}"
-    if !(vira#_get_active_issue() == g:vira_null_issue)
-      python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
-    endif
-
-    " Vim comment
-    execute "normal mmO" . comment_header . comment . "\<esc>mn"
-    call NERDComment(0, "Toggle")
-    normal `m
-  endif
+  let variable = a:variable
+  execute 'python3 Vira.api.assign_issue(vim.eval("g:vira_active_issue"), "' . value . '")'
 endfunction
 
-function! vira#_todos() "{{{2
-  " Binary files that can be ignored
-  set wildignore+=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
-  " Seacrch the CWD to find all of your current TODOs
-  vimgrep /TODO.*\[\d\{6}]/ **/* **/.* | cw 5
-  " Un-ignore the binary files
-  set wildignore-=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
+function! vira#_assign_issue() "{{{2
+  " python3 Vira.api.assign_issue(vim.eval("g:vira_active_issue"), vim.eval('s:set_menu_type'))
+  let a:variable = 'assign_issue'
+endfunction
+function! vira#_set_assign_issue() "{{{2
+  call vira#_write('assign_issue', '.')
 endfunction
 
-function! vira#_timestamp() "{{{2
-  python3 Vira.timestamp()
-endfunction
