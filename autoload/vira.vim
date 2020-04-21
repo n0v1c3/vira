@@ -21,7 +21,6 @@ let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
 
 " AutoCommands {{{1
-
 augroup ViraPrompt
   autocmd!
   exe 'autocmd BufWinLeave ' . s:vira_prompt_file . ' call vira#_prompt_end()'
@@ -196,9 +195,6 @@ function! vira#_menu(type) abort " {{{2
   if a:type == 'report'
     let type = 'report'
     let list = ''
-  elseif a:type == 'assign_issue'
-    let type = a:type
-    let list = execute('python3 Vira.api.get_' . a:type . '()')
   else
     if !vira#_check_project(a:type)
       echo 'Please select a project before applying this filter.'
@@ -243,8 +239,8 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     call vira#_print_menu(list)
-  elseif type == 'assign_issue'
-    call vira#_print_menu(list)
+  " elseif type == 'assign_issue'
+    " call vira#_print_menu(list)
   else
     call vira#_print_report(list)
   endif
@@ -354,7 +350,11 @@ function! vira#_set_filter(variable, type) "{{{2
     elseif a:variable == 'versions'
       let variable = 'fixVersion'
     endif
-    execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
+    if a:variable == 'assign_issue'
+      execute 'python3 Vira.api.assign_issue(vim.eval("g:vira_active_issue"), "' . value . '")'
+    else
+      execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
+    endif
   endif
 
   if a:variable == 'g:vira_serv'
@@ -402,25 +402,8 @@ function! vira#_set_versions() "{{{2
   call vira#_set_filter('versions', '.')
 endfunction
 
-" " Write {{{1
-function! vira#_write(variable, type) "{{{2
-  execute 'normal 0'
-
-  if a:type == '<cWORD>'
-    let value = expand('<cWORD>')
-  else
-    let value = getline('.')
-  endif
-
-  let variable = a:variable
-  execute 'python3 Vira.api.assign_issue(vim.eval("g:vira_active_issue"), "' . value . '")'
-endfunction
-
-function! vira#_assign_issue() "{{{2
-  " python3 Vira.api.assign_issue(vim.eval("g:vira_active_issue"), vim.eval('s:set_menu_type'))
-  let a:variable = 'assign_issue'
-endfunction
+" Write {{{1
 function! vira#_set_assign_issue() "{{{2
-  call vira#_write('assign_issue', '.')
+  call vira#_set_filter('assign_issue', '.')
 endfunction
 
