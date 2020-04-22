@@ -350,8 +350,8 @@ function! vira#_set_filter(variable, type) "{{{2
     elseif a:variable == 'versions'
       let variable = 'fixVersion'
     endif
-    if a:variable == 'assign_issue'
-      execute 'python3 Vira.api.assign_issue(vim.eval("g:vira_active_issue"), "' . value . '")'
+    if a:variable == 'assign_issue' || a:variable == 'transition_issue'
+      execute 'python3 Vira.api.' . a:variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
     else
       execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
     endif
@@ -405,5 +405,9 @@ endfunction
 " Write {{{1
 function! vira#_set_assign_issue() "{{{2
   call vira#_set_filter('assign_issue', '.')
+endfunction
+
+function! vira#_set_set_status() "{{{2
+  call vira#_set_filter('transition_issue', '.')
 endfunction
 

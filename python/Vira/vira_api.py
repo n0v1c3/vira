@@ -333,6 +333,13 @@ class ViraAPI():
         for status in self.jira.statuses():
             print(status)
 
+    def get_set_status(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_statuses()
+
     def get_users(self):
         '''
         Get my issues with JQL
@@ -428,6 +435,12 @@ class ViraAPI():
         '''
 
         self.jira.assign_issue(issue, assignee)
+
+    def transition_issue(self, issue, status):
+        '''
+        Assign an issue to a user
+        '''
+        self.jira.transition_issue(issue, transition=status)
 
     def write_jira(self):
         '''
