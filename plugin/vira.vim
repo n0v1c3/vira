@@ -28,8 +28,6 @@ let g:vira_load_project_enabled = 1
 
 " Commands {{{1
 " Basics
-command! -nargs=0 -bang ViraAssignIssue call vira#_menu('assign_issue');
-command! -nargs=0 -bang ViraSetStatus call vira#_menu('set_status');
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_prompt_start('comment')
 command! -nargs=0 -bang ViraEpics call vira#_menu("epics")
@@ -42,9 +40,12 @@ command! -nargs=0 -bang ViraServers call vira#_menu('servers')
 command! -nargs=0 -bang ViraTodo call vira#_todo()
 command! -nargs=0 -bang ViraTodos call vira#_todos()
 
+" Set/Update
+command! -nargs=0 -bang ViraAssignIssue call vira#_menu('assign_issue');
+command! -nargs=0 -bang ViraSetStatus call vira#_menu('set_status');
+
 " Filters
 command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
-
 command! -nargs=0 -bang ViraFilterAssignees call vira#_menu('assignees')
 command! -nargs=0 -bang ViraFilterComponents call vira#_menu('components')
 command! -nargs=0 -bang ViraFilterPriorities call vira#_menu('priorities')

@@ -239,8 +239,6 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     call vira#_print_menu(list)
-  " elseif type == 'assign_issue'
-    " call vira#_print_menu(list)
   else
     call vira#_print_report(list)
   endif
@@ -320,38 +318,50 @@ function! vira#_filter(name) "{{{2
 endfunction
 
 function! vira#_set() "{{{2
-  silent! execut 'call vira#_set_' . s:vira_menu_type . '()'
-endfunction
-
-function! vira#_set_assignees() "{{{2
-  call vira#_set_filter('assignee', '.')
-endfunction
-
-function! vira#_set_components() "{{{2
-  call vira#_set_filter('component', '.')
+  silent! execut 'call vira#_set_filter("' . s:vira_menu_type . '",".")'
 endfunction
 
 function! vira#_set_filter(variable, type) "{{{2
-  execute 'normal 0'
+  let lookup = {
+    \'assign_issue': 'assign_issue',
+    \'assignees': 'assignee',
+    \'components': 'component',
+    \'issues': 'g:vira_active_issue',
+    \'servers': 'g:vira_serv',
+    \'issuetypes': 'issuetype',
+    \'priorities': 'priority',
+    \'projects': 'project',
+    \'reporters': 'reporter',
+    \'statusCategories': 'statusCategory',
+    \'statuses': 'status',
+    \'set_status': 'transition_issue',
+    \'versions': 'fixVersion',
+    \}
 
-  if a:type == '<cWORD>'
+  execute 'normal 0'
+  if a:variable == 'issues' || a:variable == 'projects' || a:variable == 'set_servers'
     let value = expand('<cWORD>')
   else
     let value = getline('.')
   endif
 
+  let variable = lookup[a:variable]
+
   " This function is used to set vim and python variables
-  if a:variable[:1] == 'g:'
-    execute 'let ' . a:variable . ' = "' . value . '"'
-  else
-    let variable = a:variable
-    if a:variable == 'status'
-      execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
-    elseif a:variable == 'versions'
-      let variable = 'fixVersion'
+  if variable[:1] == 'g:'
+    if a:variable == 'servers'
+      " Reset connection and clear filters before selecting new server
+      call vira#_reset_filters()
+      python3 Vira.api.vim_filters["project"] = ""
+      let s:vira_connected = 0
     endif
-    if a:variable == 'assign_issue' || a:variable == 'transition_issue'
-      execute 'python3 Vira.api.' . a:variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+    execute 'let ' . variable . ' = "' . value . '"'
+  else
+    if variable == 'status'
+      execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
+    endif
+    if variable == 'assign_issue' || variable == 'transition_issue'
+      execute 'python3 Vira.api.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
     else
       execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
     endif
@@ -362,26 +372,6 @@ function! vira#_set_filter(variable, type) "{{{2
   endif
 endfunction
 
-function! vira#_set_issues() "{{{2
-  call vira#_set_filter('g:vira_active_issue', '<cWORD>')
-endfunction
-
-function! vira#_set_issuetypes() "{{{2
-  call vira#_set_filter('issuetype', '.')
-endfunction
-
-function! vira#_set_priorities() "{{{2
-  call vira#_set_filter('priority', '.')
-endfunction
-
-function! vira#_set_projects() "{{{2
-  call vira#_set_filter('project', '<cWORD>')
-endfunction
-
-function! vira#_set_reporters() "{{{2
-  call vira#_set_filter('reporter', '.')
-endfunction
-
 function! vira#_set_servers() "{{{2
   " Reset connection and clear filters before selecting new server
   call vira#_reset_filters()
@@ -389,25 +379,3 @@ function! vira#_set_servers() "{{{2
   let s:vira_connected = 0
   call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction
-
-function! vira#_set_statusCategories() "{{{2
-  call vira#_set_filter('statusCategory', '.')
-endfunction
-
-function! vira#_set_statuses() "{{{2
-  call vira#_set_filter('status', '.')
-endfunction
-
-function! vira#_set_versions() "{{{2
-  call vira#_set_filter('versions', '.')
-endfunction
-
-" Write {{{1
-function! vira#_set_assign_issue() "{{{2
-  call vira#_set_filter('assign_issue', '.')
-endfunction
-
-function! vira#_set_set_status() "{{{2
-  call vira#_set_filter('transition_issue', '.')
-endfunction
-
