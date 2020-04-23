@@ -19,6 +19,21 @@ let s:vira_menu_type = ''
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
+let s:vira_set_lookup = {
+      \'assign_issue': 'assign_issue',
+      \'assignees': 'assignee',
+      \'components': 'component',
+      \'issues': 'g:vira_active_issue',
+      \'servers': 'g:vira_serv',
+      \'issuetypes': 'issuetype',
+      \'priorities': 'priority',
+      \'projects': 'project',
+      \'reporters': 'reporter',
+      \'statusCategories': 'statusCategory',
+      \'statuses': 'status',
+      \'set_status': 'transition_issue',
+      \'versions': 'fixVersion',
+      \}
 
 " AutoCommands {{{1
 augroup ViraPrompt
@@ -322,22 +337,6 @@ function! vira#_set() "{{{2
 endfunction
 
 function! vira#_set_filter(variable, type) "{{{2
-  let lookup = {
-    \'assign_issue': 'assign_issue',
-    \'assignees': 'assignee',
-    \'components': 'component',
-    \'issues': 'g:vira_active_issue',
-    \'servers': 'g:vira_serv',
-    \'issuetypes': 'issuetype',
-    \'priorities': 'priority',
-    \'projects': 'project',
-    \'reporters': 'reporter',
-    \'statusCategories': 'statusCategory',
-    \'statuses': 'status',
-    \'set_status': 'transition_issue',
-    \'versions': 'fixVersion',
-    \}
-
   execute 'normal 0'
   if a:variable == 'issues' || a:variable == 'projects' || a:variable == 'set_servers'
     let value = expand('<cWORD>')
@@ -345,7 +344,7 @@ function! vira#_set_filter(variable, type) "{{{2
     let value = getline('.')
   endif
 
-  let variable = lookup[a:variable]
+  let variable = s:vira_set_lookup[a:variable]
 
   " This function is used to set vim and python variables
   if variable[:1] == 'g:'
@@ -361,7 +360,7 @@ function! vira#_set_filter(variable, type) "{{{2
       execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
     endif
     if variable == 'assign_issue' || variable == 'transition_issue'
-      execute 'python3 Vira.api.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+      execute 'python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
     else
       execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
     endif

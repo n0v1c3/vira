@@ -422,26 +422,6 @@ class ViraAPI():
 
         self.vim_filters = dict(self.vim_filters_default)
 
-    def set_status(self, issue, status):
-        '''
-        Set the status of the given issue
-        '''
-
-        self.jira.transition_issue(issue, status)
-
-    def assign_issue(self, issue, assignee):
-        '''
-        Assign an issue to a user
-        '''
-
-        self.jira.assign_issue(issue, assignee)
-
-    def transition_issue(self, issue, status):
-        '''
-        Assign an issue to a user
-        '''
-        self.jira.transition_issue(issue, transition=status)
-
     def write_jira(self):
         '''
         Write to jira
