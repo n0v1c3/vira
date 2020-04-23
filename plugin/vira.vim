@@ -40,12 +40,13 @@ command! -nargs=0 -bang ViraServers call vira#_menu('servers')
 command! -nargs=0 -bang ViraTodo call vira#_todo()
 command! -nargs=0 -bang ViraTodos call vira#_todos()
 
-" Set/Update
-command! -nargs=0 -bang ViraAssignIssue call vira#_menu('assign_issue');
+" Sets
+command! -nargs=0 -bang ViraSetAssignee call vira#_menu('assign_issue');
 command! -nargs=0 -bang ViraSetStatus call vira#_menu('set_status');
 
 " Filters
 command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
+
 command! -nargs=0 -bang ViraFilterAssignees call vira#_menu('assignees')
 command! -nargs=0 -bang ViraFilterComponents call vira#_menu('components')
 command! -nargs=0 -bang ViraFilterPriorities call vira#_menu('priorities')
