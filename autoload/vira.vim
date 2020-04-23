@@ -19,9 +19,23 @@ let s:vira_menu_type = ''
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
+let s:vira_set_lookup = {
+      \'assign_issue': 'assign_issue',
+      \'assignees': 'assignee',
+      \'components': 'component',
+      \'issues': 'g:vira_active_issue',
+      \'servers': 'g:vira_serv',
+      \'issuetypes': 'issuetype',
+      \'priorities': 'priority',
+      \'projects': 'project',
+      \'reporters': 'reporter',
+      \'statusCategories': 'statusCategory',
+      \'statuses': 'status',
+      \'set_status': 'transition_issue',
+      \'versions': 'fixVersion',
+      \}
 
 " AutoCommands {{{1
-
 augroup ViraPrompt
   autocmd!
   exe 'autocmd BufWinLeave ' . s:vira_prompt_file . ' call vira#_prompt_end()'
@@ -121,10 +135,6 @@ function! vira#_connect() abort "{{{2
 
 endfunction
 
-function! vira#_filter(name) "{{{2
-  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
-endfunction
-
 function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
 endfunction
@@ -206,7 +216,7 @@ function! vira#_menu(type) abort " {{{2
       return
     endif
     let type = 'menu'
-    echo a:type
+    " echo a:type
     let list = execute('python3 Vira.api.get_' . a:type . '()')
   endif
 
@@ -278,85 +288,6 @@ function! vira#_reset_filters() " {{{2
   python3 Vira.api.reset_filters()
 endfunction
 
-function! vira#_set() "{{{2
-  silent! execut 'call vira#_set_' . s:vira_menu_type . '()'
-endfunction
-
-function! vira#_set_assignees() "{{{2
-  call vira#_set_filter('assignee', '.')
-endfunction
-
-function! vira#_set_components() "{{{2
-  call vira#_set_filter('component', '.')
-endfunction
-
-function! vira#_set_filter(variable, type) "{{{2
-  execute 'normal 0'
-
-  if a:type == '<cWORD>'
-    let value = expand('<cWORD>')
-  else
-    let value = getline('.')
-  endif
-
-  " This function is used to set vim and python variables
-  if a:variable[:1] == 'g:'
-    execute 'let ' . a:variable . ' = "' . value . '"'
-  else
-    let variable = a:variable
-    if a:variable == 'status'
-      execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
-    elseif a:variable == 'versions'
-      let variable = 'fixVersion'
-    endif
-    execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
-  endif
-
-  if a:variable == 'g:vira_serv'
-    call vira#_connect()
-  endif
-endfunction
-
-function! vira#_set_issues() "{{{2
-  call vira#_set_filter('g:vira_active_issue', '<cWORD>')
-endfunction
-
-function! vira#_set_issuetypes() "{{{2
-  call vira#_set_filter('issuetype', '.')
-endfunction
-
-function! vira#_set_priorities() "{{{2
-  call vira#_set_filter('priority', '.')
-endfunction
-
-function! vira#_set_projects() "{{{2
-  call vira#_set_filter('project', '<cWORD>')
-endfunction
-
-function! vira#_set_reporters() "{{{2
-  call vira#_set_filter('reporter', '.')
-endfunction
-
-function! vira#_set_servers() "{{{2
-  " Reset connection and clear filters before selecting new server
-  call vira#_reset_filters()
-  python3 Vira.api.vim_filters["project"] = ""
-  let s:vira_connected = 0
-  call vira#_set_filter('g:vira_serv', '<cWORD>')
-endfunction
-
-function! vira#_set_statusCategories() "{{{2
-  call vira#_set_filter('statusCategory', '.')
-endfunction
-
-function! vira#_set_statuses() "{{{2
-  call vira#_set_filter('status', '.')
-endfunction
-
-function! vira#_set_versions() "{{{2
-  call vira#_set_filter('versions', '.')
-endfunction
-
 function! vira#_todo() "{{{2
   " Build default or issue header
   let comment_header = s:vira_todo_header
@@ -394,4 +325,56 @@ endfunction
 
 function! vira#_timestamp() "{{{2
   python3 Vira.timestamp()
+endfunction
+
+" Filter {{{1
+function! vira#_filter(name) "{{{2
+  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
+endfunction
+
+function! vira#_set() "{{{2
+  silent! execut 'call vira#_set_filter("' . s:vira_menu_type . '",".")'
+endfunction
+
+function! vira#_set_filter(variable, type) "{{{2
+  execute 'normal 0'
+  if a:variable == 'issues' || a:variable == 'projects' || a:variable == 'set_servers'
+    let value = expand('<cWORD>')
+  else
+    let value = getline('.')
+  endif
+
+  let variable = s:vira_set_lookup[a:variable]
+
+  " This function is used to set vim and python variables
+  if variable[:1] == 'g:'
+    if a:variable == 'servers'
+      " Reset connection and clear filters before selecting new server
+      call vira#_reset_filters()
+      python3 Vira.api.vim_filters["project"] = ""
+      let s:vira_connected = 0
+    endif
+    execute 'let ' . variable . ' = "' . value . '"'
+  else
+    if variable == 'status'
+      execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
+    endif
+    if variable == 'assign_issue' || variable == 'transition_issue'
+      execute 'python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+    else
+      execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
+    endif
+  endif
+
+  if a:variable == 'g:vira_serv'
+    call vira#_connect()
+  endif
+endfunction
+
+function! vira#_set_servers() "{{{2
+  " Reset connection and clear filters before selecting new server
+  call vira#_reset_filters()
+  python3 Vira.api.vim_filters["project"] = ""
+  let s:vira_connected = 0
+  call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction

@@ -136,6 +136,13 @@ class ViraAPI():
 
         return f"{filterType} in ({selection})"
 
+    def get_assign_issue(self):
+        '''
+        Menu to select users
+        '''
+
+        self.get_users()
+
     def get_assignees(self):
         '''
         Get my issues with JQL
@@ -326,12 +333,24 @@ class ViraAPI():
         for status in self.jira.statuses():
             print(status)
 
+    def get_set_status(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_statuses()
+
     def get_users(self):
         '''
         Get my issues with JQL
         '''
 
-        for user in self.jira.search_users("."):
+        users = [
+            user.key
+            for user in self.jira.search_users(".")
+            if not user.key.startswith('JIRAUSER')
+        ]
+        for user in users:
             print(user)
 
     def get_versions(self):
@@ -402,13 +421,6 @@ class ViraAPI():
         '''
 
         self.vim_filters = dict(self.vim_filters_default)
-
-    def set_status(self, issue, status):
-        '''
-        Set the status of the given issue
-        '''
-
-        self.jira.transition_issue(issue, status)
 
     def write_jira(self):
         '''

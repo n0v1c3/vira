@@ -7,12 +7,6 @@ along with creating new issues on the go.
 
 ## Installation
 
-Add to your vim plugin list in your .vimrc:
-
-```
-Plugin n0v1c3/vira
-```
-
 Example of vim-plug post-update hook to automatically install python dependencies along with vira:
 
 ```
@@ -190,6 +184,8 @@ to be used to help configure Vira to work for you.
 - `ViraIssues` - Get and Set the active **issue**.
 - `ViraReport` - Get report for active issue.
 - `ViraServers` - Get and Set active Jira server.
+- `ViraSetAssignee` - Select user to assign the current issue.
+- `ViraSetStatus` - Select the status of the current issue.
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 
@@ -209,14 +205,18 @@ to be used to help configure Vira to work for you.
 ```
 " Basics
 nnoremap <silent> <leader>vI :ViraIssue<cr>
+nnoremap <silent> <leader>vS :ViraServers<cr>
 nnoremap <silent> <leader>vT :ViraTodo<cr>
 nnoremap <silent> <leader>vb :ViraBrowse<cr>
 nnoremap <silent> <leader>vc :ViraComment<cr>
 nnoremap <silent> <leader>ve :ViraEpics<cr>
 nnoremap <silent> <leader>vi :ViraIssues<cr>
 nnoremap <silent> <leader>vr :ViraReport<cr>
-nnoremap <silent> <leader>vs :ViraServers<cr>
 nnoremap <silent> <leader>vt :ViraTodos<cr>
+
+" Sets
+nnoremap <silent> <leader>vsa :ViraSetAssignee<cr>
+nnoremap <silent> <leader>vss :ViraSetStatus<cr>
 
 " Filter search
 nnoremap <silent> <leader>vfP :ViraFilterPriorities<cr>
