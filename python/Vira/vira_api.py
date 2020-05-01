@@ -200,7 +200,7 @@ class ViraAPI():
         # issues = []
         for issue in self.query_issues():
             print(
-                issue["key"] + "  -  " + issue["fields"]["summary"] + " | " +
+                issue["key"] + "  ~  " + issue["fields"]["summary"] + " | " +
                 issue["fields"]["status"]["name"] + " |")
             #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
         # return str(issues)

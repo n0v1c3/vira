@@ -9,6 +9,9 @@ augroup Vira
   autocmd BufNewFile,BufRead vira_report setf vira
   autocmd BufNewFile,BufRead vira_menu setf vira
   autocmd Filetype vira nnoremap <silent> <buffer> <cr> 0:call vira#_set()<cr>:q!<cr>:call vira#_refresh()<cr>
+  autocmd Filetype vira nnoremap <silent> <buffer> s :call vira#_select()<cr>
+  " autocmd Filetype vira nnoremap <buffer> s 0vf~hy/<up><c-r>"|<cr>
+  " autocmd Filetype vira nnoremap <buffer> s 0vf~hy/\v\|<c-r>"\|<cr>
   autocmd Filetype vira nnoremap <silent> <buffer> k gk
   autocmd Filetype vira nnoremap <silent> <buffer> q :q!<CR>
   autocmd Filetype vira vnoremap <silent> <buffer> j gj

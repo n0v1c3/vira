@@ -16,6 +16,9 @@ let s:vira_end_time = 0
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_menu_type = ''
+  
+let s:vira_select_init = 0
+let s:vira_filter = ''
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
@@ -253,6 +256,8 @@ function! vira#_menu(type) abort " {{{2
 
   " Write report output into buffer
   if type == 'menu'
+    let s:vira_filter = ''
+    let s:vira_select_init = 0
     call vira#_print_menu(list)
   else
     call vira#_print_report(list)
@@ -330,6 +335,26 @@ endfunction
 " Filter {{{1
 function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
+endfunction
+
+function! vira#_select() "{{{2
+  execute 'normal mm'
+  execute 'normal 0'
+  if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    let value = expand('<cWORD>')
+  else
+    let value = getline('.')
+  endif
+  if s:vira_select_init == 1
+    let s:vira_filter = s:vira_filter . "|" . value
+  else
+    let s:vira_filter = value
+    let s:vira_select_init = 1
+  endif
+  let @/ = '\v' . s:vira_filter
+  silent execute "normal! /\\v" . s:vira_filter . "\<cr>"
+  execute 'normal `m'
+  call feedkeys(":set hlsearch\<cr>")
 endfunction
 
 function! vira#_set() "{{{2
