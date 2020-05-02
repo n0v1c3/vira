@@ -3,8 +3,8 @@ if exists('b:current_syntax') | finish|  endif
 
 " Syntax matching
 syntax match viraIssuesStatus "| .* |" contained
-syntax match viraIssuesDescription "-  .*"hs=s+3 contains=viraIssuesStatus nextgroup=viraIssuesStatus
-syntax match viraIssuesIssue ".*-.*  -"he=e contains=viraIssuesDescription nextgroup=viraIssuesDescription
+syntax match viraIssuesDescription "\~  .*"hs=s+3 contains=viraIssuesStatus nextgroup=viraIssuesStatus
+syntax match viraIssuesIssue ".*-.*  \~"he=e contains=viraIssuesDescription nextgroup=viraIssuesDescription
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
