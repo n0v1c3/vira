@@ -13,7 +13,7 @@ augroup Vira
   " autocmd Filetype vira nnoremap <buffer> s 0vf~hy/<up><c-r>"|<cr>
   " autocmd Filetype vira nnoremap <buffer> s 0vf~hy/\v\|<c-r>"\|<cr>
   autocmd Filetype vira nnoremap <silent> <buffer> k gk
-  autocmd Filetype vira nnoremap <silent> <buffer> q :q!<CR>
+  autocmd Filetype vira nnoremap <silent> <buffer> q :q!<cr>:call vira#_filter_reset()<cr>
   autocmd Filetype vira vnoremap <silent> <buffer> j gj
   autocmd Filetype vira vnoremap <silent> <buffer> k gk
 augroup END

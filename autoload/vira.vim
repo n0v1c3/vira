@@ -19,6 +19,7 @@ let s:vira_menu_type = ''
   
 let s:vira_select_init = 0
 let s:vira_filter = ''
+let s:vira_filter_hold = @/
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
@@ -257,9 +258,7 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     call feedkeys(":set hlsearch\<cr>")
-    let s:vira_filter = ''
-    let @/ = ''
-    let s:vira_select_init = 0
+    let s:vira_filter_hold = @/
     call vira#_print_menu(list)
   else
     call vira#_print_report(list)
@@ -394,6 +393,13 @@ function! vira#_set_filter(variable, type) "{{{2
   else
     execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
   endif
+
+  call vira#_filter_reset()
+endfunction
+
+function! vira#_filter_reset()
+  let s:vira_select_init = 0
+  let @/ = s:vira_filter_hold
 endfunction
 
 function! vira#_set_servers() "{{{2
