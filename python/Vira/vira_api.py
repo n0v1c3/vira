@@ -273,10 +273,10 @@ class ViraAPI():
         close_fold = '}}}'
         summary = issues['issues'][0]['fields']['summary']
         story_points = str(issues['issues'][0]['fields'].get('customfield_10106', ''))
-        created = issues['issues'][0]['fields']['created'][0:10] + ' ' + issues['issues'][0][
-            'fields']['created'][11:16]
-        updated = issues['issues'][0]['fields']['updated'][0:10] + ' ' + issues['issues'][0][
-            'fields']['updated'][11:16]
+        created = issues['issues'][0]['fields']['created'][0:10] + ' ' + issues['issues'][
+            0]['fields']['created'][11:16]
+        updated = issues['issues'][0]['fields']['updated'][0:10] + ' ' + issues['issues'][
+            0]['fields']['updated'][11:16]
         task_type = issues['issues'][0]['fields']['issuetype']['name']
         status = issues['issues'][0]['fields']['status']['name']
         priority = issues['issues'][0]['fields']['priority']['name']
@@ -286,9 +286,8 @@ class ViraAPI():
         description = str(issues['issues'][0]['fields'].get('description'))
         comments = '\n'.join(
             [
-                f"\n{comment['author']['displayName']}" + ' @ ' +
-                f"{comment['updated'][0:10]}" + ' ' + f"{comment['updated'][11:16]}" +
-                ' {' + '{{2' + f"\n{comment['body']}" + "\n}}" + "}"
+                comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
+                ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
                 for comment in issues['issues'][0]['fields']['comment']['comments']
             ])
 
