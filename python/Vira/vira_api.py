@@ -260,48 +260,57 @@ class ViraAPI():
         '''
 
         # Get passed issue content
-        issue = vim.eval("g:vira_active_issue")
+        active_issue = vim.eval("g:vira_active_issue")
         issues = self.jira.search_issues(
-            'issue = "' + issue + '"',
+            'issue = "' + active_issue + '"',
             #  fields='*',
-            fields='summary,comment,' + 'description,issuetype,' + 'priority,status,' +
-            'created,updated,' + 'assignee,reporter,' + 'customfield_10106,',
+            fields=','.join(
+                [
+                    'summary,', 'comment,', 'component', 'description', 'issuetype,',
+                    'priority', 'status,', 'created', 'updated,', 'assignee', 'reporter,',
+                    'fixVersion', 'customfield_10106,'
+                ]),
             json_result='True')
+        issue = issues['issues'][0]['fields']
 
         # Prepare report data
         open_fold = '{{{'
         close_fold = '}}}'
-        summary = issues['issues'][0]['fields']['summary']
-        story_points = str(issues['issues'][0]['fields'].get('customfield_10106', ''))
-        created = issues['issues'][0]['fields']['created'][0:10] + ' ' + issues['issues'][
-            0]['fields']['created'][11:16]
-        updated = issues['issues'][0]['fields']['updated'][0:10] + ' ' + issues['issues'][
-            0]['fields']['updated'][11:16]
-        task_type = issues['issues'][0]['fields']['issuetype']['name']
-        status = issues['issues'][0]['fields']['status']['name']
-        priority = issues['issues'][0]['fields']['priority']['name']
-        assignee = issues['issues'][0]['fields']['assignee']['displayName'] if type(
-            issues['issues'][0]['fields']['assignee']) == dict else 'Unassigned'
-        reporter = issues['issues'][0]['fields']['reporter']['displayName']
-        description = str(issues['issues'][0]['fields'].get('description'))
+        summary = issue['summary']
+        story_points = str(issue.get('customfield_10106', ''))
+        created = issue['created'][0:10] + ' ' + issues['issues'][0]['fields']['created'][
+            11:16]
+        updated = issue['updated'][0:10] + ' ' + issues['issues'][0]['fields']['updated'][
+            11:16]
+        task_type = issue['issuetype']['name']
+        status = issue['status']['name']
+        priority = issue['priority']['name']
+        assignee = issue['assignee']['displayName'] if type(
+            issue['assignee']) == dict else 'Unassigned'
+        reporter = issue['reporter']['displayName']
+        component = ', '.join([c['name'] for c in issue['components']])
+        version = ', '.join([v['name'] for v in issue['fixVersions']])
+        description = str(issue.get('description'))
         comments = '\n'.join(
             [
                 comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
                 ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
-                for comment in issues['issues'][0]['fields']['comment']['comments']
+                for comment in issue['comment']['comments']
             ])
 
         # Create report template and fill with data
-        report = '''{issue}: {summary}
+        report = '''{active_issue}: {summary}
 Details {open_fold}1
-Story Points  :  {story_points}
-     Created  :  {created}
-     Updated  :  {updated}
-        Type  :  {task_type}
-      Status  :  {status}
-    Priority  :  {priority}
-    Assignee  :  {assignee}
-    Reporter  :  {reporter}
+Story Points   :  {story_points}
+     Created   :  {created}
+     Updated   :  {updated}
+        Type   :  {task_type}
+      Status   :  {status}
+    Priority   :  {priority}
+    Component  :  {component}
+    Version    :  {version}
+    Assignee   :  {assignee}
+    Reporter   :  {reporter}
 {close_fold}
 Description {open_fold}1
 {description}
