@@ -132,7 +132,9 @@ class ViraAPI():
 
         selection = str(self.vim_filters[filterType]).strip('[]') if type(
             self.vim_filters[filterType]
-        ) == list else "'" + self.vim_filters[filterType] + "'"
+        ) == list else self.vim_filters[filterType] if type(
+                self.vim_filters[filterType]
+                ) == tuple else "'" + self.vim_filters[filterType] + "'"
 
         return f"{filterType} in ({selection})"
 
@@ -200,7 +202,7 @@ class ViraAPI():
         # issues = []
         for issue in self.query_issues():
             print(
-                issue["key"] + "  -  " + issue["fields"]["summary"] + " | " +
+                issue["key"] + "  ~  " + issue["fields"]["summary"] + " | " +
                 issue["fields"]["status"]["name"] + " |")
             #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
         # return str(issues)

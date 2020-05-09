@@ -16,6 +16,10 @@ let s:vira_end_time = 0
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_menu_type = ''
+  
+let s:vira_select_init = 0
+let s:vira_filter = ''
+let s:vira_filter_hold = @/
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
@@ -253,6 +257,9 @@ function! vira#_menu(type) abort " {{{2
 
   " Write report output into buffer
   if type == 'menu'
+    let s:vira_filter = ''
+    call feedkeys(":set hlsearch\<cr>")
+    let s:vira_filter_hold = @/
     call vira#_print_menu(list)
   else
     call vira#_print_report(list)
@@ -266,7 +273,6 @@ function! vira#_menu(type) abort " {{{2
   " Ensure wrap and linebreak are enabled
   silent! execute 'set wrap'
   silent! execute 'set linebreak'
-
 endfunction
 
 function! vira#_quit() "{{{2
@@ -332,43 +338,71 @@ function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
 
-function! vira#_set() "{{{2
-  silent! execut 'call vira#_set_filter("' . s:vira_menu_type . '",".")'
+function! vira#_getter() "{{{2
+  " Return the proper form of the selected data
+  if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    return expand('<cWORD>')
+  endif
+  return getline('.')
 endfunction
 
-function! vira#_set_filter(variable, type) "{{{2
+function! vira#_select() "{{{2
+  execute 'normal mm'
   execute 'normal 0'
-  if a:variable == 'issues' || a:variable == 'projects' || a:variable == 'set_servers'
-    let value = expand('<cWORD>')
+
+  let value = vira#_getter()
+
+  if s:vira_select_init == 1
+    let s:vira_highlight = s:vira_highlight . "|" . value
+    let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
   else
-    let value = getline('.')
+    let s:vira_highlight = value
+    let s:vira_filter = '"' . value . '"'
+    let s:vira_select_init = 1
   endif
+  let @/ = '\v' . s:vira_highlight
+  execute "normal! /\\v" . s:vira_highlight . "\<cr>"
+  execute 'normal `m'
+  call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
+endfunction
 
-  let variable = s:vira_set_lookup[a:variable]
-
+function! vira#_set() "{{{2
   " This function is used to set vim and python variables
+  execute 'normal 0'
+
+  let value = vira#_getter()
+  let variable = s:vira_set_lookup[s:vira_menu_type]
+
   if variable[:1] == 'g:'
-    if a:variable == 'servers'
+    execute 'let ' . variable . ' = "' . value . '"'
+    if variable == 'g:vira_serv'
       " Reset connection and clear filters before selecting new server
       call vira#_reset_filters()
       python3 Vira.api.vim_filters["project"] = ""
       let s:vira_connected = 0
+      call vira#_connect()
     endif
-    execute 'let ' . variable . ' = "' . value . '"'
+
+  elseif variable == 'assign_issue' || variable == 'transition_issue'
+    execute 'python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+
   else
+    if s:vira_filter[:0] == '"'
+      let value = substitute(s:vira_filter,'|',', ','')
+    endif
+    execute 'python3 Vira.api.vim_filters["' . variable . '"] = '. value .''
+
     if variable == 'status'
       execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
     endif
-    if variable == 'assign_issue' || variable == 'transition_issue'
-      execute 'python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
-    else
-      execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
-    endif
   endif
 
-  if a:variable == 'g:vira_serv'
-    call vira#_connect()
-  endif
+  call vira#_filter_reset()
+endfunction
+
+function! vira#_filter_reset()
+  let s:vira_select_init = 0
+  let @/ = s:vira_filter_hold
 endfunction
 
 function! vira#_set_servers() "{{{2
