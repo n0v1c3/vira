@@ -364,7 +364,7 @@ function! vira#_select() "{{{2
 endfunction
 
 function! vira#_set() "{{{2
-  silent! execut 'call vira#_set_filter("' . s:vira_menu_type . '",".")'
+  execut 'call vira#_set_filter("' . s:vira_menu_type . '",".")'
 endfunction
 
 function! vira#_set_filter(variable, type) "{{{2
@@ -384,13 +384,13 @@ function! vira#_set_filter(variable, type) "{{{2
       call vira#_connect()
     endif
 
-  elseif variable == 'status'
-    execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
-
   elseif variable == 'assign_issue' || variable == 'transition_issue'
     execute 'python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
   else
+    if variable == 'status'
+      execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
+    endif
     execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
   endif
 
