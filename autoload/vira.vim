@@ -257,6 +257,7 @@ function! vira#_menu(type) abort " {{{2
 
   " Write report output into buffer
   if type == 'menu'
+    let s:vira_filter = ''
     call feedkeys(":set hlsearch\<cr>")
     let s:vira_filter_hold = @/
     call vira#_print_menu(list)
@@ -352,15 +353,17 @@ function! vira#_select() "{{{2
   let value = vira#_getter()
 
   if s:vira_select_init == 1
-    let s:vira_filter = s:vira_filter . "|" . value
+    let s:vira_highlight = s:vira_highlight . "|" . value
+    let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
   else
-    let s:vira_filter = value
+    let s:vira_highlight = value
+    let s:vira_filter = '"' . value . '"'
     let s:vira_select_init = 1
   endif
-  let @/ = '\v' . s:vira_filter
-  execute "normal! /\\v" . s:vira_filter . "\<cr>"
+  let @/ = '\v' . s:vira_highlight
+  execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   execute 'normal `m'
-  call feedkeys(":echo '" . s:vira_filter . "'\<cr>")
+  call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
 function! vira#_set() "{{{2
@@ -384,10 +387,16 @@ function! vira#_set() "{{{2
     execute 'python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
   else
+    if s:vira_filter[:0] == '"'
+      let value = substitute(s:vira_filter,'|',', ','')
+      execute 'python3 Vira.api.vim_filters["' . variable . '"] = '. value .''
+    else
+      execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
+    endif
+
     if variable == 'status'
       execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
     endif
-    execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
   endif
 
   call vira#_filter_reset()

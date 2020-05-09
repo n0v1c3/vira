@@ -132,7 +132,9 @@ class ViraAPI():
 
         selection = str(self.vim_filters[filterType]).strip('[]') if type(
             self.vim_filters[filterType]
-        ) == list else "'" + self.vim_filters[filterType] + "'"
+        ) == list else self.vim_filters[filterType] if type(
+                self.vim_filters[filterType]
+                ) == tuple else "'" + self.vim_filters[filterType] + "'"
 
         return f"{filterType} in ({selection})"
 
