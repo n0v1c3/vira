@@ -364,19 +364,15 @@ function! vira#_select() "{{{2
 endfunction
 
 function! vira#_set() "{{{2
-  execut 'call vira#_set_filter("' . s:vira_menu_type . '",".")'
-endfunction
-
-function! vira#_set_filter(variable, type) "{{{2
   " This function is used to set vim and python variables
   execute 'normal 0'
 
   let value = vira#_getter()
-  let variable = s:vira_set_lookup[a:variable]
+  let variable = s:vira_set_lookup[s:vira_menu_type]
 
   if variable[:1] == 'g:'
     execute 'let ' . variable . ' = "' . value . '"'
-    if a:variable == 'servers'
+    if variable == 'g:vira_serv'
       " Reset connection and clear filters before selecting new server
       call vira#_reset_filters()
       python3 Vira.api.vim_filters["project"] = ""
