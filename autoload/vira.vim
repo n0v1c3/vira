@@ -389,10 +389,8 @@ function! vira#_set() "{{{2
   else
     if s:vira_filter[:0] == '"'
       let value = substitute(s:vira_filter,'|',', ','')
-      execute 'python3 Vira.api.vim_filters["' . variable . '"] = '. value .''
-    else
-      execute 'python3 Vira.api.vim_filters["' . variable . '"] = "'. value .'"'
     endif
+    execute 'python3 Vira.api.vim_filters["' . variable . '"] = '. value .''
 
     if variable == 'status'
       execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'

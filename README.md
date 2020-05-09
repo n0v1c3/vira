@@ -167,6 +167,17 @@ let g:vira_browser = 'chromium'
 A list of the important commands, functions and global variables
 to be used to help configure Vira to work for you.
 
+### Keyboard
+
+It is possible to *select multiple* items from all menus,
+if nothing is selected prior to the item will be selected
+from the current column.
+
+*NOTE:* These keys are only mapped to the Vira windows.
+
+- `s` - Select current line within menu
+- `<cr>` - Apply selections or current line
+
 ### Commands
 
 - `ViraBrowse` - View Jira issue in web-browser.
