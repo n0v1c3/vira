@@ -260,53 +260,64 @@ class ViraAPI():
         '''
 
         # Get passed issue content
-
-        issue = vim.eval("g:vira_active_issue")
+        active_issue = vim.eval("g:vira_active_issue")
         issues = self.jira.search_issues(
-            'issue = "' + issue + '"',
+            'issue = "' + active_issue + '"',
             #  fields='*',
-            fields='summary,comment,' + 'description,issuetype,' + 'priority,status,' +
-            'created,updated,' + 'assignee,reporter,' + 'customfield_10106,',
+            fields=','.join(
+                [
+                    'summary,', 'comment,', 'component', 'description', 'issuetype,',
+                    'priority', 'status,', 'created', 'updated,', 'assignee', 'reporter,',
+                    'fixVersion', 'customfield_10106,'
+                ]),
             json_result='True')
+        issue = issues['issues'][0]['fields']
 
-        # Print issue content
-        report = issue + ': ' + issues['issues'][0]['fields']['summary']
-        report += '\nDetails {{' + '{1'
-        report += "\nStory Points  :  "
-        report += str(issues['issues'][0]['fields'].get('customfield_10106', ''))
-        report += "\n     Created  :  "
-        report += issues['issues'][0]['fields']['created'][0:10]
-        report += ' ' + issues['issues'][0]['fields']['created'][11:16]
-        report += "\n     Updated  :  "
-        report += issues['issues'][0]['fields']['updated'][0:10]
-        report += ' ' + issues['issues'][0]['fields']['updated'][11:16]
-        report += "\n        Type  :  "
-        report += issues['issues'][0]['fields']['issuetype']['name']
-        report += "\n      Status  :  "
-        report += issues['issues'][0]['fields']['status']['name']
-        report += "\n    Priority  :  "
-        report += issues['issues'][0]['fields']['priority']['name']
+        # Prepare report data
+        open_fold = '{{{'
+        close_fold = '}}}'
+        summary = issue['summary']
+        story_points = str(issue.get('customfield_10106', ''))
+        created = issue['created'][0:10] + ' ' + issues['issues'][0]['fields']['created'][
+            11:16]
+        updated = issue['updated'][0:10] + ' ' + issues['issues'][0]['fields']['updated'][
+            11:16]
+        task_type = issue['issuetype']['name']
+        status = issue['status']['name']
+        priority = issue['priority']['name']
+        assignee = issue['assignee']['displayName'] if type(
+            issue['assignee']) == dict else 'Unassigned'
+        reporter = issue['reporter']['displayName']
+        component = ', '.join([c['name'] for c in issue['components']])
+        version = ', '.join([v['name'] for v in issue['fixVersions']])
+        description = str(issue.get('description'))
+        comments = '\n'.join(
+            [
+                comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
+                ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
+                for comment in issue['comment']['comments']
+            ])
 
-        report += "\n    Assignee  :  "
-        try:
-            report += issues['issues'][0]['fields']['assignee']['displayName']
-        except:
-            report += "Unassigned"
-
-        report += "\n    Reporter  :  "
-        report += issues['issues'][0]['fields']['reporter']['displayName']
-        report += '\n}}' + '}'
-        report += '\nDescription {{' + '{1\n'
-        report += str(issues['issues'][0]['fields'].get('description'))
-        report += '\n}}' + '}'
-        report += "\nComments {" + "{{1"
-        for comment in issues['issues'][0]['fields']['comment']['comments']:
-            report += f"\n{comment['author']['displayName']}" + ' @ '
-            report += f"{comment['updated'][0:10]}" + ' '
-            report += f"{comment['updated'][11:16]}" + ' {' + '{{2'
-            report += f"\n{comment['body']}"
-            report += '\n}}' + '}'
-        report += "\n}}" + "}"
+        # Create report template and fill with data
+        report = '''{active_issue}: {summary}
+Details {open_fold}1
+Story Points   :  {story_points}
+     Created   :  {created}
+     Updated   :  {updated}
+        Type   :  {task_type}
+      Status   :  {status}
+    Priority   :  {priority}
+    Component  :  {component}
+    Version    :  {version}
+    Assignee   :  {assignee}
+    Reporter   :  {reporter}
+{close_fold}
+Description {open_fold}1
+{description}
+{close_fold}
+Comments {open_fold}1
+{comments}
+{close_fold}'''.format(**locals())
 
         return report
 
