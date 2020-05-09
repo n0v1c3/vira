@@ -59,9 +59,7 @@ function! vira#_browse() "{{{2
   " Set browser - either user defined or $BROWSER
   if exists('g:vira_browser')
     let l:browser = g:vira_browser
-  else
-    let l:browser = $BROWSER
-  endif
+  else | let l:browser = $BROWSER | endif
 
   " User needs to define a browser
   if l:browser == ''
@@ -174,9 +172,7 @@ function! vira#_print_menu(list) " {{{2
     for line in a:list
       execute ':normal! o' . line . "\<esc>"
     endfor
-  else
-    execute ':normal! o' . a:list . "\<esc>"
-  endif
+  else | execute ':normal! o' . a:list . "\<esc>" | endif
 endfunction
 
 function! vira#_load_project_config() " {{{2
@@ -261,9 +257,7 @@ function! vira#_menu(type) abort " {{{2
     call feedkeys(":set hlsearch\<cr>")
     let s:vira_filter_hold = @/
     call vira#_print_menu(list)
-  else
-    call vira#_print_report(list)
-  endif
+  else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
   silent! execute '%s/\^M//g'
@@ -389,6 +383,7 @@ function! vira#_set() "{{{2
   else
     if s:vira_filter[:0] == '"'
       let value = substitute(s:vira_filter,'|',', ','')
+    else | let value = '"' . value . '"'
     endif
     execute 'python3 Vira.api.vim_filters["' . variable . '"] = '. value .''
 
