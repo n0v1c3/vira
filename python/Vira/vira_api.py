@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# dev: let b:startapp = 'vim "+Vader! /mnt/cloud/temp/test1.vader"'
+# dev: let b:startfile = ''
+# dev: let b:startargs = ''
 '''
 Internals and API functions for vira
 '''
@@ -48,12 +51,33 @@ class ViraAPI():
         Create new issue in jira
         '''
 
-        issuetype = 'Bug'
-
         summary = input_stripped[input_stripped.find('[Summary]') +
                                  9:input_stripped.find('[Description]')].strip().replace(
                                      '\n', ' ')
-        description = input_stripped[input_stripped.find('[Description]') + 13:].strip()
+        description = input_stripped[input_stripped.find('[Description]') +
+                                     len('[Description]'):input_stripped.
+                                     find('[IssueType]')].strip().replace(
+                                         '\n', ' ')  # noqa 126
+        issuetype = input_stripped[input_stripped.find('[IssueType]') +
+                                   len('[IssueType]'):input_stripped.
+                                   find('[Status]')].strip().replace('\n', ' ')
+        status = input_stripped[input_stripped.find('[Status]') +
+                                len('[Status]'):input_stripped.find('[Priority]')].strip(
+                                ).replace('\n', ' ')
+        priority = input_stripped[input_stripped.find('[Priority]') +
+                                  len('[Priority]'):input_stripped.
+                                  find('[Component]')].strip().replace('\n', ' ')
+        component = input_stripped[input_stripped.find('[Component]') +
+                                   len('[Component]'):input_stripped.
+                                   find('[Version]')].strip().replace('\n', ' ')
+        version = input_stripped[input_stripped.find('[Version]') +
+                                 len('[Version]'):input_stripped.
+                                 find('[Assignee]')].strip().replace('\n', ' ')
+        assignee = input_stripped[input_stripped.find('[Assignee]') + 10:].strip()
+
+        # # TODO-MB [200522] - TEST
+        # vim.command(f"let g:testvar = '{locals()}'")
+        # vim.command("let g:testvar = '" + str(self.vim_filters['project']) + "'")
 
         # Check if summary was entered by user
         if summary == '':
@@ -63,7 +87,17 @@ class ViraAPI():
             project={'key': self.vim_filters['project']},
             summary=summary,
             description=description,
-            issuetype={'name': issuetype})
+            issuetype={'name': issuetype},
+            priority={'name': priority},
+            components=[{
+                'name': component
+            }],
+            fixVersions=[{
+                'name': version
+            }],
+            assignee={'name': assignee}
+            # status=status,
+        )
 
         jira_server = vim.eval('g:vira_serv')
         print(f'Added {jira_server}/browse/{issue_key}')
@@ -131,10 +165,10 @@ class ViraAPI():
             return
 
         selection = str(self.vim_filters[filterType]).strip('[]') if type(
-            self.vim_filters[filterType]
-        ) == list else self.vim_filters[filterType] if type(
+            self.
+            vim_filters[filterType]) == list else self.vim_filters[filterType] if type(
                 self.vim_filters[filterType]
-                ) == tuple else "'" + self.vim_filters[filterType] + "'"
+            ) == tuple else "'" + self.vim_filters[filterType] + "'"
 
         return f"{filterType} in ({selection})"
 
@@ -236,21 +270,52 @@ class ViraAPI():
         Get prompt text used for inputting text into jira
         '''
 
-        # Only show users which you are allowed to tag
+        # Prepare dynamic variables for prompt text
         users = [
             user.key
             for user in self.jira.search_users(".")
             if not user.key.startswith('JIRAUSER')
+        ]
+        statuses = [x.name for x in self.jira.statuses()]
+        issuetypes = [x.name for x in self.jira.issue_types()]
+        priorities = [x.name for x in self.jira.priorities()]
+        components = [
+            x.name for x in self.jira.project_components(self.vim_filters['project'])
+        ]
+        versions = [
+            x.name for x in self.jira.project_versions(self.vim_filters['project'])
         ]
 
         self.prompt_type = prompt_type
         self.prompt_text_commented = f'''\n# Please enter the {prompt_type} above this line
 # Lines starting with '#' will be ignored. An empty message will abort the operation.
 #
-# You can tag the following users: {users}
+# Below is a list of acceptable values for each input field.
+# The default values is indicated by round brackets.
+# IssueTypes: {issuetypes}
+# Statuses: {statuses}
+# Priorities: {priorities}
+# Components: {components}
+# Versions: {versions}
+# Users: {users}
 '''
         if self.prompt_type == 'issue':
-            text = '[Summary]\n\n[Description]\n' + self.prompt_text_commented
+            text = f'''[Summary]
+
+[Description]
+
+[IssueType]
+
+[Status]
+
+[Priority]
+
+[Component]
+
+[Version]
+
+[Assignee]
+{self.prompt_text_commented}'''
         else:
             text = self.prompt_text_commented
 
