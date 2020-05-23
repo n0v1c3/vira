@@ -80,11 +80,6 @@ function! vira#_prompt_start(type) "{{{2
       echo "Please select an issue before commenting"
       return
     endif
-  elseif a:type == 'issue'
-    if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
-      echo "Please select project before adding a new issue."
-      return
-    endif
   endif
 
   let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]

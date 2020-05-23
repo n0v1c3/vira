@@ -56,14 +56,18 @@ class ViraAPI():
                                      '\n', ' ')
         description = input_stripped[input_stripped.find('[Description]') +
                                      len('[Description]'):input_stripped.
-                                     find('[IssueType]')].strip().replace(
+                                     find('[Project]')].strip().replace(
                                          '\n', ' ')  # noqa 126
+        project = input_stripped[input_stripped.find('[Project]') +
+                                 len('[Project]'):input_stripped.
+                                 find('[IssueType]')].strip().replace(
+                                     '\n', ' ')  # noqa 126
         issuetype = input_stripped[input_stripped.find('[IssueType]') +
                                    len('[IssueType]'):input_stripped.
                                    find('[Status]')].strip().replace('\n', ' ')
         status = input_stripped[input_stripped.find('[Status]') +
                                 len('[Status]'):input_stripped.find('[Priority]')].strip(
-                                ).replace('\n', ' ')
+                                ).replace('\n', ' ')  # noqa 126
         priority = input_stripped[input_stripped.find('[Priority]') +
                                   len('[Priority]'):input_stripped.
                                   find('[Component]')].strip().replace('\n', ' ')
@@ -78,13 +82,14 @@ class ViraAPI():
         # # TODO-MB [200522] - TEST
         # vim.command(f"let g:testvar = '{locals()}'")
         # vim.command("let g:testvar = '" + str(self.vim_filters['project']) + "'")
+        # return
 
         # Check if summary was entered by user
         if summary == '':
             return
 
         issue_key = self.jira.create_issue(
-            project={'key': self.vim_filters['project']},
+            project=project,
             summary=summary,
             description=description,
             issuetype={'name': issuetype},
@@ -95,8 +100,7 @@ class ViraAPI():
             fixVersions=[{
                 'name': version
             }],
-            assignee={'name': assignee}
-        )
+            assignee={'name': assignee})
         self.jira.transition_issue(issue_key, status)
 
         jira_server = vim.eval('g:vira_serv')
@@ -281,10 +285,11 @@ class ViraAPI():
         priorities = [x.name for x in self.jira.priorities()]
         components = [
             x.name for x in self.jira.project_components(self.vim_filters['project'])
-        ]
+        ] if self.vim_filters['project'] != '' else ''
         versions = [
             x.name for x in self.jira.project_versions(self.vim_filters['project'])
-        ]
+        ] if self.vim_filters['project'] != '' else ''
+        projects = [x.key for x in self.jira.projects()]
 
         self.prompt_type = prompt_type
         self.prompt_text_commented = f'''\n# Please enter the {prompt_type} above this line
@@ -292,6 +297,7 @@ class ViraAPI():
 #
 # Below is a list of acceptable values for each input field.
 # The default values is indicated by round brackets.
+# Projects: {projects}
 # IssueTypes: {issuetypes}
 # Statuses: {statuses}
 # Priorities: {priorities}
@@ -303,6 +309,8 @@ class ViraAPI():
             text = f'''[Summary]
 
 [Description]
+
+[Project]
 
 [IssueType]
 
