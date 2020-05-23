@@ -96,8 +96,8 @@ class ViraAPI():
                 'name': version
             }],
             assignee={'name': assignee}
-            # status=status,
         )
+        self.jira.transition_issue(issue_key, status)
 
         jira_server = vim.eval('g:vira_serv')
         print(f'Added {jira_server}/browse/{issue_key}')
@@ -295,8 +295,8 @@ class ViraAPI():
 # IssueTypes: {issuetypes}
 # Statuses: {statuses}
 # Priorities: {priorities}
-# Components: {components}
-# Versions: {versions}
+# Components in {self.vim_filters["project"]} Project: {components}
+# Versions in {self.vim_filters["project"]} Project: {versions}
 # Users: {users}
 '''
         if self.prompt_type == 'issue':
