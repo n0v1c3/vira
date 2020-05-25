@@ -12,7 +12,7 @@ from jira import JIRA
 from jira.exceptions import JIRAError
 import datetime
 import urllib3
-from Vira.helper import load_config, run_command
+from Vira.helper import load_config, run_command, parse_prompt_text
 
 class ViraAPI():
     '''
@@ -50,7 +50,7 @@ class ViraAPI():
             'assignee': '',
             'component': '',
             'fixVersion': '',
-            'issuetype': '',
+            'issuetype': 'Bug',
             'priority': '',
             'status': '',
         }
@@ -60,58 +60,64 @@ class ViraAPI():
         Create new issue in jira
         '''
 
-        summary = input_stripped[input_stripped.find('[Summary]') +
-                                 9:input_stripped.find('[Description]')].strip().replace(
-                                     '\n', ' ')
-        description = input_stripped[input_stripped.find('[Description]') +
-                                     len('[Description]'):input_stripped.
-                                     find('[Project]')].strip().replace(
-                                         '\n', ' ')  # noqa 126
-        project = input_stripped[input_stripped.find('[Project]') +
-                                 len('[Project]'):input_stripped.
-                                 find('[IssueType]')].strip().replace(
-                                     '\n', ' ')  # noqa 126
-        issuetype = input_stripped[input_stripped.find('[IssueType]') +
-                                   len('[IssueType]'):input_stripped.
-                                   find('[Status]')].strip().replace('\n', ' ')
-        status = input_stripped[input_stripped.find('[Status]') +
-                                len('[Status]'):input_stripped.find('[Priority]')].strip(
-                                ).replace('\n', ' ')  # noqa 126
-        priority = input_stripped[input_stripped.find('[Priority]') +
-                                  len('[Priority]'):input_stripped.
-                                  find('[Component]')].strip().replace('\n', ' ')
-        component = input_stripped[input_stripped.find('[Component]') +
-                                   len('[Component]'):input_stripped.
-                                   find('[Version]')].strip().replace('\n', ' ')
-        version = input_stripped[input_stripped.find('[Version]') +
-                                 len('[Version]'):input_stripped.
-                                 find('[Assignee]')].strip().replace('\n', ' ')
-        assignee = input_stripped[input_stripped.find('[Assignee]') + 10:].strip()
+        section = {
+            'summary': parse_prompt_text(input_stripped, '*Summary*', 'Description'),
+            'description': parse_prompt_text(input_stripped, 'Description', 'Project'),
+            'project': parse_prompt_text(input_stripped, '*Project*', 'IssueType'),
+            'issuetype': parse_prompt_text(input_stripped, '*IssueType*', 'Status'),
+            'status': parse_prompt_text(input_stripped, 'Status', 'Priority'),
+            'priority': parse_prompt_text(input_stripped, 'Priority', 'Component'),
+            'components': parse_prompt_text(input_stripped, 'Component', 'Version'),
+            'fixVersions': parse_prompt_text(input_stripped, 'Version', 'Assignee'),
+            'assignee': parse_prompt_text(input_stripped, 'Assignee'),
+        }
 
-        # # TODO-MB [200522] - TEST
-        # vim.command(f"let g:testvar = '{locals()}'")
-        # vim.command("let g:testvar = '" + str(self.userconfig_filter['project']) + "'")
-        return
-
-        # Check if summary was entered by user
-        if summary == '':
+        # Check if required fields was entered by user
+        if section['summary'] == '' or section['project'] == '' or section[
+                'issuetype'] == '':
             return
 
-        # TODO-MB [200522] - Try using **kwargs
-        issue_key = self.jira.create_issue(
-            project=project,
-            summary=summary,
-            description=description,
-            issuetype={'name': issuetype},
-            priority={'name': priority},
-            components=[{
-                'name': component
+        issue_kwargs = {
+            'project': section['project'],
+            'summary': section['summary'],
+            'description': section['description'],
+            'issuetype': {
+                'name': section['issuetype']
+            },
+            'priority': {
+                'name': section['priority']
+            },
+            'components': [{
+                'name': section['components']
             }],
-            fixVersions=[{
-                'name': version
+            'fixVersions': [{
+                'name': section['fixVersions']
             }],
-            assignee={'name': assignee})
-        self.jira.transition_issue(issue_key, status)
+            'assignee': {
+                'name': section['assignee']
+            },
+        }
+
+        # Jira API doesn't accept empty fields for certain keys
+        for key, value in section.items():
+            if value == '':
+                try:
+                    issue_kwargs.pop(key)
+                except:
+                    pass
+
+        # # TODO-MB [200522] - TEST
+        # vim.command(f"let g:testvar = '{issue_kwargs}'")
+        # # vim.command(
+        # # f"let g:testvar = \"{[summary, description, project, issuetype, status, component, version, assignee]}\""
+        # # )
+        # # vim.command("let g:testvar = '" + str(self.userconfig_filter['project']) + "'")
+        # return
+
+        # Create issue and transition
+        issue_key = self.jira.create_issue(**issue_kwargs)
+        if section['status'] != '':
+            self.jira.transition_issue(issue_key, section['status'])
 
         jira_server = vim.eval('g:vira_serv')
         print(f'Added {jira_server}/browse/{issue_key}')
@@ -317,13 +323,13 @@ class ViraAPI():
 # Users: {users}
 '''
         if self.prompt_type == 'issue':
-            text = f'''[Summary]
+            text = f'''[*Summary*]
 
 [Description]
 
-[Project]
+[*Project*]
 {self.userconfig_filter["project"]}
-[IssueType]
+[*IssueType*]
 {self.userconfig_newissue["issuetype"]}
 [Status]
 {self.userconfig_newissue["status"]}

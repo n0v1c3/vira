@@ -68,6 +68,18 @@ def parse_yaml(file_path) -> dict:
 
     return config
 
+def parse_prompt_text(input_stripped, start_section, end_section=None) -> str:
+    '''
+    Parse the text in between prompt sections.
+    For example: text between [Summary] and [Description]
+    '''
+
+    end_char = None if not end_section else input_stripped.find(f'[{end_section}]')
+    text = input_stripped[input_stripped.find(f'[{start_section}]') +
+                          len(f'[{start_section}]'):end_char].strip().replace('\n', ' ')
+
+    return text
+
 def run_command(cmd_string):
     '''
     Run bash command and return dictionary with the keys:
