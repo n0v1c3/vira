@@ -112,7 +112,7 @@ function! vira#_check_project(type) abort "{{{2
     return 1
   endif
 
-  if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
+  if (execute('python3 print(Vira.api.userconfig_filter["project"])')[1:] == "")
     return 0
   endif
 
@@ -367,7 +367,7 @@ function! vira#_set() "{{{2
     if variable == 'g:vira_serv'
       " Reset connection and clear filters before selecting new server
       call vira#_reset_filters()
-      python3 Vira.api.vim_filters["project"] = ""
+      python3 Vira.api.userconfig_filter["project"] = ""
       let s:vira_connected = 0
       call vira#_connect()
     endif
@@ -380,10 +380,10 @@ function! vira#_set() "{{{2
       let value = substitute(s:vira_filter,'|',', ','')
     else | let value = '"' . value . '"'
     endif
-    execute 'python3 Vira.api.vim_filters["' . variable . '"] = '. value .''
+    execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
 
     if variable == 'status'
-      execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
+      execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
     endif
   endif
 
@@ -398,7 +398,7 @@ endfunction
 function! vira#_set_servers() "{{{2
   " Reset connection and clear filters before selecting new server
   call vira#_reset_filters()
-  python3 Vira.api.vim_filters["project"] = ""
+  python3 Vira.api.userconfig_filter["project"] = ""
   let s:vira_connected = 0
   call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction

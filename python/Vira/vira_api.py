@@ -33,7 +33,7 @@ class ViraAPI():
         except:
             print(f'Could not load {file_servers} or {file_projects}')
 
-        self.vim_filters_default = {
+        self.userconfig_filter_default = {
             'assignee': '',
             'component': '',
             'fixVersion': '',
@@ -81,7 +81,7 @@ class ViraAPI():
 
         # # TODO-MB [200522] - TEST
         # vim.command(f"let g:testvar = '{locals()}'")
-        # vim.command("let g:testvar = '" + str(self.vim_filters['project']) + "'")
+        # vim.command("let g:testvar = '" + str(self.userconfig_filter['project']) + "'")
         return
 
         # Check if summary was entered by user
@@ -165,14 +165,14 @@ class ViraAPI():
             AND status in ('In Progress', 'To Do')
         '''
 
-        if self.vim_filters.get(filterType, '') == '':
+        if self.userconfig_filter.get(filterType, '') == '':
             return
 
-        selection = str(self.vim_filters[filterType]).strip('[]') if type(
+        selection = str(self.userconfig_filter[filterType]).strip('[]') if type(
             self.
-            vim_filters[filterType]) == list else self.vim_filters[filterType] if type(
-                self.vim_filters[filterType]
-            ) == tuple else "'" + self.vim_filters[filterType] + "'"
+            userconfig_filter[filterType]) == list else self.userconfig_filter[filterType] if type(
+                self.userconfig_filter[filterType]
+            ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
         return f"{filterType} in ({selection})"
 
@@ -214,7 +214,7 @@ class ViraAPI():
         Build a vim popup menu for a list of components
         '''
 
-        for component in self.jira.project_components(self.vim_filters['project']):
+        for component in self.jira.project_components(self.userconfig_filter['project']):
             print(component.name)
 
     def get_epics(self):
@@ -284,11 +284,11 @@ class ViraAPI():
         issuetypes = [x.name for x in self.jira.issue_types()]
         priorities = [x.name for x in self.jira.priorities()]
         components = [
-            x.name for x in self.jira.project_components(self.vim_filters['project'])
-        ] if self.vim_filters['project'] != '' else ''
+            x.name for x in self.jira.project_components(self.userconfig_filter['project'])
+        ] if self.userconfig_filter['project'] != '' else ''
         versions = [
-            x.name for x in self.jira.project_versions(self.vim_filters['project'])
-        ] if self.vim_filters['project'] != '' else ''
+            x.name for x in self.jira.project_versions(self.userconfig_filter['project'])
+        ] if self.userconfig_filter['project'] != '' else ''
         projects = [x.key for x in self.jira.projects()]
 
         self.prompt_type = prompt_type
@@ -301,8 +301,8 @@ class ViraAPI():
 # IssueTypes: {issuetypes}
 # Statuses: {statuses}
 # Priorities: {priorities}
-# Components in {self.vim_filters["project"]} Project: {components}
-# Versions in {self.vim_filters["project"]} Project: {versions}
+# Components in {self.userconfig_filter["project"]} Project: {components}
+# Versions in {self.userconfig_filter["project"]} Project: {versions}
 # Users: {users}
 '''
         if self.prompt_type == 'issue':
@@ -311,7 +311,7 @@ class ViraAPI():
 [Description]
 
 [Project]
-{self.vim_filters["project"]}
+{self.userconfig_filter["project"]}
 
 [IssueType]
 
@@ -445,7 +445,7 @@ Comments {open_fold}1
         Build a vim popup menu for a list of versions
         '''
 
-        for version in self.jira.project_versions(self.vim_filters['project']):
+        for version in self.jira.project_versions(self.userconfig_filter['project']):
             print(version.name)
 
     def load_project_config(self):
@@ -477,10 +477,10 @@ Comments {open_fold}1
         if server:
             vim.command(f'let g:vira_serv = "{server}"')
 
-        for filterType in self.vim_filters.keys():
+        for filterType in self.userconfig_filter.keys():
             filterValue = self.vira_projects.get(repo, {}).get('filter', {}).get(filterType)
             if filterValue:
-                self.vim_filters[filterType] = filterValue
+                self.userconfig_filter[filterType] = filterValue
 
     def query_issues(self):
         '''
@@ -488,7 +488,7 @@ Comments {open_fold}1
         '''
 
         q = []
-        for filterType in self.vim_filters.keys():
+        for filterType in self.userconfig_filter.keys():
             filter_str = self.filter_str(filterType)
             if filter_str:
                 q.append(filter_str)
@@ -507,7 +507,7 @@ Comments {open_fold}1
         Reset filters to their default values
         '''
 
-        self.vim_filters = dict(self.vim_filters_default)
+        self.userconfig_filter = dict(self.userconfig_filter_default)
 
     def write_jira(self):
         '''
