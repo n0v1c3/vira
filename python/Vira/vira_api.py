@@ -46,6 +46,15 @@ class ViraAPI():
         }
         self.reset_filters()
 
+        self.userconfig_newissue = {
+            'assignee': '',
+            'component': '',
+            'fixVersion': '',
+            'issuetype': '',
+            'priority': '',
+            'status': '',
+        }
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
@@ -88,6 +97,7 @@ class ViraAPI():
         if summary == '':
             return
 
+        # TODO-MB [200522] - Try using **kwargs
         issue_key = self.jira.create_issue(
             project=project,
             summary=summary,
@@ -169,10 +179,10 @@ class ViraAPI():
             return
 
         selection = str(self.userconfig_filter[filterType]).strip('[]') if type(
-            self.
-            userconfig_filter[filterType]) == list else self.userconfig_filter[filterType] if type(
-                self.userconfig_filter[filterType]
-            ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
+            self.userconfig_filter[filterType]
+        ) == list else self.userconfig_filter[filterType] if type(
+            self.userconfig_filter[filterType]
+        ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
         return f"{filterType} in ({selection})"
 
@@ -284,7 +294,8 @@ class ViraAPI():
         issuetypes = [x.name for x in self.jira.issue_types()]
         priorities = [x.name for x in self.jira.priorities()]
         components = [
-            x.name for x in self.jira.project_components(self.userconfig_filter['project'])
+            x.name
+            for x in self.jira.project_components(self.userconfig_filter['project'])
         ] if self.userconfig_filter['project'] != '' else ''
         versions = [
             x.name for x in self.jira.project_versions(self.userconfig_filter['project'])
@@ -292,7 +303,7 @@ class ViraAPI():
         projects = [x.key for x in self.jira.projects()]
 
         self.prompt_type = prompt_type
-        self.prompt_text_commented = f'''\n# Please enter the {prompt_type} above this line
+        self.prompt_text_commented = f'''# Please enter the {prompt_type} above this line
 # Lines starting with '#' will be ignored. An empty message will abort the operation.
 #
 # Below is a list of acceptable values for each input field.
@@ -312,18 +323,18 @@ class ViraAPI():
 
 [Project]
 {self.userconfig_filter["project"]}
-
 [IssueType]
-
+{self.userconfig_newissue["issuetype"]}
 [Status]
-
+{self.userconfig_newissue["status"]}
 [Priority]
-
+{self.userconfig_newissue["priority"]}
 [Component]
-
+{self.userconfig_newissue["component"]}
 [Version]
-
+{self.userconfig_newissue["fixVersion"]}
 [Assignee]
+{self.userconfig_newissue["assignee"]}
 {self.prompt_text_commented}'''
         else:
             text = self.prompt_text_commented
@@ -473,14 +484,22 @@ Comments {open_fold}1
             else:
                 return
 
+        # Set server
         server = self.vira_projects.get(repo, {}).get('server')
         if server:
             vim.command(f'let g:vira_serv = "{server}"')
 
-        for filterType in self.userconfig_filter.keys():
-            filterValue = self.vira_projects.get(repo, {}).get('filter', {}).get(filterType)
-            if filterValue:
-                self.userconfig_filter[filterType] = filterValue
+        # Set user-defined filters for current project
+        for key in self.userconfig_filter.keys():
+            value = self.vira_projects.get(repo, {}).get('filter', {}).get(key)
+            if value:
+                self.userconfig_filter[key] = value
+
+        # Set user-defined new-issue defaults for current project
+        for key in self.userconfig_newissue.keys():
+            value = self.vira_projects.get(repo, {}).get('newissue', {}).get(key)
+            if value:
+                self.userconfig_newissue[key] = value
 
     def query_issues(self):
         '''
