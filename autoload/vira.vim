@@ -84,7 +84,7 @@ function! vira#_prompt_start(type) "{{{2
 
   let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
-  execute 'top sp ' . s:vira_prompt_file
+  execute 'sp ' . s:vira_prompt_file
   silent! setlocal spell
   1
 

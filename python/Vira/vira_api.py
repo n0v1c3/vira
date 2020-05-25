@@ -82,7 +82,7 @@ class ViraAPI():
         # # TODO-MB [200522] - TEST
         # vim.command(f"let g:testvar = '{locals()}'")
         # vim.command("let g:testvar = '" + str(self.vim_filters['project']) + "'")
-        # return
+        return
 
         # Check if summary was entered by user
         if summary == '':
@@ -311,6 +311,7 @@ class ViraAPI():
 [Description]
 
 [Project]
+{self.vim_filters["project"]}
 
 [IssueType]
 
@@ -477,7 +478,7 @@ Comments {open_fold}1
             vim.command(f'let g:vira_serv = "{server}"')
 
         for filterType in self.vim_filters.keys():
-            filterValue = self.vira_projects.get(repo, {}).get(filterType)
+            filterValue = self.vira_projects.get(repo, {}).get('filter', {}).get(filterType)
             if filterValue:
                 self.vim_filters[filterType] = filterValue
 
