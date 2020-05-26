@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# dev: let b:startapp = 'vim "+Vader! /mnt/cloud/temp/test1.vader"'
-# dev: let b:startfile = ''
-# dev: let b:startargs = ''
 '''
 Internals and API functions for vira
 '''
@@ -62,8 +59,8 @@ class ViraAPI():
 
         section = {
             'summary': parse_prompt_text(input_stripped, '*Summary*', 'Description'),
-            'description': parse_prompt_text(input_stripped, 'Description', 'Project'),
-            'project': parse_prompt_text(input_stripped, '*Project*', 'IssueType'),
+            'description': parse_prompt_text(input_stripped, 'Description', '*Project*'),
+            'project': parse_prompt_text(input_stripped, '*Project*', '*IssueType*'),
             'issuetype': parse_prompt_text(input_stripped, '*IssueType*', 'Status'),
             'status': parse_prompt_text(input_stripped, 'Status', 'Priority'),
             'priority': parse_prompt_text(input_stripped, 'Priority', 'Component'),
@@ -99,20 +96,9 @@ class ViraAPI():
         }
 
         # Jira API doesn't accept empty fields for certain keys
-        for key, value in section.items():
-            if value == '':
-                try:
-                    issue_kwargs.pop(key)
-                except:
-                    pass
-
-        # # TODO-MB [200522] - TEST
-        # vim.command(f"let g:testvar = '{issue_kwargs}'")
-        # # vim.command(
-        # # f"let g:testvar = \"{[summary, description, project, issuetype, status, component, version, assignee]}\""
-        # # )
-        # # vim.command("let g:testvar = '" + str(self.userconfig_filter['project']) + "'")
-        # return
+        for key in issue_kwargs.copy().keys():
+            if section[key] == '':
+                issue_kwargs.pop(key)
 
         # Create issue and transition
         issue_key = self.jira.create_issue(**issue_kwargs)
@@ -313,17 +299,20 @@ class ViraAPI():
 # Lines starting with '#' will be ignored. An empty message will abort the operation.
 #
 # Below is a list of acceptable values for each input field.
-# The default values is indicated by round brackets.
-# Projects: {projects}
+# Users: {users}
+'''
+        if self.prompt_type == 'comment':
+            return '\n' + self.prompt_text_commented
+
+        # Extra info for prompt_type == 'issue'
+        self.prompt_text_commented += f'''# Projects: {projects}
 # IssueTypes: {issuetypes}
 # Statuses: {statuses}
 # Priorities: {priorities}
 # Components in {self.userconfig_filter["project"]} Project: {components}
 # Versions in {self.userconfig_filter["project"]} Project: {versions}
-# Users: {users}
 '''
-        if self.prompt_type == 'issue':
-            text = f'''[*Summary*]
+        return f'''[*Summary*]
 
 [Description]
 
@@ -342,10 +331,6 @@ class ViraAPI():
 [Assignee]
 {self.userconfig_newissue["assignee"]}
 {self.prompt_text_commented}'''
-        else:
-            text = self.prompt_text_commented
-
-        return text
 
     def get_report(self):
         '''
