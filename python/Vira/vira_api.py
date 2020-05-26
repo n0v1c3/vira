@@ -295,14 +295,15 @@ class ViraAPI():
         projects = [x.key for x in self.jira.projects()]
 
         self.prompt_type = prompt_type
-        self.prompt_text_commented = f'''# Please enter the {prompt_type} above this line
+        self.prompt_text_commented = f'''
+# Please enter the {prompt_type} above this line
 # Lines starting with '#' will be ignored. An empty message will abort the operation.
 #
 # Below is a list of acceptable values for each input field.
 # Users: {users}
 '''
         if self.prompt_type == 'comment':
-            return '\n' + self.prompt_text_commented
+            return self.prompt_text_commented
 
         # Extra info for prompt_type == 'issue'
         self.prompt_text_commented += f'''# Projects: {projects}
@@ -313,23 +314,15 @@ class ViraAPI():
 # Versions in {self.userconfig_filter["project"]} Project: {versions}
 '''
         return f'''[*Summary*]
-
 [Description]
 
-[*Project*]
-{self.userconfig_filter["project"]}
-[*IssueType*]
-{self.userconfig_newissue["issuetype"]}
-[Status]
-{self.userconfig_newissue["status"]}
-[Priority]
-{self.userconfig_newissue["priority"]}
-[Component]
-{self.userconfig_newissue["component"]}
-[Version]
-{self.userconfig_newissue["fixVersion"]}
-[Assignee]
-{self.userconfig_newissue["assignee"]}
+[*Project*] {self.userconfig_filter["project"]}
+[*IssueType*] {self.userconfig_newissue["issuetype"]}
+[Status] {self.userconfig_newissue["status"]}
+[Priority] {self.userconfig_newissue["priority"]}
+[Component] {self.userconfig_newissue["component"]}
+[Version] {self.userconfig_newissue["fixVersion"]}
+[Assignee] {self.userconfig_newissue["assignee"]}
 {self.prompt_text_commented}'''
 
     def get_report(self):
