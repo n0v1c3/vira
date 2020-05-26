@@ -9,7 +9,7 @@ from jira import JIRA
 from jira.exceptions import JIRAError
 import datetime
 import urllib3
-from Vira.helper import load_config, run_command
+from Vira.helper import load_config, run_command, parse_prompt_text
 
 class ViraAPI():
     '''
@@ -30,7 +30,7 @@ class ViraAPI():
         except:
             print(f'Could not load {file_servers} or {file_projects}')
 
-        self.vim_filters_default = {
+        self.userconfig_filter_default = {
             'assignee': '',
             'component': '',
             'fixVersion': '',
@@ -43,27 +43,67 @@ class ViraAPI():
         }
         self.reset_filters()
 
+        self.userconfig_newissue = {
+            'assignee': '',
+            'component': '',
+            'fixVersion': '',
+            'issuetype': 'Bug',
+            'priority': '',
+            'status': '',
+        }
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
         '''
 
-        issuetype = 'Bug'
+        section = {
+            'summary': parse_prompt_text(input_stripped, '*Summary*', 'Description'),
+            'description': parse_prompt_text(input_stripped, 'Description', '*Project*'),
+            'project': parse_prompt_text(input_stripped, '*Project*', '*IssueType*'),
+            'issuetype': parse_prompt_text(input_stripped, '*IssueType*', 'Status'),
+            'status': parse_prompt_text(input_stripped, 'Status', 'Priority'),
+            'priority': parse_prompt_text(input_stripped, 'Priority', 'Component'),
+            'components': parse_prompt_text(input_stripped, 'Component', 'Version'),
+            'fixVersions': parse_prompt_text(input_stripped, 'Version', 'Assignee'),
+            'assignee': parse_prompt_text(input_stripped, 'Assignee'),
+        }
 
-        summary = input_stripped[input_stripped.find('[Summary]') +
-                                 9:input_stripped.find('[Description]')].strip().replace(
-                                     '\n', ' ')
-        description = input_stripped[input_stripped.find('[Description]') + 13:].strip()
-
-        # Check if summary was entered by user
-        if summary == '':
+        # Check if required fields was entered by user
+        if section['summary'] == '' or section['project'] == '' or section[
+                'issuetype'] == '':
             return
 
-        issue_key = self.jira.create_issue(
-            project={'key': self.vim_filters['project']},
-            summary=summary,
-            description=description,
-            issuetype={'name': issuetype})
+        issue_kwargs = {
+            'project': section['project'],
+            'summary': section['summary'],
+            'description': section['description'],
+            'issuetype': {
+                'name': section['issuetype']
+            },
+            'priority': {
+                'name': section['priority']
+            },
+            'components': [{
+                'name': section['components']
+            }],
+            'fixVersions': [{
+                'name': section['fixVersions']
+            }],
+            'assignee': {
+                'name': section['assignee']
+            },
+        }
+
+        # Jira API doesn't accept empty fields for certain keys
+        for key in issue_kwargs.copy().keys():
+            if section[key] == '':
+                issue_kwargs.pop(key)
+
+        # Create issue and transition
+        issue_key = self.jira.create_issue(**issue_kwargs)
+        if section['status'] != '':
+            self.jira.transition_issue(issue_key, section['status'])
 
         jira_server = vim.eval('g:vira_serv')
         print(f'Added {jira_server}/browse/{issue_key}')
@@ -127,14 +167,14 @@ class ViraAPI():
             AND status in ('In Progress', 'To Do')
         '''
 
-        if self.vim_filters.get(filterType, '') == '':
+        if self.userconfig_filter.get(filterType, '') == '':
             return
 
-        selection = str(self.vim_filters[filterType]).strip('[]') if type(
-            self.vim_filters[filterType]
-        ) == list else self.vim_filters[filterType] if type(
-                self.vim_filters[filterType]
-                ) == tuple else "'" + self.vim_filters[filterType] + "'"
+        selection = str(self.userconfig_filter[filterType]).strip('[]') if type(
+            self.userconfig_filter[filterType]
+        ) == list else self.userconfig_filter[filterType] if type(
+            self.userconfig_filter[filterType]
+        ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
         return f"{filterType} in ({selection})"
 
@@ -176,7 +216,7 @@ class ViraAPI():
         Build a vim popup menu for a list of components
         '''
 
-        for component in self.jira.project_components(self.vim_filters['project']):
+        for component in self.jira.project_components(self.userconfig_filter['project']):
             print(component.name)
 
     def get_epics(self):
@@ -236,25 +276,54 @@ class ViraAPI():
         Get prompt text used for inputting text into jira
         '''
 
-        # Only show users which you are allowed to tag
+        # Prepare dynamic variables for prompt text
         users = [
             user.key
             for user in self.jira.search_users(".")
             if not user.key.startswith('JIRAUSER')
         ]
+        statuses = [x.name for x in self.jira.statuses()]
+        issuetypes = [x.name for x in self.jira.issue_types()]
+        priorities = [x.name for x in self.jira.priorities()]
+        components = [
+            x.name
+            for x in self.jira.project_components(self.userconfig_filter['project'])
+        ] if self.userconfig_filter['project'] != '' else ''
+        versions = [
+            x.name for x in self.jira.project_versions(self.userconfig_filter['project'])
+        ] if self.userconfig_filter['project'] != '' else ''
+        projects = [x.key for x in self.jira.projects()]
 
         self.prompt_type = prompt_type
-        self.prompt_text_commented = f'''\n# Please enter the {prompt_type} above this line
+        self.prompt_text_commented = f'''
+# Please enter the {prompt_type} above this line
 # Lines starting with '#' will be ignored. An empty message will abort the operation.
 #
-# You can tag the following users: {users}
+# Below is a list of acceptable values for each input field.
+# Users: {users}
 '''
-        if self.prompt_type == 'issue':
-            text = '[Summary]\n\n[Description]\n' + self.prompt_text_commented
-        else:
-            text = self.prompt_text_commented
+        if self.prompt_type == 'comment':
+            return self.prompt_text_commented
 
-        return text
+        # Extra info for prompt_type == 'issue'
+        self.prompt_text_commented += f'''# Projects: {projects}
+# IssueTypes: {issuetypes}
+# Statuses: {statuses}
+# Priorities: {priorities}
+# Components in {self.userconfig_filter["project"]} Project: {components}
+# Versions in {self.userconfig_filter["project"]} Project: {versions}
+'''
+        return f'''[*Summary*]
+[Description]
+
+[*Project*] {self.userconfig_filter["project"]}
+[*IssueType*] {self.userconfig_newissue["issuetype"]}
+[Status] {self.userconfig_newissue["status"]}
+[Priority] {self.userconfig_newissue["priority"]}
+[Component] {self.userconfig_newissue["component"]}
+[Version] {self.userconfig_newissue["fixVersion"]}
+[Assignee] {self.userconfig_newissue["assignee"]}
+{self.prompt_text_commented}'''
 
     def get_report(self):
         '''
@@ -371,7 +440,7 @@ Comments {open_fold}1
         Build a vim popup menu for a list of versions
         '''
 
-        for version in self.jira.project_versions(self.vim_filters['project']):
+        for version in self.jira.project_versions(self.userconfig_filter['project']):
             print(version.name)
 
     def load_project_config(self):
@@ -399,14 +468,22 @@ Comments {open_fold}1
             else:
                 return
 
+        # Set server
         server = self.vira_projects.get(repo, {}).get('server')
         if server:
             vim.command(f'let g:vira_serv = "{server}"')
 
-        for filterType in self.vim_filters.keys():
-            filterValue = self.vira_projects.get(repo, {}).get(filterType)
-            if filterValue:
-                self.vim_filters[filterType] = filterValue
+        # Set user-defined filters for current project
+        for key in self.userconfig_filter.keys():
+            value = self.vira_projects.get(repo, {}).get('filter', {}).get(key)
+            if value:
+                self.userconfig_filter[key] = value
+
+        # Set user-defined new-issue defaults for current project
+        for key in self.userconfig_newissue.keys():
+            value = self.vira_projects.get(repo, {}).get('newissue', {}).get(key)
+            if value:
+                self.userconfig_newissue[key] = value
 
     def query_issues(self):
         '''
@@ -414,7 +491,7 @@ Comments {open_fold}1
         '''
 
         q = []
-        for filterType in self.vim_filters.keys():
+        for filterType in self.userconfig_filter.keys():
             filter_str = self.filter_str(filterType)
             if filter_str:
                 q.append(filter_str)
@@ -433,7 +510,7 @@ Comments {open_fold}1
         Reset filters to their default values
         '''
 
-        self.vim_filters = dict(self.vim_filters_default)
+        self.userconfig_filter = dict(self.userconfig_filter_default)
 
     def write_jira(self):
         '''

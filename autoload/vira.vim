@@ -80,16 +80,11 @@ function! vira#_prompt_start(type) "{{{2
       echo "Please select an issue before commenting"
       return
     endif
-  elseif a:type == 'issue'
-    if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
-      echo "Please select project before adding a new issue."
-      return
-    endif
   endif
 
   let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
-  execute 'top 10 sp ' . s:vira_prompt_file
+  execute 'sp ' . s:vira_prompt_file
   silent! setlocal spell
   1
 
@@ -117,7 +112,7 @@ function! vira#_check_project(type) abort "{{{2
     return 1
   endif
 
-  if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
+  if (execute('python3 print(Vira.api.userconfig_filter["project"])')[1:] == "")
     return 0
   endif
 
@@ -372,7 +367,7 @@ function! vira#_set() "{{{2
     if variable == 'g:vira_serv'
       " Reset connection and clear filters before selecting new server
       call vira#_reset_filters()
-      python3 Vira.api.vim_filters["project"] = ""
+      python3 Vira.api.userconfig_filter["project"] = ""
       let s:vira_connected = 0
       call vira#_connect()
     endif
@@ -385,10 +380,10 @@ function! vira#_set() "{{{2
       let value = substitute(s:vira_filter,'|',', ','')
     else | let value = '"' . value . '"'
     endif
-    execute 'python3 Vira.api.vim_filters["' . variable . '"] = '. value .''
+    execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
 
     if variable == 'status'
-      execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
+      execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
     endif
   endif
 
@@ -403,7 +398,7 @@ endfunction
 function! vira#_set_servers() "{{{2
   " Reset connection and clear filters before selecting new server
   call vira#_reset_filters()
-  python3 Vira.api.vim_filters["project"] = ""
+  python3 Vira.api.userconfig_filter["project"] = ""
   let s:vira_connected = 0
   call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction
