@@ -36,7 +36,11 @@ def load_templates(config) -> dict:
     for key, value in config.items():
         if value.get('template'):
             template = dict(config[value.get('template')])
-            template.update(template_config[key])
+            try:
+                template['filter'].update(template_config[key]['filter'])
+                template['newissue'].update(template_config[key]['newissue'])
+            except:
+                pass
             template_config[key].update(template)
 
     return template_config
