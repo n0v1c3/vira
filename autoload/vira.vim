@@ -163,7 +163,7 @@ endfunction
 function! vira#_print_menu(list) " {{{2
   " Write menu output
   " execute ':normal! o' . list . "\<esc>"
-  if (a:list->type() == type([]))
+  if (type(a:list) == type([]))
     for line in a:list
       execute ':normal! o' . line . "\<esc>"
     endfor
