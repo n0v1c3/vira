@@ -7,12 +7,6 @@ along with creating new issues on the go.
 
 ## Installation
 
-Add to your vim plugin list in your .vimrc:
-
-```
-Plugin n0v1c3/vira
-```
-
 Example of vim-plug post-update hook to automatically install python dependencies along with vira:
 
 ```
@@ -75,55 +69,99 @@ In order for vira to use the previous yaml example, set the following variable i
 The configuration for your jira project(s) needs to be done in a json or yaml file.
 Similar to jira servers, default file file-type is json. The default file location is `~/.config/vira/vira_projects.json`
 
+When you're in a git repo, vira will auto-load your pre-defined settings by matching the local repo name from file path.
+
+For each jira project, set:
+
+- `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml)
+
 The following is an example of a typical `vira_project.json` configuration:
 
 ```json
 {
   "vira": {
-    "server": "https://jira.site.com",
-    "project": "VIRA",
-    "assignee": "Mike Boiko",
-    "priority": ["High", "Highest"]
+    "server": "https://jira.site.com"
   },
   "OtherProject": {
-    "server": "https://jira.othersite.com",
-    "project": "MAIN",
-    "assignee": "Travis Gall",
-    "status": "In-Progress"
+    "server": "https://jira.othersite.com"
   }
 }
 ```
-
-When you're in a git repo, vira will auto-load your pre-defined settings by matching the local repo name from file path.
-For each jira project, the following configuration variables are available:
-
-- `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml)
-- `project` - Filter these projects. Can be a single item or list.
-- `status` - Filter these statuses. Can be a single item or list.
-- `assignee` - Filter these assignees. Can be a single item or list.
-- `reporter` - Filter these reporters. Can be a single item or list.
-- `priority` - Filter these priorities. Can be a single item or list.
-- `issuetype` - Filter these issuetypes. Can be a single item or list.
 
 The following is an example of the same configuration in yaml:
 
 ```yaml
 vira:
   server: https://jira.site.com
-  project: VIRA
-  assignee: Mike Boiko
-  priority: [High, Highest]
 OtherProject:
   server: https://jira.othersite.com
-  project: MAIN
-  assignee: Travis Gall
-  status: In-Progress
 ```
 
 In order for vira to use the previous yaml example, set the following variable in your .vimrc:
 `let g:vira_config_file_projects = $HOME.'/vira_projects.yaml'`
 
-Note: Vira will only load the vira_projects.json/yaml configuration automatically once per vim session. You can, however, manually switch servers and filters as many times as you want after that.
+Note: Vira will only load the vira_projects.json/yaml configuration automatically once per vim session. You can, however, manually switch servers and filters as many times as you want after that. See Usage section.
+
+#### Filters
+
+Default repo filters can be defined under a `filter` key as such:
+
+```yaml
+vira:
+  server: https://jira.site.com
+  filter:
+    project: VIRA
+    assignee: mike
+    priority: [High, Highest]
+    fixVersion: [1.1.1, 1.1.2]
+OtherProject:
+  server: https://jira.othersite.com
+  filter:
+    project: MAIN
+    assignee: travis
+    status: In-Progress
+```
+
+The acceptable values for the filter key are:
+
+- `project` - Filter these projects. Can be a single item or list.
+- `assignee` - Filter these assignees. Can be a single item or list.
+- `component` - Filter these components. Can be a single item or list.
+- `fixVersion` - Filter these versions. Can be a single item or list.
+- `issuetype` - Filter these issuetypes. Can be a single item or list.
+- `priority` - Filter these priorities. Can be a single item or list.
+- `reporter` - Filter these reporters. Can be a single item or list.
+- `status` - Filter these statuses. Can be a single item or list.
+
+#### New Issues
+
+Similar to the `filter` key, you can define a `newissue` key to set repo-based
+default configurtion for the new-issue fields.
+
+For example:
+
+```yaml
+vira:
+  server: https://jira.site.com
+  newissue:
+    issuetype: Task
+OtherProject:
+  server: https://jira.othersite.com
+  newissue:
+    assignee: travis
+  filter:
+    assignee: travis
+    status: In-Progress
+```
+
+The acceptable values for filter keys are:
+
+- `assignee` - Define assinee.
+- `component` - Define component. Note - these are project specific.
+- `fixVersion` - Define fixVersion. Note - these are project specific.
+- `issuetype` - Define issue type. The default is Bug.
+- `priority` - Define priority.
+- `status` - Define status. Vira will transition issue to this status.
 
 #### Project Templates
 
@@ -134,14 +172,16 @@ Refer to the yaml example below. Note that the priority in `repo2` will override
 ```yaml
 __maintemplate__:
   server: https://jira.site.com
-  project: VIRA
-  assignee: Travis Gall
-  priority: [High, Highest]
+  filter:
+    project: VIRA
+    assignee: travis
+    priority: [High, Highest]
 repo1:
   template: __maintemplate__
 repo2:
   template: __maintemplate__
-  priority: High
+  filter:
+    priority: High
 ```
 
 #### Default Project Template
@@ -152,9 +192,10 @@ Refer to the yaml example below.
 ```yaml
 __default__:
   server: https://jira.site.com
-  project: VIRA
-  assignee: Mike Boiko
-  priority: [High, Highest]
+  filter:
+    assignee: mike
+  newissue:
+    issuetype: Task
 ```
 
 ### Browser
@@ -170,21 +211,36 @@ let g:vira_browser = 'chromium'
 A list of the important commands, functions and global variables
 to be used to help configure Vira to work for you.
 
+### Keyboard
+
+It is possible to _select multiple_ items from all menus,
+if nothing is selected prior to the item will be selected
+from the current column.
+
+_NOTE:_ These keys are only mapped to the Vira windows.
+
+- `s` - Select current line within menu
+- `<cr>` - Apply selections or current line
+
 ### Commands
 
 - `ViraBrowse` - View Jira issue in web-browser.
 - `ViraComment` - Insert a comment for active issue.
 - `ViraEpics` - Get and Set Project(s) epic issues.
 - `ViraFilterAssignees` - Add assignees to filter.
+- `ViraFilterComponents` - Add components to filter.
 - `ViraFilterPriorities` - Add priorities to filter.
 - `ViraFilterProjects` - Add projects to filter.
 - `ViraFilterReset` - Reset filter to default.
 - `ViraFilterStatuses` - Add statuses to filter.
 - `ViraFilterTypes` - Add issuetypes to filter.
-- `ViraIssue` - Create a new **issue**.
+- `ViraFilterVersions` - Add versions to filter.
+- `ViraIssue` - Create a new **issue**. The required fields are indicated by \*.
 - `ViraIssues` - Get and Set the active **issue**.
 - `ViraReport` - Get report for active issue.
 - `ViraServers` - Get and Set active Jira server.
+- `ViraSetAssignee` - Select user to assign the current issue.
+- `ViraSetStatus` - Select the status of the current issue.
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 
@@ -204,14 +260,18 @@ to be used to help configure Vira to work for you.
 ```
 " Basics
 nnoremap <silent> <leader>vI :ViraIssue<cr>
+nnoremap <silent> <leader>vS :ViraServers<cr>
 nnoremap <silent> <leader>vT :ViraTodo<cr>
 nnoremap <silent> <leader>vb :ViraBrowse<cr>
 nnoremap <silent> <leader>vc :ViraComment<cr>
 nnoremap <silent> <leader>ve :ViraEpics<cr>
 nnoremap <silent> <leader>vi :ViraIssues<cr>
 nnoremap <silent> <leader>vr :ViraReport<cr>
-nnoremap <silent> <leader>vs :ViraServers<cr>
 nnoremap <silent> <leader>vt :ViraTodos<cr>
+
+" Sets
+nnoremap <silent> <leader>vsa :ViraSetAssignee<cr>
+nnoremap <silent> <leader>vss :ViraSetStatus<cr>
 
 " Filter search
 nnoremap <silent> <leader>vfP :ViraFilterPriorities<cr>

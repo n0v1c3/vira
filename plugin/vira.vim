@@ -40,15 +40,21 @@ command! -nargs=0 -bang ViraServers call vira#_menu('servers')
 command! -nargs=0 -bang ViraTodo call vira#_todo()
 command! -nargs=0 -bang ViraTodos call vira#_todos()
 
+" Sets
+command! -nargs=0 -bang ViraSetAssignee call vira#_menu('assign_issue');
+command! -nargs=0 -bang ViraSetStatus call vira#_menu('set_status');
+
 " Filters
 command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
 
-command! -nargs=0 -bang ViraFilterAssignees call vira#_menu("assignees")
-command! -nargs=0 -bang ViraFilterPriorities call vira#_menu("priorities")
-command! -nargs=0 -bang ViraFilterProjects call vira#_menu("projects")
-command! -nargs=0 -bang ViraFilterReporters call vira#_menu("reporters")
-command! -nargs=0 -bang ViraFilterStatuses call vira#_menu("statuses")
-command! -nargs=0 -bang ViraFilterTypes call vira#_menu("issuetypes")
+command! -nargs=0 -bang ViraFilterAssignees call vira#_menu('assignees')
+command! -nargs=0 -bang ViraFilterComponents call vira#_menu('components')
+command! -nargs=0 -bang ViraFilterPriorities call vira#_menu('priorities')
+command! -nargs=0 -bang ViraFilterProjects call vira#_menu('projects')
+command! -nargs=0 -bang ViraFilterReporters call vira#_menu('reporters')
+command! -nargs=0 -bang ViraFilterStatuses call vira#_menu('statuses')
+command! -nargs=0 -bang ViraFilterTypes call vira#_menu('issuetypes')
+command! -nargs=0 -bang ViraFilterVersions call vira#_menu('versions')
 
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2

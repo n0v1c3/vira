@@ -15,11 +15,31 @@ let s:vira_end_time = 0
 
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
+let s:vira_menu_type = ''
+  
+let s:vira_select_init = 0
+let s:vira_filter = ''
+let s:vira_filter_hold = @/
+
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
+let s:vira_set_lookup = {
+      \'assign_issue': 'assign_issue',
+      \'assignees': 'assignee',
+      \'components': 'component',
+      \'issues': 'g:vira_active_issue',
+      \'servers': 'g:vira_serv',
+      \'issuetypes': 'issuetype',
+      \'priorities': 'priority',
+      \'projects': 'project',
+      \'reporters': 'reporter',
+      \'statusCategories': 'statusCategory',
+      \'statuses': 'status',
+      \'set_status': 'transition_issue',
+      \'versions': 'fixVersion',
+      \}
 
 " AutoCommands {{{1
-
 augroup ViraPrompt
   autocmd!
   exe 'autocmd BufWinLeave ' . s:vira_prompt_file . ' call vira#_prompt_end()'
@@ -39,9 +59,7 @@ function! vira#_browse() "{{{2
   " Set browser - either user defined or $BROWSER
   if exists('g:vira_browser')
     let l:browser = g:vira_browser
-  else
-    let l:browser = $BROWSER
-  endif
+  else | let l:browser = $BROWSER | endif
 
   " User needs to define a browser
   if l:browser == ''
@@ -62,16 +80,11 @@ function! vira#_prompt_start(type) "{{{2
       echo "Please select an issue before commenting"
       return
     endif
-  elseif a:type == 'issue'
-    if (execute('python3 print(Vira.api.vim_filters["project"])')[1:] == "")
-      echo "Please select project before adding a new issue."
-      return
-    endif
   endif
 
   let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
-  execute 'top 10 sp ' . s:vira_prompt_file
+  execute 'sp ' . s:vira_prompt_file
   silent! setlocal spell
   1
 
@@ -86,7 +99,24 @@ function! vira#_prompt_end() "{{{2
     redraw | echo "No vira actions performed"
   else
     python3 Vira.api.write_jira()
+    call vira#_refresh()
   endif
+
+endfunction
+
+function! vira#_check_project(type) abort "{{{2
+  " Check if project was selected for
+  " components and versions
+
+  if a:type != 'components' && a:type != 'versions'
+    return 1
+  endif
+
+  if (execute('python3 print(Vira.api.userconfig_filter["project"])')[1:] == "")
+    return 0
+  endif
+
+  return 1
 
 endfunction
 
@@ -100,10 +130,6 @@ function! vira#_connect() abort "{{{2
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
 
-endfunction
-
-function! vira#_filter(name) "{{{2
-  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
 
 function! vira#_get_active_issue() "{{{2
@@ -141,9 +167,7 @@ function! vira#_print_menu(list) " {{{2
     for line in a:list
       execute ':normal! o' . line . "\<esc>"
     endfor
-  else
-    execute ':normal! o' . a:list . "\<esc>"
-  endif
+  else | execute ':normal! o' . a:list . "\<esc>" | endif
 endfunction
 
 function! vira#_load_project_config() " {{{2
@@ -182,12 +206,19 @@ function! vira#_menu(type) abort " {{{2
     let type = 'report'
     let list = ''
   else
+    if !vira#_check_project(a:type)
+      echo 'Please select a project before applying this filter.'
+      return
+    endif
     let type = 'menu'
-    echo a:type
+    " echo a:type
     let list = execute('python3 Vira.api.get_' . a:type . '()')
   endif
-  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
 
+  " Save current menu type
+  let s:vira_menu_type = a:type
+
+  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
   " Toggle/create the report buffer
   if (winnr >= 0)
     silent! execute winnr .'wincmd q'
@@ -212,24 +243,16 @@ function! vira#_menu(type) abort " {{{2
   silent! set nonumber
   " }}}
 
-  " TODO: VIRA-80 [190928] - Move mappings to ftplugin {{{
-  " Key mapping
-  silent! execute 'nnoremap <silent> <buffer> <cr> 0:call vira#_set_' . a:type . '()<cr>:q!<cr>'
-  silent! execute 'nnoremap <silent> <buffer> k gk'
-  silent! execute 'nnoremap <silent> <buffer> q :q!<CR>'
-  silent! execute 'vnoremap <silent> <buffer> j gj'
-  silent! execute 'vnoremap <silent> <buffer> k gk'
-  " }}}
-
   " Clean-up existing report buffer
   silent! normal ggVGd
 
   " Write report output into buffer
   if type == 'menu'
+    let s:vira_filter = ''
+    call feedkeys(":set hlsearch\<cr>")
+    let s:vira_filter_hold = @/
     call vira#_print_menu(list)
-  else
-    call vira#_print_report(list)
-  endif
+  else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
   silent! execute '%s/\^M//g'
@@ -239,7 +262,6 @@ function! vira#_menu(type) abort " {{{2
   " Ensure wrap and linebreak are enabled
   silent! execute 'set wrap'
   silent! execute 'set linebreak'
-
 endfunction
 
 function! vira#_quit() "{{{2
@@ -259,70 +281,6 @@ endfunction
 
 function! vira#_reset_filters() " {{{2
   python3 Vira.api.reset_filters()
-endfunction
-
-function! vira#_set_filter(variable, type) "{{{2
-  execute 'normal 0'
-
-  if a:type == '<cWORD>'
-    let value = expand('<cWORD>')
-  else
-    let value = getline('.')
-  endif
-
-  " This function is used to set vim and python variables
-  if a:variable[:1] == 'g:'
-    execute 'let ' . a:variable . ' = "' . value . '"'
-  else
-    if a:variable == 'status'
-      execute 'python3 Vira.api.vim_filters["statusCategory"] = ""'
-    endif
-    execute 'python3 Vira.api.vim_filters["' . a:variable . '"] = "'. value .'"'
-  endif
-
-  if a:variable == 'g:vira_serv'
-    call vira#_connect()
-  endif
-endfunction
-
-function! vira#_set_issues() "{{{2
-  call vira#_set_filter('g:vira_active_issue', '<cWORD>')
-endfunction
-
-function! vira#_set_projects() "{{{2
-  call vira#_set_filter('project', '<cWORD>')
-endfunction
-
-function! vira#_set_servers() "{{{2
-  " Reset connection and clear filters before selecting new server
-  call vira#_reset_filters()
-  python3 Vira.api.vim_filters["project"] = ""
-  let s:vira_connected = 0
-  call vira#_set_filter('g:vira_serv', '<cWORD>')
-endfunction
-
-function! vira#_set_statuses() "{{{2
-  call vira#_set_filter('status', '.')
-endfunction
-
-function! vira#_set_statusCategories() "{{{2
-  call vira#_set_filter('statusCategory', '.')
-endfunction
-
-function! vira#_set_assignees() "{{{2
-  call vira#_set_filter('assignee', '.')
-endfunction
-
-function! vira#_set_priorities() "{{{2
-  call vira#_set_filter('priority', '.')
-endfunction
-
-function! vira#_set_reporters() "{{{2
-  call vira#_set_filter('reporter', '.')
-endfunction
-
-function! vira#_set_issuetypes() "{{{2
-  call vira#_set_filter('issuetype', '.')
 endfunction
 
 function! vira#_todo() "{{{2
@@ -362,4 +320,85 @@ endfunction
 
 function! vira#_timestamp() "{{{2
   python3 Vira.timestamp()
+endfunction
+
+" Filter {{{1
+function! vira#_filter(name) "{{{2
+  silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
+endfunction
+
+function! vira#_getter() "{{{2
+  " Return the proper form of the selected data
+  if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    return expand('<cWORD>')
+  endif
+  return getline('.')
+endfunction
+
+function! vira#_select() "{{{2
+  execute 'normal mm'
+  execute 'normal 0'
+
+  let value = vira#_getter()
+
+  if s:vira_select_init == 1
+    let s:vira_highlight = s:vira_highlight . "|" . value
+    let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
+  else
+    let s:vira_highlight = value
+    let s:vira_filter = '"' . value . '"'
+    let s:vira_select_init = 1
+  endif
+  let @/ = '\v' . s:vira_highlight
+  execute "normal! /\\v" . s:vira_highlight . "\<cr>"
+  execute 'normal `m'
+  call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
+endfunction
+
+function! vira#_set() "{{{2
+  " This function is used to set vim and python variables
+  execute 'normal 0'
+
+  let value = vira#_getter()
+  let variable = s:vira_set_lookup[s:vira_menu_type]
+
+  if variable[:1] == 'g:'
+    execute 'let ' . variable . ' = "' . value . '"'
+    if variable == 'g:vira_serv'
+      " Reset connection and clear filters before selecting new server
+      call vira#_reset_filters()
+      python3 Vira.api.userconfig_filter["project"] = ""
+      let s:vira_connected = 0
+      call vira#_connect()
+    endif
+
+  elseif variable == 'assign_issue' || variable == 'transition_issue'
+    execute 'python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+
+  else
+    if s:vira_filter[:0] == '"'
+      let value = substitute(s:vira_filter,'|',', ','')
+    else | let value = '"' . value . '"'
+    endif
+    execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
+
+    if variable == 'status'
+      execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
+    endif
+  endif
+
+  call vira#_filter_reset()
+endfunction
+
+function! vira#_filter_reset()
+  let s:vira_select_init = 0
+  let @/ = s:vira_filter_hold
+endfunction
+
+function! vira#_set_servers() "{{{2
+  " Reset connection and clear filters before selecting new server
+  call vira#_reset_filters()
+  python3 Vira.api.userconfig_filter["project"] = ""
+  let s:vira_connected = 0
+  call vira#_set_filter('g:vira_serv', '<cWORD>')
 endfunction

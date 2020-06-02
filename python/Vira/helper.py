@@ -36,7 +36,11 @@ def load_templates(config) -> dict:
     for key, value in config.items():
         if value.get('template'):
             template = dict(config[value.get('template')])
-            template.update(template_config[key])
+            try:
+                template['filter'].update(template_config[key]['filter'])
+                template['newissue'].update(template_config[key]['newissue'])
+            except:
+                pass
             template_config[key].update(template)
 
     return template_config
@@ -67,6 +71,18 @@ def parse_yaml(file_path) -> dict:
         raise e
 
     return config
+
+def parse_prompt_text(input_stripped, start_section, end_section=None) -> str:
+    '''
+    Parse the text in between prompt sections.
+    For example: text between [Summary] and [Description]
+    '''
+
+    end_char = None if not end_section else input_stripped.find(f'[{end_section}]')
+    text = input_stripped[input_stripped.find(f'[{start_section}]') +
+                          len(f'[{start_section}]'):end_char].strip().replace('\n', ' ')
+
+    return text
 
 def run_command(cmd_string):
     '''

@@ -9,7 +9,7 @@ from jira import JIRA
 from jira.exceptions import JIRAError
 import datetime
 import urllib3
-from Vira.helper import load_config, run_command
+from Vira.helper import load_config, run_command, parse_prompt_text
 
 class ViraAPI():
     '''
@@ -30,8 +30,10 @@ class ViraAPI():
         except:
             print(f'Could not load {file_servers} or {file_projects}')
 
-        self.vim_filters_default = {
+        self.userconfig_filter_default = {
             'assignee': '',
+            'component': '',
+            'fixVersion': '',
             'issuetype': '',
             'priority': '',
             'project': '',
@@ -41,27 +43,67 @@ class ViraAPI():
         }
         self.reset_filters()
 
+        self.userconfig_newissue = {
+            'assignee': '',
+            'component': '',
+            'fixVersion': '',
+            'issuetype': 'Bug',
+            'priority': '',
+            'status': '',
+        }
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
         '''
 
-        issuetype = 'Bug'
+        section = {
+            'summary': parse_prompt_text(input_stripped, '*Summary*', 'Description'),
+            'description': parse_prompt_text(input_stripped, 'Description', '*Project*'),
+            'project': parse_prompt_text(input_stripped, '*Project*', '*IssueType*'),
+            'issuetype': parse_prompt_text(input_stripped, '*IssueType*', 'Status'),
+            'status': parse_prompt_text(input_stripped, 'Status', 'Priority'),
+            'priority': parse_prompt_text(input_stripped, 'Priority', 'Component'),
+            'components': parse_prompt_text(input_stripped, 'Component', 'Version'),
+            'fixVersions': parse_prompt_text(input_stripped, 'Version', 'Assignee'),
+            'assignee': parse_prompt_text(input_stripped, 'Assignee'),
+        }
 
-        summary = input_stripped[input_stripped.find('[Summary]') +
-                                 9:input_stripped.find('[Description]')].strip().replace(
-                                     '\n', ' ')
-        description = input_stripped[input_stripped.find('[Description]') + 13:].strip()
-
-        # Check if summary was entered by user
-        if summary == '':
+        # Check if required fields was entered by user
+        if section['summary'] == '' or section['project'] == '' or section[
+                'issuetype'] == '':
             return
 
-        issue_key = self.jira.create_issue(
-            project={'key': self.vim_filters['project']},
-            summary=summary,
-            description=description,
-            issuetype={'name': issuetype})
+        issue_kwargs = {
+            'project': section['project'],
+            'summary': section['summary'],
+            'description': section['description'],
+            'issuetype': {
+                'name': section['issuetype']
+            },
+            'priority': {
+                'name': section['priority']
+            },
+            'components': [{
+                'name': section['components']
+            }],
+            'fixVersions': [{
+                'name': section['fixVersions']
+            }],
+            'assignee': {
+                'name': section['assignee']
+            },
+        }
+
+        # Jira API doesn't accept empty fields for certain keys
+        for key in issue_kwargs.copy().keys():
+            if section[key] == '':
+                issue_kwargs.pop(key)
+
+        # Create issue and transition
+        issue_key = self.jira.create_issue(**issue_kwargs)
+        if section['status'] != '':
+            self.jira.transition_issue(issue_key, section['status'])
 
         jira_server = vim.eval('g:vira_serv')
         print(f'Added {jira_server}/browse/{issue_key}')
@@ -125,14 +167,30 @@ class ViraAPI():
             AND status in ('In Progress', 'To Do')
         '''
 
-        if self.vim_filters.get(filterType, '') == '':
+        if self.userconfig_filter.get(filterType, '') == '':
             return
 
-        selection = str(self.vim_filters[filterType]).strip('[]') if type(
-            self.vim_filters[filterType]
-        ) == list else "'" + self.vim_filters[filterType] + "'"
+        selection = str(self.userconfig_filter[filterType]).strip('[]') if type(
+            self.userconfig_filter[filterType]
+        ) == list else self.userconfig_filter[filterType] if type(
+            self.userconfig_filter[filterType]
+        ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
         return f"{filterType} in ({selection})"
+
+    def get_assign_issue(self):
+        '''
+        Menu to select users
+        '''
+
+        self.get_users()
+
+    def get_assignees(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_users()
 
     def get_comments(self, issue):
         '''
@@ -152,6 +210,14 @@ class ViraAPI():
                 f"{comment['updated'][11:16]}" + ' | ', f"{comment['body']} + '\n'")
 
         return comments
+
+    def get_components(self):
+        '''
+        Build a vim popup menu for a list of components
+        '''
+
+        for component in self.jira.project_components(self.userconfig_filter['project']):
+            print(component.name)
 
     def get_epics(self):
         '''
@@ -176,7 +242,7 @@ class ViraAPI():
         # issues = []
         for issue in self.query_issues():
             print(
-                issue["key"] + "  -  " + issue["fields"]["summary"] + " | " +
+                issue["key"] + "  ~  " + issue["fields"]["summary"] + " | " +
                 issue["fields"]["status"]["name"] + " |")
             #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
         # return str(issues)
@@ -197,31 +263,6 @@ class ViraAPI():
         for priority in self.jira.priorities():
             print(priority)
 
-    def get_prompt_text(self, prompt_type):
-        '''
-        Get prompt text used for inputting text into jira
-        '''
-
-        # Only show users which you are allowed to tag
-        users = [
-            user.key
-            for user in self.jira.search_users(".")
-            if not user.key.startswith('JIRAUSER')
-        ]
-
-        self.prompt_type = prompt_type
-        self.prompt_text_commented = f'''\n# Please enter the {prompt_type} above this line
-# Lines starting with '#' will be ignored. An empty message will abort the operation.
-#
-# You can tag the following users: {users}
-'''
-        if self.prompt_type == 'issue':
-            text = '[Summary]\n\n[Description]\n' + self.prompt_text_commented
-        else:
-            text = self.prompt_text_commented
-
-        return text
-
     def get_projects(self):
         '''
         Build a vim popup menu for a list of projects
@@ -230,61 +271,133 @@ class ViraAPI():
         for project in self.jira.projects():
             print(project)
 
+    def get_prompt_text(self, prompt_type):
+        '''
+        Get prompt text used for inputting text into jira
+        '''
+
+        # Prepare dynamic variables for prompt text
+        users = [
+            user.key
+            for user in self.jira.search_users(".")
+            if not user.key.startswith('JIRAUSER')
+        ]
+        statuses = [x.name for x in self.jira.statuses()]
+        issuetypes = [x.name for x in self.jira.issue_types()]
+        priorities = [x.name for x in self.jira.priorities()]
+        components = [
+            x.name
+            for x in self.jira.project_components(self.userconfig_filter['project'])
+        ] if self.userconfig_filter['project'] != '' else ''
+        versions = [
+            x.name for x in self.jira.project_versions(self.userconfig_filter['project'])
+        ] if self.userconfig_filter['project'] != '' else ''
+        projects = [x.key for x in self.jira.projects()]
+
+        self.prompt_type = prompt_type
+        self.prompt_text_commented = f'''
+# Please enter the {prompt_type} above this line
+# Lines starting with '#' will be ignored. An empty message will abort the operation.
+#
+# Below is a list of acceptable values for each input field.
+# Users: {users}
+'''
+        if self.prompt_type == 'comment':
+            return self.prompt_text_commented
+
+        # Extra info for prompt_type == 'issue'
+        self.prompt_text_commented += f'''# Projects: {projects}
+# IssueTypes: {issuetypes}
+# Statuses: {statuses}
+# Priorities: {priorities}
+# Components in {self.userconfig_filter["project"]} Project: {components}
+# Versions in {self.userconfig_filter["project"]} Project: {versions}
+'''
+        return f'''[*Summary*]
+[Description]
+
+[*Project*] {self.userconfig_filter["project"]}
+[*IssueType*] {self.userconfig_newissue["issuetype"]}
+[Status] {self.userconfig_newissue["status"]}
+[Priority] {self.userconfig_newissue["priority"]}
+[Component] {self.userconfig_newissue["component"]}
+[Version] {self.userconfig_newissue["fixVersion"]}
+[Assignee] {self.userconfig_newissue["assignee"]}
+{self.prompt_text_commented}'''
+
     def get_report(self):
         '''
         Print a report for the given issue
         '''
 
         # Get passed issue content
-
-        issue = vim.eval("g:vira_active_issue")
+        active_issue = vim.eval("g:vira_active_issue")
         issues = self.jira.search_issues(
-            'issue = "' + issue + '"',
+            'issue = "' + active_issue + '"',
             #  fields='*',
-            fields='summary,comment,' + 'description,issuetype,' + 'priority,status,' +
-            'created,updated,' + 'assignee,reporter,' + 'customfield_10106,',
+            fields=','.join(
+                [
+                    'summary,', 'comment,', 'component', 'description', 'issuetype,',
+                    'priority', 'status,', 'created', 'updated,', 'assignee', 'reporter,',
+                    'fixVersion', 'customfield_10106,'
+                ]),
             json_result='True')
+        issue = issues['issues'][0]['fields']
 
-        # Print issue content
-        report = issue + ': ' + issues['issues'][0]['fields']['summary']
-        report += '\nDetails {{' + '{1'
-        report += "\nStory Points  :  "
-        report += str(issues['issues'][0]['fields'].get('customfield_10106', ''))
-        report += "\n     Created  :  "
-        report += issues['issues'][0]['fields']['created'][0:10]
-        report += ' ' + issues['issues'][0]['fields']['created'][11:16]
-        report += "\n     Updated  :  "
-        report += issues['issues'][0]['fields']['updated'][0:10]
-        report += ' ' + issues['issues'][0]['fields']['updated'][11:16]
-        report += "\n        Type  :  "
-        report += issues['issues'][0]['fields']['issuetype']['name']
-        report += "\n      Status  :  "
-        report += issues['issues'][0]['fields']['status']['name']
-        report += "\n    Priority  :  "
-        report += issues['issues'][0]['fields']['priority']['name']
+        # Prepare report data
+        open_fold = '{{{'
+        close_fold = '}}}'
+        summary = issue['summary']
+        story_points = str(issue.get('customfield_10106', ''))
+        created = issue['created'][0:10] + ' ' + issues['issues'][0]['fields']['created'][
+            11:16]
+        updated = issue['updated'][0:10] + ' ' + issues['issues'][0]['fields']['updated'][
+            11:16]
+        task_type = issue['issuetype']['name']
+        status = issue['status']['name']
+        priority = issue['priority']['name']
+        assignee = issue['assignee']['displayName'] if type(
+            issue['assignee']) == dict else 'Unassigned'
+        reporter = issue['reporter']['displayName']
+        component = ', '.join([c['name'] for c in issue['components']])
+        version = ', '.join([v['name'] for v in issue['fixVersions']])
+        description = str(issue.get('description'))
+        comments = '\n'.join(
+            [
+                comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
+                ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
+                for comment in issue['comment']['comments']
+            ])
 
-        report += "\n    Assignee  :  "
-        try:
-            report += issues['issues'][0]['fields']['assignee']['displayName']
-        except:
-            report += "Unassigned"
-
-        report += "\n    Reporter  :  "
-        report += issues['issues'][0]['fields']['reporter']['displayName']
-        report += '\n}}' + '}'
-        report += '\nDescription {{' + '{1\n'
-        report += str(issues['issues'][0]['fields'].get('description'))
-        report += '\n}}' + '}'
-        report += "\nComments {" + "{{1"
-        for comment in issues['issues'][0]['fields']['comment']['comments']:
-            report += f"\n{comment['author']['displayName']}" + ' @ '
-            report += f"{comment['updated'][0:10]}" + ' '
-            report += f"{comment['updated'][11:16]}" + ' {' + '{{2'
-            report += f"\n{comment['body']}"
-            report += '\n}}' + '}'
-        report += "\n}}" + "}"
+        # Create report template and fill with data
+        report = '''{active_issue}: {summary}
+Details {open_fold}1
+Story Points   :  {story_points}
+     Created   :  {created}
+     Updated   :  {updated}
+        Type   :  {task_type}
+      Status   :  {status}
+    Priority   :  {priority}
+    Component  :  {component}
+    Version    :  {version}
+    Assignee   :  {assignee}
+    Reporter   :  {reporter}
+{close_fold}
+Description {open_fold}1
+{description}
+{close_fold}
+Comments {open_fold}1
+{comments}
+{close_fold}'''.format(**locals())
 
         return report
+
+    def get_reporters(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_users()
 
     def get_servers(self):
         '''
@@ -302,27 +415,33 @@ class ViraAPI():
         for status in self.jira.statuses():
             print(status)
 
+    def get_set_status(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_statuses()
+
     def get_users(self):
         '''
         Get my issues with JQL
         '''
 
-        for user in self.jira.search_users("."):
+        users = [
+            user.key
+            for user in self.jira.search_users(".")
+            if not user.key.startswith('JIRAUSER')
+        ]
+        for user in users:
             print(user)
 
-    def get_assignees(self):
+    def get_versions(self):
         '''
-        Get my issues with JQL
-        '''
-
-        self.get_users()
-
-    def get_reporters(self):
-        '''
-        Get my issues with JQL
+        Build a vim popup menu for a list of versions
         '''
 
-        self.get_users()
+        for version in self.jira.project_versions(self.userconfig_filter['project']):
+            print(version.name)
 
     def load_project_config(self):
         '''
@@ -349,14 +468,22 @@ class ViraAPI():
             else:
                 return
 
+        # Set server
         server = self.vira_projects.get(repo, {}).get('server')
         if server:
             vim.command(f'let g:vira_serv = "{server}"')
 
-        for filterType in self.vim_filters.keys():
-            filterValue = self.vira_projects.get(repo, {}).get(filterType)
-            if filterValue:
-                self.vim_filters[filterType] = filterValue
+        # Set user-defined filters for current project
+        for key in self.userconfig_filter.keys():
+            value = self.vira_projects.get(repo, {}).get('filter', {}).get(key)
+            if value:
+                self.userconfig_filter[key] = value
+
+        # Set user-defined new-issue defaults for current project
+        for key in self.userconfig_newissue.keys():
+            value = self.vira_projects.get(repo, {}).get('newissue', {}).get(key)
+            if value:
+                self.userconfig_newissue[key] = value
 
     def query_issues(self):
         '''
@@ -364,14 +491,17 @@ class ViraAPI():
         '''
 
         q = []
-        for filterType in self.vim_filters.keys():
+        for filterType in self.userconfig_filter.keys():
             filter_str = self.filter_str(filterType)
             if filter_str:
                 q.append(filter_str)
 
         query = ' AND '.join(q) + ' ORDER BY updated DESC'
         issues = self.jira.search_issues(
-            query, fields='summary,comment,status,statusCategory', json_result='True', maxResults=-1)
+            query,
+            fields='summary,comment,status,statusCategory',
+            json_result='True',
+            maxResults=-1)
 
         return issues['issues']
 
@@ -380,14 +510,7 @@ class ViraAPI():
         Reset filters to their default values
         '''
 
-        self.vim_filters = dict(self.vim_filters_default)
-
-    def set_status(self, issue, status):
-        '''
-        Set the status of the given issue
-        '''
-
-        self.jira.transition_issue(issue, status)
+        self.userconfig_filter = dict(self.userconfig_filter_default)
 
     def write_jira(self):
         '''
