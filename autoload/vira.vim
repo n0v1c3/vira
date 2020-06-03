@@ -127,6 +127,9 @@ function! vira#_connect() abort "{{{2
     return
   endif
 
+  " Neovim requires this when trying to run vira from a brand new empty buffer
+  python3 import vim
+
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
 
