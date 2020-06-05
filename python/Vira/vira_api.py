@@ -146,7 +146,8 @@ class ViraAPI():
             self.jira = JIRA(
                 options={
                     'server': server,
-                    'verify': cert_verify
+                    'verify': cert_verify,
+                    'api': '3'
                 },
                 basic_auth=(username, password),
                 timeout=5)
