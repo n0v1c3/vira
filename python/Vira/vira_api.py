@@ -148,7 +148,7 @@ class ViraAPI():
                     'server': server,
                     'verify': cert_verify
                 },
-                auth=(username, password),
+                basic_auth=(username, password),
                 timeout=5)
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
