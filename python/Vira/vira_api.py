@@ -146,7 +146,8 @@ class ViraAPI():
             self.jira = JIRA(
                 options={
                     'server': server,
-                    'verify': cert_verify
+                    'verify': cert_verify,
+                    'api': '3'
                 },
                 basic_auth=(username, password),
                 timeout=5)
@@ -278,9 +279,9 @@ class ViraAPI():
 
         # Prepare dynamic variables for prompt text
         users = [
-            user.key
-            for user in self.jira.search_users(".")
-            if not user.key.startswith('JIRAUSER')
+            #  user.key
+            #  for user in self.jira.search_users(".")
+            #  if not user.key.startswith('JIRAUSER')
         ]
         statuses = [x.name for x in self.jira.statuses()]
         issuetypes = [x.name for x in self.jira.issue_types()]
