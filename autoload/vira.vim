@@ -397,11 +397,3 @@ function! vira#_filter_reset()
   let s:vira_select_init = 0
   let @/ = s:vira_filter_hold
 endfunction
-
-function! vira#_set_servers() "{{{2
-  " Reset connection and clear filters before selecting new server
-  call vira#_reset_filters()
-  python3 Vira.api.userconfig_filter["project"] = ""
-  let s:vira_connected = 0
-  call vira#_set_filter('g:vira_serv', '<cWORD>')
-endfunction

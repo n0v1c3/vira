@@ -177,7 +177,9 @@ class ViraAPI():
             self.userconfig_filter[filterType]
         ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
-        return f"{filterType} in ({selection})"
+        return f"{filterType} in ({selection})".replace(
+                "'null'", "Null").replace(
+                    "'unassigned'", "Null")
 
     def get_assign_issue(self):
         '''
@@ -435,6 +437,7 @@ Comments {open_fold}1
         ]
         for user in users:
             print(user)
+        print('unassigned')
 
     def get_versions(self):
         '''
@@ -443,6 +446,7 @@ Comments {open_fold}1
 
         for version in self.jira.project_versions(self.userconfig_filter['project']):
             print(version.name)
+        print('null')
 
     def load_project_config(self):
         '''
