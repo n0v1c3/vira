@@ -39,7 +39,8 @@ class ViraAPI():
             'project': '',
             'reporter': '',
             'status': '',
-            'statusCategory': ['To Do', 'In Progress']
+            'statusCategory': ['To Do', 'In Progress'],
+            'text': ''
         }
         self.reset_filters()
 
@@ -179,7 +180,8 @@ class ViraAPI():
 
         return f"{filterType} in ({selection})".replace(
                 "'null'", "Null").replace(
-                    "'unassigned'", "Null")
+                "'unassigned'", "Null").replace(
+                        f"text in ({selection})", f"text ~ {selection}")
 
     def get_assign_issue(self):
         '''
@@ -280,10 +282,12 @@ class ViraAPI():
         '''
 
         # Prepare dynamic variables for prompt text
-        users = [
-            #  user.key
             #  for user in self.jira.search_users(".")
-            #  if not user.key.startswith('JIRAUSER')
+            #  for user in self.jira.search_assignable_users_for_projects('*','*')
+        users = [
+            user.key
+            for user in self.jira.group_members('*')
+            if not user.key.startswith('JIRAUSER')
         ]
         statuses = [x.name for x in self.jira.statuses()]
         issuetypes = [x.name for x in self.jira.issue_types()]
@@ -430,10 +434,28 @@ Comments {open_fold}1
         Get my issues with JQL
         '''
 
+        issues = self.jira.search_issues(
+            '',
+            #  fields='*',
+            fields=','.join(
+                [
+                    'assignee', 'reporter,'
+                ]),
+            json_result='True')
+        print(issues)
+        assigneer = issues['fields']['assignee']
+        #  assigneer = issue['assignee']['displayName'] if type(
+            #  issue['assignee']) == dict else 'Unassigned'
+        #  reporter = assignee + issue['reporter']['displayName']
         users = [
-            user.key
-            for user in self.jira.search_users(".")
-            if not user.key.startswith('JIRAUSER')
+            #  user.key
+            #  for user in self.jira.search_users(".")
+            #  if not user.key.startswith('JIRAUSER')
+            #  print jira.group_menbers(self.jira.groups())
+            #  user.key
+            #  for user in self.jira.create_temp_project_avatar
+
+            #  if not user.key.startswith('JIRAUSER')
         ]
         for user in users:
             print(user)

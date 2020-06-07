@@ -233,6 +233,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraFilterProjects` - Add projects to filter.
 - `ViraFilterReset` - Reset filter to default.
 - `ViraFilterStatuses` - Add statuses to filter.
+- `ViraFilterText` - Add flexible issue text to filter.
 - `ViraFilterTypes` - Add issuetypes to filter.
 - `ViraFilterVersions` - Add versions to filter.
 - `ViraIssue` - Create a new **issue**. The required fields are indicated by \*.
@@ -274,6 +275,8 @@ nnoremap <silent> <leader>vsa :ViraSetAssignee<cr>
 nnoremap <silent> <leader>vss :ViraSetStatus<cr>
 
 " Filter search
+nnoremap <silent> <leader>v/ ViraFilterText<cr>
+
 nnoremap <silent> <leader>vfP :ViraFilterPriorities<cr>
 nnoremap <silent> <leader>vfa :ViraFilterAssignees<cr>
 nnoremap <silent> <leader>vfp :ViraFilterProjects<cr>

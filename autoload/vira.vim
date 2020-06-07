@@ -208,6 +208,9 @@ function! vira#_menu(type) abort " {{{2
   if a:type == 'report'
     let type = 'report'
     let list = ''
+  elseif a:type == 'text'
+    execute 'python3 Vira.api.userconfig_filter["text"] = "' . input('text ~ ') . '"'
+    return
   else
     if !vira#_check_project(a:type)
       echo 'Please select a project before applying this filter.'
