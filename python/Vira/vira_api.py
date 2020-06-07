@@ -178,10 +178,11 @@ class ViraAPI():
             self.userconfig_filter[filterType]
         ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
-        return f"{filterType} in ({selection})".replace(
-                "'null'", "Null").replace(
-                "'unassigned'", "Null").replace(
-                        f"text in ({selection})", f"text ~ {selection}")
+        return str(
+            f"{filterType} in ({selection})"
+        ).replace("'null'", "Null"
+        ).replace("'Unassigned'", "Null"
+        ).replace(f"text in ({selection})", f"text ~ {selection}")
 
     def get_assign_issue(self):
         '''
@@ -285,9 +286,9 @@ class ViraAPI():
             #  for user in self.jira.search_users(".")
             #  for user in self.jira.search_assignable_users_for_projects('*','*')
         users = [
-            user.key
-            for user in self.jira.group_members('*')
-            if not user.key.startswith('JIRAUSER')
+            #  user.key
+            #  for user in self.jira.group_members('*')
+            #  if not user.key.startswith('JIRAUSER')
         ]
         statuses = [x.name for x in self.jira.statuses()]
         issuetypes = [x.name for x in self.jira.issue_types()]
@@ -434,32 +435,29 @@ Comments {open_fold}1
         Get my issues with JQL
         '''
 
+        query = 'ORDER BY updated DESC'
         issues = self.jira.search_issues(
-            '',
-            #  fields='*',
-            fields=','.join(
-                [
-                    'assignee', 'reporter,'
-                ]),
-            json_result='True')
-        print(issues)
-        assigneer = issues['fields']['assignee']
-        #  assigneer = issue['assignee']['displayName'] if type(
-            #  issue['assignee']) == dict else 'Unassigned'
-        #  reporter = assignee + issue['reporter']['displayName']
-        users = [
-            #  user.key
-            #  for user in self.jira.search_users(".")
-            #  if not user.key.startswith('JIRAUSER')
-            #  print jira.group_menbers(self.jira.groups())
-            #  user.key
-            #  for user in self.jira.create_temp_project_avatar
+            query,
+            fields='assignee, reporter',
+            json_result='True',
+            maxResults=-1)
 
-            #  if not user.key.startswith('JIRAUSER')
-        ]
-        for user in users:
-            print(user)
-        print('unassigned')
+        users = []
+        for issue in issues["issues"]:
+
+            user = issue['fields']['reporter']['displayName']
+            if user not in users:
+                users.append(user)
+                print(user)
+
+            user = issue['fields']['assignee']['displayName'] if type(
+                issue['fields']['assignee']) == dict else 'Unassigned'
+            if user not in users:
+                users.append(user)
+                print(user)
+
+            if "Unassigned" not in users:
+                print('Unassigned')
 
     def get_versions(self):
         '''
