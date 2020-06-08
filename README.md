@@ -64,6 +64,12 @@ https://jira.othersite.com:
 In order for vira to use the previous yaml example, set the following variable in your .vimrc:
 `let g:vira_config_file_servers = $HOME.'/vira_servers.yaml'`
 
+#### Atlassian Cloud Notes
+
+[Atlassian Cloud Jira Key](https://id.atlassian.com/manage-profile/security/api-tokens)
+may be required if you are using the Atlassian Cloud service.
+Once an `API token` has been created that key can be used for `password`.
+
 ### Jira projects
 
 The configuration for your jira project(s) needs to be done in a json or yaml file.
@@ -124,7 +130,7 @@ OtherProject:
 
 The acceptable values for the filter key are:
 
-- `project` - Filter these projects. Can be a single item or list.
+ `project` - Filter these projects. Can be a single item or list.
 - `assignee` - Filter these assignees. Can be a single item or list.
 - `component` - Filter these components. Can be a single item or list.
 - `fixVersion` - Filter these versions. Can be a single item or list.
@@ -136,7 +142,7 @@ The acceptable values for the filter key are:
 #### New Issues
 
 Similar to the `filter` key, you can define a `newissue` key to set repo-based
-default configurtion for the new-issue fields.
+default configuration for the new-issue fields.
 
 For example:
 
@@ -156,7 +162,7 @@ OtherProject:
 
 The acceptable values for filter keys are:
 
-- `assignee` - Define assinee.
+- `assignee` - Define assignee.
 - `component` - Define component. Note - these are project specific.
 - `fixVersion` - Define fixVersion. Note - these are project specific.
 - `issuetype` - Define issue type. The default is Bug.
@@ -200,7 +206,8 @@ __default__:
 
 ### Browser
 
-The default browser used for :ViraBrowse is the environment variable \$BROWSER. Override this by setting g:vira_browser.
+The default browser used for `:ViraBrowse` is the environment
+variable `$BROWSER`. Override this by setting `g:vira_browser`.
 
 ```
 let g:vira_browser = 'chromium'
@@ -259,7 +266,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 ### Examples:
 
 ```
-" Basics
+ Basics
 nnoremap <silent> <leader>vI :ViraIssue<cr>
 nnoremap <silent> <leader>vS :ViraServers<cr>
 nnoremap <silent> <leader>vT :ViraTodo<cr>
@@ -292,14 +299,45 @@ nnoremap <silent> <leader>vfr :ViraFilterReset<cr>
 statusline+=%{ViraStatusline()}
 ```
 
-### Plugin Support:
+## Support
+### Private and Cloud Jira Hosting
 
-Plugins used and supported. This list will build as required
-from other requests.
+We currently support Private Jira servers version 8 and up. We
+have not seen issues with the lower versions we had access to
+but we no longer do have a test platform.
+
+The Cloud feature now available from Atlassian is currently
+also available. The `API token` key referenced above is required
+to use as your `password`.
+
+### Vim Plugins
+
+Plugins may be used and supported. This list will build as required
+from other requests. Support will be focused on providing functions
+that provide information along with the related Jira commands for
+easy usage.
+
+Below are a few common examples. Please recommend any other tools
+that could use some good features to make your development easier.
+
+#### vim-fugitive
+
+A simple example is below put recommended that it can be expanded on
+for your personal needs.
+
+```
+function! s:VGprompt()
+  return '"' . ViraStatusLine() . ': ' . input(ViraStatusLine() . ': ') . '"'
+endfunction
+
+execute 'Git checkout -b' . ViraStatusLine()
+execute 'Git checkout ' . ViraStatusLine()
+execute 'Git push -u origin ' . ViraStatusLine()
+execute 'Git commit -m ' . s:VGprompt()
+execute 'Gmerge --no-ff ' . ViraStatusLine() . ' -m ' . s:VGprompt()
+```
 
 #### airline
-
-_Full support planned_.
 
 I am currently using the z section of airline until I figure
 out the proper way to do it.
