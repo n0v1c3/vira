@@ -285,11 +285,24 @@ class ViraAPI():
         # Prepare dynamic variables for prompt text
             #  for user in self.jira.search_users(".")
             #  for user in self.jira.search_assignable_users_for_projects('*','*')
-        users = [
-            #  user.key
-            #  for user in self.jira.group_members('*')
-            #  if not user.key.startswith('JIRAUSER')
-        ]
+        query = 'ORDER BY updated DESC'
+        issues = self.jira.search_issues(
+            query,
+            fields='assignee, reporter',
+            json_result='True',
+            maxResults=-1)
+
+        users = []
+        for issue in issues["issues"]:
+
+            user = str(issue['fields']['reporter']['displayName'])
+            if user not in users:
+                users.append(user)
+
+            user = str(issue['fields']['assignee']['displayName']) if type(
+                issue['fields']['assignee']) == dict else 'Unassigned'
+            if user not in users and user != 'Unassigned':
+                users.append(user)
         statuses = [x.name for x in self.jira.statuses()]
         issuetypes = [x.name for x in self.jira.issue_types()]
         priorities = [x.name for x in self.jira.priorities()]
@@ -420,8 +433,11 @@ Comments {open_fold}1
         Get my issues with JQL
         '''
 
+        statuses = []
         for status in self.jira.statuses():
-            print(status)
+            if str(status) not in statuses:
+                statuses.append(str(status))
+                print(str(status))
 
     def get_set_status(self):
         '''
@@ -445,19 +461,18 @@ Comments {open_fold}1
         users = []
         for issue in issues["issues"]:
 
-            user = issue['fields']['reporter']['displayName']
+            user = str(issue['fields']['reporter']['displayName'])
             if user not in users:
                 users.append(user)
-                print(user)
 
-            user = issue['fields']['assignee']['displayName'] if type(
+            user = str(issue['fields']['assignee']['displayName']) if type(
                 issue['fields']['assignee']) == dict else 'Unassigned'
-            if user not in users:
+            if user not in users and user != 'Unassigned':
                 users.append(user)
-                print(user)
 
-            if "Unassigned" not in users:
-                print('Unassigned')
+        for user in sorted(users):
+            print(user)
+        print('Unassigned')
 
     def get_versions(self):
         '''
