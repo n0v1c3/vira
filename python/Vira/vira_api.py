@@ -445,19 +445,18 @@ Comments {open_fold}1
         users = []
         for issue in issues["issues"]:
 
-            user = issue['fields']['reporter']['displayName']
+            user = str(issue['fields']['reporter']['displayName'])
             if user not in users:
                 users.append(user)
-                print(user)
 
-            user = issue['fields']['assignee']['displayName'] if type(
+            user = str(issue['fields']['assignee']['displayName']) if type(
                 issue['fields']['assignee']) == dict else 'Unassigned'
-            if user not in users:
+            if user not in users and user != 'Unassigned':
                 users.append(user)
-                print(user)
 
-            if "Unassigned" not in users:
-                print('Unassigned')
+        for user in sorted(users):
+            print(user)
+        print('Unassigned')
 
     def get_versions(self):
         '''
