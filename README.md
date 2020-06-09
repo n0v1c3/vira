@@ -130,7 +130,7 @@ OtherProject:
 
 The acceptable values for the filter key are:
 
- `project` - Filter these projects. Can be a single item or list.
+- `project` - Filter these projects. Can be a single item or list.
 - `assignee` - Filter these assignees. Can be a single item or list.
 - `component` - Filter these components. Can be a single item or list.
 - `fixVersion` - Filter these versions. Can be a single item or list.
@@ -266,7 +266,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 ### Examples:
 
 ```
- Basics
+" Basics
 nnoremap <silent> <leader>vI :ViraIssue<cr>
 nnoremap <silent> <leader>vS :ViraServers<cr>
 nnoremap <silent> <leader>vT :ViraTodo<cr>

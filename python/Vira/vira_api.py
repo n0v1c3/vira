@@ -148,7 +148,6 @@ class ViraAPI():
                 options={
                     'server': server,
                     'verify': cert_verify,
-                    'api': '3'
                 },
                 basic_auth=(username, password),
                 timeout=5)

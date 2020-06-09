@@ -366,6 +366,7 @@ function! vira#_set() "{{{2
   execute 'normal 0'
 
   let value = vira#_getter()
+  let g:testvar = value
   let variable = s:vira_set_lookup[s:vira_menu_type]
 
   if variable[:1] == 'g:'
