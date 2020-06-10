@@ -11,22 +11,25 @@ syntax match viraCitvtion "??.*??"
 syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
 syntax match viraCommentClose "}}}"
 syntax match viraCommentDate /@.*/hs=s,he=e contained
-syntax match viraDetailsA ".*  :"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsHighest,viraDetailsHigh,viraDetailsMedium,viraDetailsLow,viraDetailsLowest,viraDetailsStatusTodo,viraDetailsStatusInProgress,viraDetailsStatusComplete,viraDetailsStatusDone,viraDetailsTypeBug,viraDetailsTypeTask,viraDetailsTypeStory,viraDetailsTypeEpic nextgroup=viraDetailsB
-syntax match viraDetailsB ":" contained nextgroup=viraDetailsC
-syntax match viraDetailsC ":  .*"hs=s+1 contained nextgroup=viraDetailsHigh
-syntax match viraDetailsHigh ":  High"hs=s+1 contained nextgroup=viraDetailsHighest
-syntax match viraDetailsHighest ":  Highest"hs=s+1 contained nextgroup=viraDetailsLow
-syntax match viraDetailsLow ":  Low"hs=s+1 contained nextgroup=viraDetailsLowest
-syntax match viraDetailsLowest ":  Lowest"hs=s+1 contained nextgroup=viraDetailsMedium
-syntax match viraDetailsMedium ":  Medium"hs=s+1 contained nextgroup=viraDetailsStatusComplete
-syntax match viraDetailsStatusComplete ":  Complete"hs=s+3 contained nextgroup=viraDetailsStatusDone
-syntax match viraDetailsStatusDone ":  Done"hs=s+3 contained nextgroup=viraDetailsStatusInProgress
-syntax match viraDetailsStatusInProgress ":  In Progress"hs=s+3 contained nextgroup=viraDetailsStatusTodo
-syntax match viraDetailsStatusTodo ":  To Do"hs=s+3 contained nextgroup=viraDetailsTypeBug
-syntax match viraDetailsTypeBug ":  Bug"hs=s+3 contained nextgroup=viraDetailsTypeEpic
-syntax match viraDetailsTypeEpic ":  Epic"hs=s+3 contained nextgroup=viraDetailsTypeStory
-syntax match viraDetailsTypeStory ":  Story"hs=s+3 contained nextgroup=viraDetailsTypeTask
-syntax match viraDetailsTypeTask ":  Task"hs=s+3 contained
+syntax match viraDetailsA "│.* │"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsD,viraDetailsE,viraDetailsHighest,viraDetailsHigh,viraDetailsMedium,viraDetailsLow,viraDetailsLowest,viraDetailsStatusTodo,viraDetailsStatusInProgress,viraDetailsStatusComplete,viraDetailsStatusDone,viraDetailsTypeBug,viraDetailsTypeTask,viraDetailsTypeStory,viraDetailsTypeEpic nextgroup=viraDetailsB
+syntax match viraDetailsB "│" contained nextgroup=viraDetailsC
+syntax match viraDetailsC "│ .*"hs=s+1 contained nextgroup=viraDetailsHigh
+syntax match viraDetailsD "┌.*"
+syntax match viraDetailsE "└.*"
+syntax match viraDetailsHigh ".*│ High"hs=s+17 contained nextgroup=viraDetailsHighest
+syntax match viraDetailsHighest ".*│ Highest"hs=s+17 contained nextgroup=viraDetailsLow
+syntax match viraDetailsLow ".*│ Low"hs=s+17 contained nextgroup=viraDetailsLowest
+syntax match viraDetailsLowest ".*│ Lowest"hs=s+17 contained nextgroup=viraDetailsMedium
+syntax match viraDetailsMedium ".*│ Medium"hs=s+17 contained nextgroup=viraDetailsStatusComplete
+syntax match viraDetailsStatusComplete ".*│ Complete"hs=s+17 contained nextgroup=viraDetailsStatusDone
+syntax match viraDetailsStatusDone ".*│ Done"hs=s+17 contained nextgroup=viraDetailsStatusInProgress
+syntax match viraDetailsStatusInProgress ".*│ In Progress"hs=s+17 contained nextgroup=viraDetailsStatusTodo
+syntax match viraDetailsStatusTodo ".*│ To Do"hs=s+17 contained nextgroup=viraDetailsTypeBug
+syntax match viraDetailsTypeBug ".*│ Bug"hs=s+17 contained nextgroup=viraDetailsTypeEpic
+syntax match viraDetailsTypeEpic ".*│ Epic"hs=s+17 contained nextgroup=viraDetailsTypeStory
+syntax match viraDetailsTypeStory ".*│ Story"hs=s+17 contained nextgroup=viraDetailsTypeTask
+syntax match viraDetailsTypeTask ".*│ Task"hs=s+17 contained nextgroup=viraDetailsTypeAssignee
+syntax match viraDetailsTypeAssignee "|.*Assignee │ .* |"hs=s+17,he=e-1 contained
 syntax match viraItalic "_.*_"
 syntax match viraLink "\[.*|.*\]"
 syntax match viraMonospaced "{{.*}}"
@@ -54,8 +57,10 @@ highlight default link viraCommentAuthor Identifier
 highlight default link viraCommentClose Statement
 highlight default link viraCommentDate Statement
 highlight default link viraDetailsA Identifier
-highlight default link viraDetailsB Question
-highlight default link viraDetailsC Question
+highlight default link viraDetailsB Identifier
+highlight default link viraDetailsC Identifier
+highlight default link viraDetailsD Identifier
+highlight default link viraDetailsE Identifier
 highlight default link viraMonospaced Question
 highlight default link viraNoformat Normal
 highlight default link viraPhoto Title
@@ -80,6 +85,7 @@ highlight viraDetailsTypeBug ctermfg=red guifg=red
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
 highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
+highlight viraDetailsTypeAssignee ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
