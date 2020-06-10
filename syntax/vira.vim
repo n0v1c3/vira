@@ -38,6 +38,7 @@ syntax match viraStory "\v.*" contained
 syntax match viraStrikethrough "-.*-"
 syntax match viraSubscript "\~.*\~"
 syntax match viraTheLine "----"
+syntax match viraTitles "Description\|Comments\n"hs=s,he=e
 syntax match viraTitle "\%1l.*:" nextgroup=viraStory
 syntax match viraTitleComment /.*{{1/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
 syntax match viraTitleFold /{{.*/hs=s,he=e contained
@@ -67,9 +68,10 @@ highlight default link viraPhoto Title
 highlight default link viraStory Identifier
 highlight default link viraSubscript Question
 highlight default link viraTheLine Title
+highlight default link viraTitles Title
 highlight default link viraTitle Title
-highlight default link viraTitleComment Title
-highlight default link viraTitleDescription Title
+highlight default link viraTitleComment Question
+highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
 highlight viraBold cterm=bold gui=bold
 highlight viraDetailsHigh ctermfg=red guifg=red

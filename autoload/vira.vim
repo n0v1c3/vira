@@ -261,9 +261,11 @@ function! vira#_menu(type) abort " {{{2
   else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
-  silent! execute '%s/\^M//g'
+  " silent! execute '%s/^M//g'
+  silent! normal gg2dd
   silent! normal GV3kzogg
-  silent! execute 'g/^$/d'
+  " silent! execute 'g/^$/d'
+  silent! execute 'g/\n\n/\n/g'
 
   " Ensure wrap and linebreak are enabled
   silent! execute 'set wrap'

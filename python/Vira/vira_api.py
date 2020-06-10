@@ -385,7 +385,7 @@ class ViraAPI():
         comments = '\n'.join(
             [
                 comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
-                ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
+                ' ' + comment['updated'][11:16] + ' {{{1\n' + comment['body'] + '\n}}}'
                 for comment in issue['comment']['comments']
             ])
 
@@ -410,7 +410,6 @@ class ViraAPI():
         # Create report template and fill with data
         report = '''{active_issue}: {summary}
 
-Details {open_fold}1
 ┌──────────────┬─{dashlength}─┐
 │      Created │ {created}{created_spaces} │
 │      Updated │ {updated}{updated_spaces} │
@@ -423,13 +422,13 @@ Details {open_fold}1
 │     Assignee │ {assignee}{assignee_spaces} │
 │     Reporter │ {reporter}{reporter_spaces} │
 └──────────────┴─{dashlength}─┘
-{close_fold}
-Description {open_fold}1
+
+Description
 {description}
-{close_fold}
-Comments {open_fold}1
+
+Comments
 {comments}
-{close_fold}'''.format(**locals())
+'''.format(**locals())
 
         return report
 
