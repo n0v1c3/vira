@@ -395,7 +395,11 @@ class ViraAPI():
         wordslength = sorted(words, key=len)[-1]
         s = '''─'''
         dashlength = s.join([char*len(wordslength) for char in s])
-
+        
+        active_issue_spacing = int((16+len(dashlength))/2 - len(active_issue)/2)
+        active_issue_spaces = ''' '''.join([char*(active_issue_spacing) for char in ' '])
+        active_issue_space = ''' '''.join([char*(len(active_issue) % 2) for char in ' '])
+        
         created_spaces = ''' '''.join([char*(len(dashlength)-len(created)) for char in ' '])
         updated_spaces = ''' '''.join([char*(len(dashlength)-len(updated)) for char in ' '])
         task_type_spaces = ''' '''.join([char*(len(dashlength)-len(task_type)) for char in ' '])
@@ -410,7 +414,9 @@ class ViraAPI():
         # Create report template and fill with data
         report = '''{active_issue}: {summary}
 
-┌──────────────┬─{dashlength}─┐
+┌────────────────{dashlength}─┐
+│{active_issue_spaces}{active_issue}{active_issue_spaces}{active_issue_space} │
+├──────────────┬─{dashlength}─┤
 │      Created │ {created}{created_spaces} │
 │      Updated │ {updated}{updated_spaces} │
 │         Type │ {task_type}{task_type_spaces} │

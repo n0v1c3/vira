@@ -14,8 +14,9 @@ syntax match viraCommentDate /@.*/hs=s,he=e contained
 syntax match viraDetailsA "│.* │"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsD,viraDetailsE,viraDetailsHighest,viraDetailsHigh,viraDetailsMedium,viraDetailsLow,viraDetailsLowest,viraDetailsStatusTodo,viraDetailsStatusInProgress,viraDetailsStatusComplete,viraDetailsStatusDone,viraDetailsTypeBug,viraDetailsTypeTask,viraDetailsTypeStory,viraDetailsTypeEpic nextgroup=viraDetailsB
 syntax match viraDetailsB "│" contained nextgroup=viraDetailsC
 syntax match viraDetailsC "│ .*"hs=s+1 contained nextgroup=viraDetailsHigh
-syntax match viraDetailsD "┌.*"
-syntax match viraDetailsE "└.*"
+syntax match viraDetails "┌.*"
+syntax match viraDetails "└.*"
+syntax match viraDetails "├.*"
 syntax match viraDetailsHigh ".*│ High"hs=s+17 contained nextgroup=viraDetailsHighest
 syntax match viraDetailsHighest ".*│ Highest"hs=s+17 contained nextgroup=viraDetailsLow
 syntax match viraDetailsLow ".*│ Low"hs=s+17 contained nextgroup=viraDetailsLowest
@@ -60,8 +61,7 @@ highlight default link viraCommentDate Statement
 highlight default link viraDetailsA Identifier
 highlight default link viraDetailsB Identifier
 highlight default link viraDetailsC Identifier
-highlight default link viraDetailsD Identifier
-highlight default link viraDetailsE Identifier
+highlight default link viraDetails Identifier
 highlight default link viraMonospaced Question
 highlight default link viraNoformat Normal
 highlight default link viraPhoto Title
