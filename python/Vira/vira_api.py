@@ -412,9 +412,8 @@ class ViraAPI():
         reporter_spaces = ''' '''.join([char*(len(dashlength)-len(reporter)) for char in ' '])
 
         # Create report template and fill with data
-        report = '''{active_issue}: {summary}
-
-┌────────────────{dashlength}─┐
+        #  report = '''{active_issue}: {summary}
+        report = '''┌────────────────{dashlength}─┐
 │{active_issue_spaces}{active_issue}{active_issue_spaces}{active_issue_space} │
 ├──────────────┬─{dashlength}─┤
 │      Created │ {created}{created_spaces} │
@@ -428,6 +427,8 @@ class ViraAPI():
 │     Assignee │ {assignee}{assignee_spaces} │
 │     Reporter │ {reporter}{reporter_spaces} │
 └──────────────┴─{dashlength}─┘
+Summary
+{summary}
 
 Description
 {description}

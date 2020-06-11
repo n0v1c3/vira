@@ -11,8 +11,8 @@ syntax match viraCitvtion "??.*??"
 syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
 syntax match viraCommentClose "}}}"
 syntax match viraCommentDate /@.*/hs=s,he=e contained
-syntax match viraDetailsA "│.* │"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsD,viraDetailsE,viraDetailsHighest,viraDetailsHigh,viraDetailsMedium,viraDetailsLow,viraDetailsLowest,viraDetailsStatusTodo,viraDetailsStatusInProgress,viraDetailsStatusComplete,viraDetailsStatusDone,viraDetailsTypeBug,viraDetailsTypeTask,viraDetailsTypeStory,viraDetailsTypeEpic nextgroup=viraDetailsB
-syntax match viraDetailsB "│" contained nextgroup=viraDetailsC
+syntax match viraDetailsA "│.*│"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsHighest,viraDetailsHigh,viraDetailsMedium,viraDetailsLow,viraDetailsLowest,viraDetailsStatusTodo,viraDetailsStatusInProgress,viraDetailsStatusComplete,viraDetailsStatusDone,viraDetailsTypeBug,viraDetailsTypeTask,viraDetailsTypeStory,viraDetailsTypeEpic nextgroup=viraDetailsB
+syntax match viraDetailsB "│" contained nextgroup=viraDetailsB
 syntax match viraDetailsC "│ .*"hs=s+1 contained nextgroup=viraDetailsHigh
 syntax match viraDetails "┌.*"
 syntax match viraDetails "└.*"
@@ -31,6 +31,7 @@ syntax match viraDetailsTypeEpic ".*│ Epic"hs=s+17 contained nextgroup=viraDet
 syntax match viraDetailsTypeStory ".*│ Story"hs=s+17 contained nextgroup=viraDetailsTypeTask
 syntax match viraDetailsTypeTask ".*│ Task"hs=s+17 contained nextgroup=viraDetailsTypeAssignee
 syntax match viraDetailsTypeAssignee "|.*Assignee │ .* |"hs=s+17,he=e-1 contained
+syntax match viraDetailsD "│.*│.*│"hs=s+17,he=e-2 contained
 syntax match viraItalic "_.*_"
 syntax match viraLink "\[.*|.*\]"
 syntax match viraMonospaced "{{.*}}"
@@ -61,6 +62,7 @@ highlight default link viraCommentDate Statement
 highlight default link viraDetailsA Identifier
 highlight default link viraDetailsB Identifier
 highlight default link viraDetailsC Identifier
+highlight default link viraDetailsD Normal
 highlight default link viraDetails Identifier
 highlight default link viraMonospaced Question
 highlight default link viraNoformat Normal
