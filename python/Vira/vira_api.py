@@ -245,10 +245,13 @@ class ViraAPI():
         '''
 
         for issue in self.query_issues():
+            user = str(issue['fields']['assignee']['displayName']) if type(
+                issue['fields']['assignee']) == dict else 'Unassigned'
             print(
-                issue["key"] + "  ~  " + issue["fields"]["summary"] + " | " +
-                issue["fields"]["issuetype"]["name"] + " " +
-                issue["fields"]["status"]["name"] + " |")
+                issue["key"] + "  ~  " + issue["fields"]["summary"] + " |  " +
+                issue["fields"]["issuetype"]["name"] + " - " +
+                issue["fields"]["status"]["name"] + "  |" +
+                '  >  ' + user)
 
     def get_issuetypes(self):
         '''
@@ -562,7 +565,7 @@ Comments
         query = ' AND '.join(q) + ' ORDER BY updated DESC'
         issues = self.jira.search_issues(
             query,
-            fields='summary,comment,status,statusCategory,issuetype',
+            fields='summary,comment,status,statusCategory,issuetype,assignee',
             json_result='True',
             maxResults=-1)
 

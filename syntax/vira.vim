@@ -3,8 +3,20 @@ if exists('b:current_syntax') | finish|  endif
 
 " Syntax matching {{{1
 syntax match viraHTML "https://.*"hs=s,he=e
-syntax match viraIssuesStatus "| .* |" contained
-syntax match viraIssuesDescription "\~  .*"hs=s+3 contains=viraIssuesStatus nextgroup=viraIssuesStatus
+syntax match viraIssuesDescription "\~  .*"hs=s+3 contains=viraIssuesAssignee,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus
+syntax match viraDetailsStatusInProgress "In Progress  |"he=e-3
+syntax match viraDetailsStatusBacklog "Backlog  |"he=e-3
+syntax match viraDetailsStatusComplete "Complete  |"he=e-3
+syntax match viraDetailsStatusDone "Done  |"he=e-3
+syntax match viraDetailsStatusSelected "Selected for Development  |"he=e-3
+syntax match viraDetailsStatusTodo "To Do  |"he=e-3
+syntax match viraDetailsTypeBug "|  Bug"hs=s+3
+syntax match viraDetailsTypeEpic "|  Epic"hs=s+3
+syntax match viraDetailsTypeStory "|  Story"hs=s+3
+syntax match viraDetailsTypeTask "|  Task"hs=s+3
+syntax match viraIssuesAssignee "  >.*"hs=s+3
+" syntax match viraIssuesStatus "| .* |" contained
+
 syntax match viraIssuesIssue ".*-.*  \~"he=e contains=viraIssuesDescription nextgroup=viraIssuesDescription
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
@@ -23,8 +35,8 @@ syntax match viraDetailsC "│.*"hs=s,he=e-1
 syntax match viraDetailsE "│.*│.*"hs=e,he=e
 syntax match viraDetails "│"
 
-syntax match viraDetails "│.*Created │" nextgroup=viraDetailsStatusTodo
-syntax match viraDetails "│.*Updated │" nextgroup=viraDetailsStatusTodo
+syntax match viraDetails "│.*Created │"
+syntax match viraDetails "│.*Updated │"
 
 syntax match viraDetails "│.*Type │"
 syntax match viraDetailsTypeBug "Bug  "he=e-2
@@ -110,6 +122,7 @@ highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
 highlight default link viraDetailsTypeAssignee Statement
 highlight default link viraDetailsTypeReporter Statement
+highlight default link viraIssuesAssignee Statement
 highlight viraBold cterm=bold gui=bold
 highlight viraDetailsHigh ctermfg=red guifg=red
 highlight viraDetailsHighest ctermfg=darkred guifg=darkred
