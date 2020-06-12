@@ -222,10 +222,10 @@ function! vira#_menu(type) abort " {{{2
     endif
     let type = 'menu'
     let list = execute('python3 Vira.api.get_' . a:type . '()')
+    
+    " Save current menu type
+    let s:vira_menu_type = a:type
   endif
-
-  " Save current menu type
-  let s:vira_menu_type = a:type
 
   silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
   " Toggle/create the report buffer
@@ -263,14 +263,16 @@ function! vira#_menu(type) abort " {{{2
   else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
-  " silent! execute '%s/^M//g'
+  silent! execute '%s/\^M//g'
   silent! normal gg2dd
   silent! normal GV3kzogg
   " silent! execute 'g/^$/d'
-  silent! execute 'g/\n\n/\n/g'
+  silent! execute 'g/\n\n\n/\n\n/g'
 
   " Ensure wrap and linebreak are enabled
-  silent! execute 'set wrap'
+  if type == 'menu' | silent execut 'set nowrap'
+  else | silent! execute 'set wrap'
+  endif
   silent! execute 'set linebreak'
 endfunction
 
@@ -285,8 +287,16 @@ function! vira#_quit() "{{{2
 endfunction
 
 function! vira#_refresh() " {{{2
-  call vira#_menu('report')
-  call vira#_menu('report')
+  let vira_windows = ['menu', 'report']
+  for vira_window in vira_windows
+    let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
+    if (winnr > 0)
+        execute winnr .' wincmd q'
+        if (vira_window == 'report') | call vira#_menu(vira_window)
+        else | call vira#_menu(s:vira_menu_type)
+        endif
+    endif
+  endfor
 endfunction
 
 function! vira#_reset_filters() " {{{2
@@ -396,6 +406,7 @@ function! vira#_set() "{{{2
     if variable == 'status'
       execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
     endif
+    " call vira#_menu('issues')
   endif
 
   call vira#_filter_reset()

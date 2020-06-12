@@ -1,7 +1,7 @@
 " Quit when a syntax file was already loaded.
 if exists('b:current_syntax') | finish|  endif
 
-" Syntax matching
+" Syntax matching {{{1
 syntax match viraHTML "https://.*"hs=s,he=e
 syntax match viraIssuesStatus "| .* |" contained
 syntax match viraIssuesDescription "\~  .*"hs=s+3 contains=viraIssuesStatus nextgroup=viraIssuesStatus
@@ -12,8 +12,10 @@ syntax match viraCitvtion "??.*??"
 syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
 syntax match viraCommentClose "}}}"
 syntax match viraCommentDate /@.*/hs=s,he=e contained
+
+" Report {{{2
 syntax match viraDetails "┌.*"
-syntax match viraDetails "├.*"
+syntax match viraDetails "│"
 
 syntax match viraDetailsA "│.*│.*│"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsD nextgroup=viraDetailsB
 syntax match viraDetailsB "│.*│"hs=s,he=e-1 nextgroup=viraDetailsC
@@ -25,16 +27,19 @@ syntax match viraDetails "│.*Created │" nextgroup=viraDetailsStatusTodo
 syntax match viraDetails "│.*Updated │" nextgroup=viraDetailsStatusTodo
 
 syntax match viraDetails "│.*Type │"
-syntax match viraDetailsTypeBug "Bug  "he=s+3
-syntax match viraDetailsTypeEpic "Epic  "he=s+4
-syntax match viraDetailsTypeStory "Story  "he=s+5
-syntax match viraDetailsTypeTask "Task  "he=s+4
+syntax match viraDetailsTypeBug "Bug  "he=e-2
+syntax match viraDetailsTypeEpic "Epic  "he=e-2
+syntax match viraDetailsTypeStory "Story  "he=e-2
+syntax match viraDetailsTypeTask "Task  "he=e-2
 
 syntax match viraDetails "│.*Status │"
-syntax match viraDetailsStatusComplete "Complete  "he=s+8
-syntax match viraDetailsStatusDone "Done   "he=s+4
-syntax match viraDetailsStatusInProgress "In Progress   "he=s+11
-syntax match viraDetailsStatusTodo "To Do   "he=s+5
+syntax match viraDetailsStatusComplete "Complete   "he=e-3
+syntax match viraDetailsStatusDone "Done   "he=e-3
+syntax match viraDetailsStatusInProgress "In Progress   "he=e-3
+syntax match viraDetailsStatusTodo "To Do   "he=e-3
+syntax match viraDetailsStatusBacklog "Backlog   "he=e-3
+" TODO: VIRA-177 [200612] - "Selected for Development" can be the longest string re: style
+syntax match viraDetailsStatusSelected "Selected for Development "he=e-1
 
 syntax match viraDetails "│.*Story Points │"
 
@@ -54,9 +59,9 @@ syntax match viraDetailsTypeAssignee ".*  "hs=s+1,he=e-2 contained
 syntax match viraDetails "│.*Reporter │" nextgroup=viraDetailsTypeReporter
 syntax match viraDetailsTypeReporter ".*  "hs=s+1,he=e-2 contained
 
+syntax match viraDetails "├.*"
 syntax match viraDetails "└.*"
 
-syntax match viraDetails "┌.*"
 syntax match viraItalic "_.*_"
 syntax match viraLink "\[.*|.*\]"
 syntax match viraMonospaced "{{.*}}"
@@ -65,7 +70,7 @@ syntax match viraStory "\v.*" contained
 syntax match viraStrikethrough "-.*-"
 syntax match viraSubscript "\~.*\~"
 syntax match viraTheLine "----"
-syntax match viraTitles "Summary\|Description\|Comments\n"hs=s,he=e
+syntax match viraTitles "  .*-.*  \|Summary\|Description\|Comments\n"hs=s,he=e
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
 syntax match viraTitleComment /.*{{1/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
 syntax match viraTitleFold /{{.*/hs=s,he=e contained
@@ -115,6 +120,8 @@ highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgr
 highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusInProgress ctermbg=darkyellow ctermfg=black guibg=darkyellow guifg=black
 highlight viraDetailsStatusTodo ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
+highlight viraDetailsStatusBacklog ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
+highlight viraDetailsStatusSelected ctermbg=darkyellow ctermfg=black guibg=darkyellow guifg=black
 highlight viraDetailsTypeBug ctermfg=red guifg=red
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen

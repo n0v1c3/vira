@@ -244,13 +244,11 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        # issues = []
         for issue in self.query_issues():
             print(
                 issue["key"] + "  ~  " + issue["fields"]["summary"] + " | " +
+                issue["fields"]["issuetype"]["name"] + " " +
                 issue["fields"]["status"]["name"] + " |")
-            #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
-        # return str(issues)
 
     def get_issuetypes(self):
         '''
@@ -385,31 +383,31 @@ class ViraAPI():
         comments = '\n'.join(
             [
                 comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
-                ' ' + comment['updated'][11:16] + ' {{{1\n' + comment['body'] + '\n}}}'
+                ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
                 for comment in issue['comment']['comments']
             ])
 
         # Find the length of the longest word [-1]
-        words=[created, updated, task_type, status, story_points,
-                priority, component, version, assignee, reporter]
+        words = [created, updated, task_type, status, story_points,
+                 priority, component, version, assignee, reporter]
         wordslength = sorted(words, key=len)[-1]
         s = '''─'''
-        dashlength = s.join([char*len(wordslength) for char in s])
-        
-        active_issue_spacing = int((16+len(dashlength))/2 - len(active_issue)/2)
-        active_issue_spaces = ''' '''.join([char*(active_issue_spacing) for char in ' '])
-        active_issue_space = ''' '''.join([char*(len(active_issue) % 2) for char in ' '])
-        
-        created_spaces = ''' '''.join([char*(len(dashlength)-len(created)) for char in ' '])
-        updated_spaces = ''' '''.join([char*(len(dashlength)-len(updated)) for char in ' '])
-        task_type_spaces = ''' '''.join([char*(len(dashlength)-len(task_type)) for char in ' '])
-        status_spaces = ''' '''.join([char*(len(dashlength)-len(status)) for char in ' '])
-        story_points_spaces = ''' '''.join([char*(len(dashlength)-len(story_points)) for char in ' '])
-        priority_spaces = ''' '''.join([char*(len(dashlength)-len(priority)) for char in ' '])
-        component_spaces = ''' '''.join([char*(len(dashlength)-len(component)) for char in ' '])
-        version_spaces = ''' '''.join([char*(len(dashlength)-len(version)) for char in ' '])
-        assignee_spaces = ''' '''.join([char*(len(dashlength)-len(assignee)) for char in ' '])
-        reporter_spaces = ''' '''.join([char*(len(dashlength)-len(reporter)) for char in ' '])
+        dashlength = s.join([char * len(wordslength) for char in s])
+
+        active_issue_spacing = int((16 + len(dashlength)) / 2 - len(active_issue) / 2)
+        active_issue_spaces = ''' '''.join([char * (active_issue_spacing) for char in ' '])
+        active_issue_space = ''' '''.join([char * (len(active_issue) % 2) for char in ' '])
+
+        created_spaces = ''' '''.join([char * (len(dashlength) - len(created)) for char in ' '])
+        updated_spaces = ''' '''.join([char * (len(dashlength) - len(updated)) for char in ' '])
+        task_type_spaces = ''' '''.join([char * (len(dashlength) - len(task_type)) for char in ' '])
+        status_spaces = ''' '''.join([char * (len(dashlength) - len(status)) for char in ' '])
+        story_points_spaces = ''' '''.join([char * (len(dashlength) - len(story_points)) for char in ' '])
+        priority_spaces = ''' '''.join([char * (len(dashlength) - len(priority)) for char in ' '])
+        component_spaces = ''' '''.join([char * (len(dashlength) - len(component)) for char in ' '])
+        version_spaces = ''' '''.join([char * (len(dashlength) - len(version)) for char in ' '])
+        assignee_spaces = ''' '''.join([char * (len(dashlength) - len(assignee)) for char in ' '])
+        reporter_spaces = ''' '''.join([char * (len(dashlength) - len(reporter)) for char in ' '])
 
         # Create report template and fill with data
         #  report = '''{active_issue}: {summary}
@@ -434,8 +432,7 @@ Description
 {description}
 
 Comments
-{comments}
-'''.format(**locals())
+{comments}'''.format(**locals())
 
         return report
 
@@ -565,7 +562,7 @@ Comments
         query = ' AND '.join(q) + ' ORDER BY updated DESC'
         issues = self.jira.search_issues(
             query,
-            fields='summary,comment,status,statusCategory',
+            fields='summary,comment,status,statusCategory,issuetype',
             json_result='True',
             maxResults=-1)
 
