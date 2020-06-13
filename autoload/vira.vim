@@ -257,7 +257,6 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     let s:vira_filter = ''
-    call feedkeys(":set hlsearch\<cr>")
     let s:vira_filter_hold = @/
     call vira#_print_menu(list)
   else | call vira#_print_report(list) | endif
@@ -358,6 +357,7 @@ endfunction
 function! vira#_select() "{{{2
   execute 'normal mm'
   execute 'normal 0'
+  call feedkeys(":set hlsearch\<cr>")
 
   let value = vira#_getter()
 

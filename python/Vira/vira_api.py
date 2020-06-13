@@ -250,8 +250,8 @@ class ViraAPI():
             print(
                 issue["key"] + "  ~  " + issue["fields"]["summary"] + " |  " +
                 issue["fields"]["issuetype"]["name"] + " - " +
-                issue["fields"]["status"]["name"] + "  |" +
-                '  >  ' + user)
+                issue["fields"]["status"]["name"] +
+                '  ->  ' + user)
 
     def get_issuetypes(self):
         '''
@@ -413,7 +413,6 @@ class ViraAPI():
         reporter_spaces = ''' '''.join([char * (len(dashlength) - len(reporter)) for char in ' '])
 
         # Create report template and fill with data
-        #  report = '''{active_issue}: {summary}
         report = '''┌────────────────{dashlength}─┐
 │{active_issue_spaces}{active_issue}{active_issue_spaces}{active_issue_space} │
 ├──────────────┬─{dashlength}─┤
@@ -487,14 +486,16 @@ Comments
         users = []
         for issue in issues["issues"]:
 
-            user = str(issue['fields']['reporter']['displayName'])
-            if user not in users:
-                users.append(user)
+            id = str(issue['fields']['reporter']['self']).split("=")[1]
+            user = issue['fields']['reporter']['displayName']
+            if user + ' ~ ' + id not in users:
+                users.append(user + ' ~ ' + str(id))
 
-            user = str(issue['fields']['assignee']['displayName']) if type(
-                issue['fields']['assignee']) == dict else 'Unassigned'
-            if user not in users and user != 'Unassigned':
-                users.append(user)
+            #  id = str(issue['fields']['assignee']['id'])
+            #  user = str(issue['fields']['assignee']['displayName']) if type(
+                #  issue['fields']['assignee']) == dict else 'Unassigned'
+            #  if user not in users and user != 'Unassigned':
+                #  users.append(id + ' ~ ' + user)
 
         for user in sorted(users):
             print(user)

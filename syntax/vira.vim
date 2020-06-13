@@ -3,18 +3,19 @@ if exists('b:current_syntax') | finish|  endif
 
 " Syntax matching {{{1
 syntax match viraHTML "https://.*"hs=s,he=e
-syntax match viraIssuesDescription "\~  .*"hs=s+3 contains=viraIssuesAssignee,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus
-syntax match viraDetailsStatusInProgress "In Progress  |"he=e-3
-syntax match viraDetailsStatusBacklog "Backlog  |"he=e-3
-syntax match viraDetailsStatusComplete "Complete  |"he=e-3
-syntax match viraDetailsStatusDone "Done  |"he=e-3
-syntax match viraDetailsStatusSelected "Selected for Development  |"he=e-3
-syntax match viraDetailsStatusTodo "To Do  |"he=e-3
+syntax match viraIssuesDescription "\~  .*"hs=s+3 contains=viraIssuesStatus nextgroup=viraIssuesStatus
+syntax match viraIssuesStatus "| .* -> .*" contains=viraIssuesAssignee,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus
+syntax match viraDetailsStatusInProgress "In Progress  ->"he=e-4
+syntax match viraDetailsStatusBacklog "Backlog  ->"he=e-3
+syntax match viraDetailsStatusComplete "Complete  ->"he=e-3
+syntax match viraDetailsStatusDone "Done  ->"he=e-3
+syntax match viraDetailsStatusSelected "Selected for Development  ->"he=e-3
+syntax match viraDetailsStatusTodo "To Do  ->"he=e-3
 syntax match viraDetailsTypeBug "|  Bug"hs=s+3
 syntax match viraDetailsTypeEpic "|  Epic"hs=s+3
 syntax match viraDetailsTypeStory "|  Story"hs=s+3
 syntax match viraDetailsTypeTask "|  Task"hs=s+3
-syntax match viraIssuesAssignee "  >.*"hs=s+3
+syntax match viraIssuesAssignee "  ->  "
 " syntax match viraIssuesStatus "| .* |" contained
 
 syntax match viraIssuesIssue ".*-.*  \~"he=e contains=viraIssuesDescription nextgroup=viraIssuesDescription
