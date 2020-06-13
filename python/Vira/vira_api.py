@@ -244,13 +244,14 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        # issues = []
         for issue in self.query_issues():
+            user = str(issue['fields']['assignee']['displayName']) if type(
+                issue['fields']['assignee']) == dict else 'Unassigned'
             print(
-                issue["key"] + "  ~  " + issue["fields"]["summary"] + " | " +
-                issue["fields"]["status"]["name"] + " |")
-            #  issues.append(issue["key"] + '  -  ' + issue["fields"]['summary'])
-        # return str(issues)
+                issue["key"] + "  ~  " + issue["fields"]["summary"] + " |  " +
+                issue["fields"]["issuetype"]["name"] + " - " +
+                issue["fields"]["status"]["name"] +
+                '  ->  ' + user)
 
     def get_issuetypes(self):
         '''
@@ -389,26 +390,51 @@ class ViraAPI():
                 for comment in issue['comment']['comments']
             ])
 
+        # Find the length of the longest word [-1]
+        words = [created, updated, task_type, status, story_points,
+                 priority, component, version, assignee, reporter]
+        wordslength = sorted(words, key=len)[-1]
+        s = '''─'''
+        dashlength = s.join([char * len(wordslength) for char in s])
+
+        active_issue_spacing = int((16 + len(dashlength)) / 2 - len(active_issue) / 2)
+        active_issue_spaces = ''' '''.join([char * (active_issue_spacing) for char in ' '])
+        active_issue_space = ''' '''.join([char * (len(active_issue) % 2) for char in ' '])
+
+        created_spaces = ''' '''.join([char * (len(dashlength) - len(created)) for char in ' '])
+        updated_spaces = ''' '''.join([char * (len(dashlength) - len(updated)) for char in ' '])
+        task_type_spaces = ''' '''.join([char * (len(dashlength) - len(task_type)) for char in ' '])
+        status_spaces = ''' '''.join([char * (len(dashlength) - len(status)) for char in ' '])
+        story_points_spaces = ''' '''.join([char * (len(dashlength) - len(story_points)) for char in ' '])
+        priority_spaces = ''' '''.join([char * (len(dashlength) - len(priority)) for char in ' '])
+        component_spaces = ''' '''.join([char * (len(dashlength) - len(component)) for char in ' '])
+        version_spaces = ''' '''.join([char * (len(dashlength) - len(version)) for char in ' '])
+        assignee_spaces = ''' '''.join([char * (len(dashlength) - len(assignee)) for char in ' '])
+        reporter_spaces = ''' '''.join([char * (len(dashlength) - len(reporter)) for char in ' '])
+
         # Create report template and fill with data
-        report = '''{active_issue}: {summary}
-Details {open_fold}1
-Story Points   :  {story_points}
-     Created   :  {created}
-     Updated   :  {updated}
-        Type   :  {task_type}
-      Status   :  {status}
-    Priority   :  {priority}
-    Component  :  {component}
-    Version    :  {version}
-    Assignee   :  {assignee}
-    Reporter   :  {reporter}
-{close_fold}
-Description {open_fold}1
+        report = '''┌────────────────{dashlength}─┐
+│{active_issue_spaces}{active_issue}{active_issue_spaces}{active_issue_space} │
+├──────────────┬─{dashlength}─┤
+│      Created │ {created}{created_spaces} │
+│      Updated │ {updated}{updated_spaces} │
+│         Type │ {task_type}{task_type_spaces} │
+│       Status │ {status}{status_spaces} │
+│ Story Points │ {story_points}{story_points_spaces} │
+│     Priority │ {priority}{priority_spaces} │
+│    Component │ {component}{component_spaces} │
+│      Version │ {version}{version_spaces} │
+│     Assignee │ {assignee}{assignee_spaces} │
+│     Reporter │ {reporter}{reporter_spaces} │
+└──────────────┴─{dashlength}─┘
+Summary
+{summary}
+
+Description
 {description}
-{close_fold}
-Comments {open_fold}1
-{comments}
-{close_fold}'''.format(**locals())
+
+Comments
+{comments}'''.format(**locals())
 
         return report
 
@@ -460,14 +486,16 @@ Comments {open_fold}1
         users = []
         for issue in issues["issues"]:
 
-            user = str(issue['fields']['reporter']['displayName'])
-            if user not in users:
-                users.append(user)
+            id = str(issue['fields']['reporter']['self']).split("=")[1]
+            user = issue['fields']['reporter']['displayName']
+            if user + ' ~ ' + id not in users:
+                users.append(user + ' ~ ' + str(id))
 
-            user = str(issue['fields']['assignee']['displayName']) if type(
-                issue['fields']['assignee']) == dict else 'Unassigned'
-            if user not in users and user != 'Unassigned':
-                users.append(user)
+            #  id = str(issue['fields']['assignee']['id'])
+            #  user = str(issue['fields']['assignee']['displayName']) if type(
+                #  issue['fields']['assignee']) == dict else 'Unassigned'
+            #  if user not in users and user != 'Unassigned':
+                #  users.append(id + ' ~ ' + user)
 
         for user in sorted(users):
             print(user)
@@ -538,7 +566,7 @@ Comments {open_fold}1
         query = ' AND '.join(q) + ' ORDER BY updated DESC'
         issues = self.jira.search_issues(
             query,
-            fields='summary,comment,status,statusCategory',
+            fields='summary,comment,status,statusCategory,issuetype,assignee',
             json_result='True',
             maxResults=-1)
 
@@ -567,6 +595,6 @@ Comments {open_fold}1
             return
 
         if self.prompt_type == 'comment':
-            self.jira.add_comment(issue, input_stripped)
+            return self.jira.add_comment(issue, input_stripped)
         elif self.prompt_type == 'issue':
-            self.create_issue(input_stripped)
+            return self.create_issue(input_stripped)
