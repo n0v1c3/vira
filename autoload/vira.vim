@@ -382,6 +382,10 @@ function! vira#_set() "{{{2
   let value = vira#_getter()
   let g:testvar = value
   let variable = s:vira_set_lookup[s:vira_menu_type]
+  
+  if ((variable == 'assignee' || variable == 'reporter') && value != "Unassigned")
+    let value =  split(value,' \~ ')[1]
+  endif
 
   if variable[:1] == 'g:'
     execute 'let ' . variable . ' = "' . value . '"'
@@ -392,7 +396,7 @@ function! vira#_set() "{{{2
       let s:vira_connected = 0
       call vira#_connect()
     endif
-
+  
   elseif variable == 'assign_issue' || variable == 'transition_issue'
     execute 'python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
@@ -401,9 +405,6 @@ function! vira#_set() "{{{2
       let value = substitute(s:vira_filter,'|',', ','')
     else | let value = '"' . value . '"' | endif
 
-    if variable == 'assignee' || variable == 'reporter'
-      let value =  '"'.split(value,' \~ ')[1]
-    endif
     execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
 
     if variable == 'status'
