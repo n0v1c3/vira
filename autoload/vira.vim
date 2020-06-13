@@ -399,7 +399,10 @@ function! vira#_set() "{{{2
   else
     if s:vira_filter[:0] == '"'
       let value = substitute(s:vira_filter,'|',', ','')
-    else | let value = '"' . value . '"'
+    else | let value = '"' . value . '"' | endif
+
+    if variable == 'assignee' || variable == 'reporter'
+      let value =  '"'.split(value,' \~ ')[1]
     endif
     execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
 
