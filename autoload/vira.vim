@@ -86,22 +86,17 @@ function! vira#_prompt_start(type) "{{{2
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'sp ' . s:vira_prompt_file
   silent! setlocal spell
-  1
-
 endfunction
 
 function! vira#_prompt_end() "{{{2
   " Write contents of the prompt buffer to jira server
-
   let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
 
-  if (g:vira_input_text  == "")
-    redraw | echo "No vira actions performed"
-  else
+  if (g:vira_input_text  == "") | redraw | echo "No vira actions performed"
+  else 
     python3 Vira.api.write_jira()
     call vira#_refresh()
   endif
-
 endfunction
 
 function! vira#_check_project(type) abort "{{{2
@@ -206,6 +201,10 @@ function! vira#_menu(type) abort " {{{2
 
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
   if a:type == 'report'
+    if (vira#_get_active_issue() == g:vira_null_issue)
+      call vira#_menu('issues') 
+      return 
+    endif
     let type = 'report'
     let list = ''
   elseif a:type == 'text'
@@ -217,12 +216,11 @@ function! vira#_menu(type) abort " {{{2
       return
     endif
     let type = 'menu'
-    " echo a:type
     let list = execute('python3 Vira.api.get_' . a:type . '()')
+    
+    " Save current menu type
+    let s:vira_menu_type = a:type
   endif
-
-  " Save current menu type
-  let s:vira_menu_type = a:type
 
   silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
   " Toggle/create the report buffer
@@ -242,12 +240,11 @@ function! vira#_menu(type) abort " {{{2
   silent! redraw
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
 
-  " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type {{{
+  " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type
   " Remove folding and line numbers from the report
   silent! let &foldcolumn=0
-  silent! set relativenumber!
+  silent! set norelativenumber
   silent! set nonumber
-  " }}}
 
   " Clean-up existing report buffer
   silent! normal ggVGd
@@ -255,18 +252,21 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     let s:vira_filter = ''
-    call feedkeys(":set hlsearch\<cr>")
     let s:vira_filter_hold = @/
     call vira#_print_menu(list)
   else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
   silent! execute '%s/\^M//g'
+  silent! normal gg2dd
   silent! normal GV3kzogg
-  silent! execute 'g/^$/d'
+  " silent! execute 'g/^$/d'
+  silent! execute 'g/\n\n\n/\n\n/g'
 
   " Ensure wrap and linebreak are enabled
-  silent! execute 'set wrap'
+  if type == 'menu' | silent execut 'set nowrap'
+  else | silent! execute 'set wrap'
+  endif
   silent! execute 'set linebreak'
 endfunction
 
@@ -281,8 +281,21 @@ function! vira#_quit() "{{{2
 endfunction
 
 function! vira#_refresh() " {{{2
-  call vira#_menu('report')
-  call vira#_menu('report')
+  let vira_windows = ['menu', 'report']
+  for vira_window in vira_windows
+    let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
+    if (winnr > 0)
+      execute winnr . ' wincmd q'
+      
+      if (vira_window == 'report') | call vira#_menu(vira_window)
+      else | call vira#_menu(s:vira_menu_type)
+      endif  
+      
+      silent! set syntax=vira
+      silent! set nonumber
+      silent! set norelativenumber
+    endif
+  endfor
 endfunction
 
 function! vira#_reset_filters() " {{{2
@@ -344,6 +357,7 @@ endfunction
 function! vira#_select() "{{{2
   execute 'normal mm'
   execute 'normal 0'
+  call feedkeys(":set hlsearch\<cr>")
 
   let value = vira#_getter()
 
@@ -368,6 +382,10 @@ function! vira#_set() "{{{2
   let value = vira#_getter()
   let g:testvar = value
   let variable = s:vira_set_lookup[s:vira_menu_type]
+  
+  if ((variable == 'assignee' || variable == 'reporter') && value != "Unassigned")
+    let value =  split(value,' \~ ')[1]
+  endif
 
   if variable[:1] == 'g:'
     execute 'let ' . variable . ' = "' . value . '"'
@@ -378,20 +396,21 @@ function! vira#_set() "{{{2
       let s:vira_connected = 0
       call vira#_connect()
     endif
-
+  
   elseif variable == 'assign_issue' || variable == 'transition_issue'
     execute 'python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
   else
     if s:vira_filter[:0] == '"'
       let value = substitute(s:vira_filter,'|',', ','')
-    else | let value = '"' . value . '"'
-    endif
+    else | let value = '"' . value . '"' | endif
+
     execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
 
     if variable == 'status'
       execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
     endif
+    " call vira#_menu('issues')
   endif
 
   call vira#_filter_reset()
