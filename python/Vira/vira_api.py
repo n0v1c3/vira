@@ -595,6 +595,6 @@ Comments
             return
 
         if self.prompt_type == 'comment':
-            self.jira.add_comment(issue, input_stripped)
+            return self.jira.add_comment(issue, input_stripped)
         elif self.prompt_type == 'issue':
-            self.create_issue(input_stripped)
+            return self.create_issue(input_stripped)

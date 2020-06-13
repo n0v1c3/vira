@@ -86,22 +86,17 @@ function! vira#_prompt_start(type) "{{{2
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'sp ' . s:vira_prompt_file
   silent! setlocal spell
-  1
-
 endfunction
 
 function! vira#_prompt_end() "{{{2
   " Write contents of the prompt buffer to jira server
-
   let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
 
-  if (g:vira_input_text  == "")
-    redraw | echo "No vira actions performed"
-  else
+  if (g:vira_input_text  == "") | redraw | echo "No vira actions performed"
+  else 
     python3 Vira.api.write_jira()
     call vira#_refresh()
   endif
-
 endfunction
 
 function! vira#_check_project(type) abort "{{{2
@@ -248,7 +243,7 @@ function! vira#_menu(type) abort " {{{2
   " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type
   " Remove folding and line numbers from the report
   silent! let &foldcolumn=0
-  silent! set relativenumber!
+  silent! set norelativenumber
   silent! set nonumber
 
   " Clean-up existing report buffer
@@ -290,10 +285,15 @@ function! vira#_refresh() " {{{2
   for vira_window in vira_windows
     let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
     if (winnr > 0)
-        execute winnr .' wincmd q'
-        if (vira_window == 'report') | call vira#_menu(vira_window)
-        else | call vira#_menu(s:vira_menu_type)
-        endif
+      execute winnr . ' wincmd q'
+      
+      if (vira_window == 'report') | call vira#_menu(vira_window)
+      else | call vira#_menu(s:vira_menu_type)
+      endif  
+      
+      silent! set syntax=vira
+      silent! set nonumber
+      silent! set norelativenumber
     endif
   endfor
 endfunction
