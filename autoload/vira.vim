@@ -383,7 +383,7 @@ function! vira#_set() "{{{2
   let g:testvar = value
   let variable = s:vira_set_lookup[s:vira_menu_type]
   
-  if ((variable == 'assignee' || variable == 'reporter') && value != "Unassigned")
+  if ((variable == 'assign_issue' || variable == 'assignee' || variable == 'reporter') && value != "Unassigned")
     let value =  split(value,' \~ ')[1]
   endif
 
