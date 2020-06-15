@@ -292,14 +292,12 @@ nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
 nnoremap <silent> <leader>vfR :ViraFilterReset<cr>
 nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
 
-" Filter reset
-nnoremap <silent> <leader>vfr :ViraFilterReset<cr>
-
 " Status
 statusline+=%{ViraStatusline()}
 ```
 
 ## Support
+
 ### Private and Cloud Jira Hosting
 
 We currently support Private Jira servers version 8 and up. We
