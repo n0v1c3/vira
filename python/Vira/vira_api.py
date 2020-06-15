@@ -244,53 +244,48 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        keys = []
-        summary_list = []
-        issuetype_list = []
-        status_list = []
-        user_list = []
+        issues = []
         key_length = 0
         summary_length = 0
         issuetype_length = 0
-        status_length = 0
+        status_length = 4
         user_length = 0
 
         for issue in self.query_issues():
-            keys.append(issue['key'])
+            fields = issue['fields']
+
+            user = str(fields['assignee']['displayName']) if type(
+                fields['assignee']) == dict else 'Unassigned'
+            user_length = len(user) if len(user
+                    ) > user_length else user_length
+
             key_length = len(issue['key']) if len(
                 issue['key']) > key_length else key_length
 
-            fields = issue['fields']
-
             summary = fields['summary']
-            summary_list.append(summary)
             summary_length = len(summary) if len(summary
                     ) > summary_length else summary_length
 
             issuetype = fields['issuetype']['name']
-            issuetype_list.append(issuetype)
             issuetype_length = len(issuetype) if len(issuetype
                     ) > issuetype_length else issuetype_length
 
             status = fields['status']['name']
-            status_list.append(status)
             status_length = len(status) if len(status
                     ) > status_length else status_length
 
-            user = str(fields['assignee']['displayName']) if type(
-                fields['assignee']) == dict else 'Unassigned'
-            user_list.append(user)
-            user_length = len(user) if len(user
-                    ) > user_length else user_length
+            issues.append([issue['key'],
+                          fields['summary'],
+                          fields['issuetype']['name'],
+                          fields['status']['name'],
+                          user])
 
-        i = 0
-        for key in keys:
+        for issue in issues:
             print(
-                ('{: <' + str(key_length) + '}').format(key
-                    ) + "  ~  " + ('{: <' + str(summary_length) + '}').format(summary_list[i])
-                + " |  " + ('{: <' + str(issuetype_length) + '}').format(issuetype_list[i]
-                    ) + " - " + ('{: <' + str(status_length) + '}').format(status_list[i]) + '  ->  ' + user_list[i])
-            i = i + 1
+                ('{: <' + str(key_length) + '}').format(issue[0]
+                    ) + "  ~  " + ('{: <' + str(summary_length) + '}').format(issue[1])
+                + " |  " + ('{: <' + str(issuetype_length) + '}').format(issue[2]
+                    ) + " - " + ('{: <' + str(status_length) + '}').format(issue[3]) + '  ->  ' + issue[4])
 
     def get_issuetypes(self):
         '''
