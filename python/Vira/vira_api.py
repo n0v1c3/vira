@@ -4,12 +4,12 @@ Internals and API functions for vira
 '''
 
 from __future__ import print_function, unicode_literals
-import vim
+from Vira.helper import load_config, run_command, parse_prompt_text
 from jira import JIRA
 from jira.exceptions import JIRAError
 import datetime
 import urllib3
-from Vira.helper import load_config, run_command, parse_prompt_text
+import vim
 
 class ViraAPI():
     '''
@@ -177,11 +177,9 @@ class ViraAPI():
             self.userconfig_filter[filterType]
         ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
-        return str(
-            f"{filterType} in ({selection})"
-        ).replace("'null'", "Null"
-        ).replace("'Unassigned'", "Null"
-        ).replace(f"text in ({selection})", f"text ~ {selection}")
+        return str(f"{filterType} in ({selection})").replace("'null'", "Null").replace(
+            "'Unassigned'",
+            "Null").replace(f"text in ({selection})", f"text ~ {selection}")
 
     def get_assign_issue(self):
         '''
@@ -256,36 +254,42 @@ class ViraAPI():
 
             user = str(fields['assignee']['displayName']) if type(
                 fields['assignee']) == dict else 'Unassigned'
-            user_length = len(user) if len(user
-                    ) > user_length else user_length
+            user_length = len(user) if len(user) > user_length else user_length
 
-            key_length = len(issue['key']) if len(
-                issue['key']) > key_length else key_length
+            key_length = len(
+                issue['key']) if len(issue['key']) > key_length else key_length
 
             summary = fields['summary']
-            summary_length = len(summary) if len(summary
-                    ) > summary_length else summary_length
+            summary_length = len(
+                summary) if len(summary) > summary_length else summary_length
 
             issuetype = fields['issuetype']['name']
-            issuetype_length = len(issuetype) if len(issuetype
-                    ) > issuetype_length else issuetype_length
+            issuetype_length = len(
+                issuetype) if len(issuetype) > issuetype_length else issuetype_length
 
             status = fields['status']['name']
-            status_length = len(status) if len(status
-                    ) > status_length else status_length
+            status_length = len(status) if len(status) > status_length else status_length
 
-            issues.append([issue['key'],
-                          fields['summary'],
-                          fields['issuetype']['name'],
-                          fields['status']['name'],
-                          user])
+            issues.append(
+                [
+                    issue['key'], fields['summary'], fields['issuetype']['name'],
+                    fields['status']['name'], user
+                ])
+
+        # Add min/max limits on summary length
+        columns = vim.eval("&columns")
+        min_summary_length = 25
+        max_summary_length = int(
+            columns) - key_length - issuetype_length - status_length - 30
+        summary_length = min_summary_length if max_summary_length < min_summary_length else max_summary_length if summary_length > max_summary_length else summary_length
 
         for issue in issues:
             print(
-                ('{: <' + str(key_length) + '}').format(issue[0]
-                    ) + "  ~  " + ('{: <' + str(summary_length) + '}').format(issue[1])
-                + " |  " + ('{: <' + str(issuetype_length) + '}').format(issue[2]
-                    ) + " - " + ('{: <' + str(status_length) + '}').format(issue[3]) + '  ->  ' + issue[4])
+                ('{: <' + str(key_length) + '}').format(issue[0]) + "  ~  " +
+                ('{: <' + str(summary_length) + '}').format(issue[1][:summary_length]) +
+                " |  " + ('{: <' + str(issuetype_length) + '}').format(issue[2]) + " - " +
+                ('{: <' + str(status_length) + '}').format(issue[3]) + '  ->  ' +
+                issue[4])
 
     def get_issuetypes(self):
         '''
@@ -317,14 +321,11 @@ class ViraAPI():
         '''
 
         # Prepare dynamic variables for prompt text
-            #  for user in self.jira.search_users(".")
-            #  for user in self.jira.search_assignable_users_for_projects('*','*')
+        #  for user in self.jira.search_users(".")
+        #  for user in self.jira.search_assignable_users_for_projects('*','*')
         query = 'ORDER BY updated DESC'
         issues = self.jira.search_issues(
-            query,
-            fields='assignee, reporter',
-            json_result='True',
-            maxResults=-1)
+            query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
         users = []
         for issue in issues["issues"]:
@@ -425,26 +426,40 @@ class ViraAPI():
             ])
 
         # Find the length of the longest word [-1]
-        words = [created, updated, task_type, status, story_points,
-                 priority, component, version, assignee, reporter]
+        words = [
+            created, updated, task_type, status, story_points, priority, component,
+            version, assignee, reporter
+        ]
         wordslength = sorted(words, key=len)[-1]
         s = '''─'''
         dashlength = s.join([char * len(wordslength) for char in s])
 
         active_issue_spacing = int((16 + len(dashlength)) / 2 - len(active_issue) / 2)
-        active_issue_spaces = ''' '''.join([char * (active_issue_spacing) for char in ' '])
-        active_issue_space = ''' '''.join([char * (len(active_issue) % 2) for char in ' '])
+        active_issue_spaces = ''' '''.join(
+            [char * (active_issue_spacing) for char in ' '])
+        active_issue_space = ''' '''.join(
+            [char * (len(active_issue) % 2) for char in ' '])
 
-        created_spaces = ''' '''.join([char * (len(dashlength) - len(created)) for char in ' '])
-        updated_spaces = ''' '''.join([char * (len(dashlength) - len(updated)) for char in ' '])
-        task_type_spaces = ''' '''.join([char * (len(dashlength) - len(task_type)) for char in ' '])
-        status_spaces = ''' '''.join([char * (len(dashlength) - len(status)) for char in ' '])
-        story_points_spaces = ''' '''.join([char * (len(dashlength) - len(story_points)) for char in ' '])
-        priority_spaces = ''' '''.join([char * (len(dashlength) - len(priority)) for char in ' '])
-        component_spaces = ''' '''.join([char * (len(dashlength) - len(component)) for char in ' '])
-        version_spaces = ''' '''.join([char * (len(dashlength) - len(version)) for char in ' '])
-        assignee_spaces = ''' '''.join([char * (len(dashlength) - len(assignee)) for char in ' '])
-        reporter_spaces = ''' '''.join([char * (len(dashlength) - len(reporter)) for char in ' '])
+        created_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(created)) for char in ' '])
+        updated_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(updated)) for char in ' '])
+        task_type_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(task_type)) for char in ' '])
+        status_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(status)) for char in ' '])
+        story_points_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(story_points)) for char in ' '])
+        priority_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(priority)) for char in ' '])
+        component_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(component)) for char in ' '])
+        version_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(version)) for char in ' '])
+        assignee_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(assignee)) for char in ' '])
+        reporter_spaces = ''' '''.join(
+            [char * (len(dashlength) - len(reporter)) for char in ' '])
 
         # Create report template and fill with data
         report = '''┌────────────────{dashlength}─┐
@@ -512,10 +527,7 @@ Comments
 
         query = 'ORDER BY updated DESC'
         issues = self.jira.search_issues(
-            query,
-            fields='assignee, reporter',
-            json_result='True',
-            maxResults=-1)
+            query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
         users = []
         for issue in issues["issues"]:

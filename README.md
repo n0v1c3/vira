@@ -283,7 +283,6 @@ nnoremap <silent> <leader>vss :ViraSetStatus<cr>
 
 " Filter search
 nnoremap <silent> <leader>v/ ViraFilterText<cr>
-
 nnoremap <silent> <leader>vfP :ViraFilterPriorities<cr>
 nnoremap <silent> <leader>vfa :ViraFilterAssignees<cr>
 nnoremap <silent> <leader>vfp :ViraFilterProjects<cr>
