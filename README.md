@@ -320,7 +320,7 @@ that could use some good features to make your development easier.
 
 #### vim-fugitive
 
-A simple example is below put recommended that it can be expanded on
+A simple example is below but recommended that it can be expanded on
 for your personal needs.
 
 ```

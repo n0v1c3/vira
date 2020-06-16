@@ -2,7 +2,7 @@
 " Description: Internals and API functions for vira
 " Authors:
 "   n0v1c3 (Travis Gall) <https://github.com/n0v1c3>
-" Version: 0.0.1
+"   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Initialization {{{1
 " Plugin Loaded {{{2
@@ -59,12 +59,10 @@ command! -nargs=0 -bang ViraFilterVersions call vira#_menu('versions')
 
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2
-  " Return the actuve issue key
   return vira#_get_active_issue()
 endfunction
 
 function! ViraStatusLine() "{{{2
-  " Return formatted statusline string
   return vira#_get_statusline()
 endfunction
 

@@ -3,10 +3,9 @@
 " Authors:
 "   n0v1c3 (Travis Gall) <https://github.com/n0v1c3>
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
-" Version: 0.0.1
 
 " Variables {{{1
-let s:vira_version = '0.0.1'
+let s:vira_version = '0.1.1'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -69,11 +68,9 @@ function! vira#_browse() "{{{2
 
   " Open current issue in browser
   execute 'term ++close ' . l:browser . ' "' . l:url . '"'
-
 endfunction
 
 function! vira#_prompt_start(type) "{{{2
-
   " Make sure vira has all the required inputs selected
   if a:type == 'comment'
     if (vira#_get_active_issue() == g:vira_null_issue)
@@ -100,24 +97,18 @@ function! vira#_prompt_end() "{{{2
 endfunction
 
 function! vira#_check_project(type) abort "{{{2
-  " Check if project was selected for
-  " components and versions
-
+  " Check if project was selected for components and versions
   if a:type != 'components' && a:type != 'versions'
     return 1
   endif
-
   if (execute('python3 print(Vira.api.userconfig_filter["project"])')[1:] == "")
     return 0
   endif
-
   return 1
-
 endfunction
 
 function! vira#_connect() abort "{{{2
   " Connect to jira server if not connected already
-
   if (!exists('g:vira_serv') || g:vira_serv == '' || s:vira_connected == 1)
     return
   endif
@@ -127,7 +118,6 @@ function! vira#_connect() abort "{{{2
 
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
-
 endfunction
 
 function! vira#_get_active_issue() "{{{2
@@ -169,7 +159,6 @@ function! vira#_print_menu(list) " {{{2
 endfunction
 
 function! vira#_load_project_config() " {{{2
-
   " Save current directory and switch to file direcotry
   let s:current_dir = getcwd()
   cd %:p:h
@@ -182,11 +171,9 @@ function! vira#_load_project_config() " {{{2
 
   " Disable loading of project config
   let g:vira_load_project_enabled = 0
-
 endfunction
 
 function! vira#_menu(type) abort " {{{2
-
   " Load config from user-defined file
   if (g:vira_load_project_enabled == 1)
     call vira#_load_project_config()

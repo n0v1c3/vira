@@ -2,7 +2,6 @@
 " Description: Vira filetype detection
 " Authors:
 "   n0v1c3 (Travis Gall) <https://github.com/n0v1c3>
-" Version: 0.0.1
 
 augroup Vira
   autocmd!
