@@ -280,15 +280,15 @@ class ViraAPI():
         columns = vim.eval("&columns")
         min_summary_length = 25
         max_summary_length = int(
-            columns) - key_length - issuetype_length - status_length - 30
+            columns) - key_length - issuetype_length - status_length - 23
         summary_length = min_summary_length if max_summary_length < min_summary_length else max_summary_length if summary_length > max_summary_length else summary_length
 
         for issue in issues:
             print(
-                ('{: <' + str(key_length) + '}').format(issue[0]) + "  ~  " +
+                ('{: <' + str(key_length) + '}').format(issue[0]) + " │ " +
                 ('{: <' + str(summary_length) + '}').format(issue[1][:summary_length]) +
-                " |  " + ('{: <' + str(issuetype_length) + '}').format(issue[2]) + " - " +
-                ('{: <' + str(status_length) + '}').format(issue[3]) + '  ->  ' +
+                " │ " + ('{: <' + str(issuetype_length) + '}').format(issue[2]) + " │ " +
+                ('{: <' + str(status_length) + '}').format(issue[3]) + ' │ ' +
                 issue[4])
 
     def get_issuetypes(self):
