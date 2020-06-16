@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.1.1'
+let s:vira_version = '0.1.2'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -383,7 +383,7 @@ function! vira#_set() "{{{2
     endif
   
   elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
-    execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), ' . value . ')'
+    execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
   else
     if s:vira_filter[:0] == '"'
