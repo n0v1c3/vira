@@ -525,12 +525,6 @@ Comments
             if user + ' ~ ' + id not in users:
                 users.append(user + ' ~ ' + str(id))
 
-            #  id = str(issue['fields']['assignee']['id'])
-            #  user = str(issue['fields']['assignee']['displayName']) if type(
-                #  issue['fields']['assignee']) == dict else 'Unassigned'
-            #  if user not in users and user != 'Unassigned':
-                #  users.append(id + ' ~ ' + user)
-
         for user in sorted(users):
             print(user)
         print('Unassigned')

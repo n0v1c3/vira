@@ -292,14 +292,12 @@ nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
 nnoremap <silent> <leader>vfR :ViraFilterReset<cr>
 nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
 
-" Filter reset
-nnoremap <silent> <leader>vfr :ViraFilterReset<cr>
-
 " Status
 statusline+=%{ViraStatusline()}
 ```
 
 ## Support
+
 ### Private and Cloud Jira Hosting
 
 We currently support Private Jira servers version 8 and up. We
@@ -322,7 +320,7 @@ that could use some good features to make your development easier.
 
 #### vim-fugitive
 
-A simple example is below put recommended that it can be expanded on
+A simple example is below but recommended that it can be expanded on
 for your personal needs.
 
 ```
