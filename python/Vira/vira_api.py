@@ -287,7 +287,7 @@ class ViraAPI():
             print(
                 ('{: <' + str(key_length) + '}').format(issue[0]) + " │ " +
                 ('{: <' + str(summary_length) + '}').format(issue[1][:summary_length]) +
-                " │ " + ('{: <' + str(issuetype_length) + '}').format(issue[2]) + " │ " +
+                "  │ " + ('{: <' + str(issuetype_length) + '}').format(issue[2]) + " │ " +
                 ('{: <' + str(status_length) + '}').format(issue[3]) + ' │ ' +
                 issue[4])
 

@@ -3,10 +3,9 @@ if exists('b:current_syntax') | finish|  endif
 
 " Syntax matching {{{1
 syntax match viraHTML "https://.*"hs=s,he=e
-syntax match viraIssuesIssue ".*-.* │.*" contains=viraIssuesDescription,viraIssuesStatus nextgroup=viraIssuesDescription
-syntax match viraIssuesDescription "│.*│"hs=s+2,he=e-2 nextgroup=viraIssuesStatus contained
-syntax match viraIssuesStatus "│ .* │ .*" contains=viraIssuesDates,viraIssuesAssignee,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
-syntax match viraIssuesAssignee " │ "
+syntax match viraIssuesIssue ".*-.* │.*│.*│.*│.*" contains=viraIssuesDescription
+syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus contains=viraIssuesStatus, contained
+syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
 
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
@@ -33,7 +32,8 @@ syntax match viraDetailsStatusBacklog "Backlog │"he=e-2
 syntax match viraDetailsStatusComplete "Complete │"he=e-2
 syntax match viraDetailsStatusDone "Done │"he=e-2
 syntax match viraDetailsStatusSelected "Selected for Development │"he=e-2
-syntax match viraDetailsStatusTodo "To Do │"he=e-3 syntax match viraDetailsTypeBug "Bug │"he=e-2
+syntax match viraDetailsStatusTodo "To Do │"he=e-2
+syntax match viraDetailsTypeBug "Bug │"he=e-2
 syntax match viraDetailsTypeEpic "Epic │"he=e-2
 syntax match viraDetailsTypeStory "Story │"he=e-2
 syntax match viraDetailsTypeTask "Task │"he=e-2
@@ -126,7 +126,6 @@ highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
 highlight default link viraDetailsTypeAssignee Statement
 highlight default link viraDetailsTypeReporter Statement
-highlight default link viraIssuesAssignee Statement
 highlight default link viraDetailsDates Statement
 highlight viraDetailsDates ctermfg=yellow guifg=yellow
 highlight viraBold cterm=bold gui=bold
