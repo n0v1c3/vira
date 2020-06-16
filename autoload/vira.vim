@@ -350,8 +350,10 @@ function! vira#_getter() "{{{2
   " Return the proper form of the selected data
   if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
     return expand('<cWORD>')
-  endif
-  return getline('.')
+  elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignee' || s:vira_menu_type == 'reporter'
+    if getline('.') == 'Unassigned' | return '-1'
+    else | return  split(getline('.'),' \~ ')[1] | endif
+  else | return getline('.') | endif
 endfunction
 
 function! vira#_select() "{{{2
@@ -382,11 +384,7 @@ function! vira#_set() "{{{2
   let value = vira#_getter()
   let g:testvar = value
   let variable = s:vira_set_lookup[s:vira_menu_type]
-  
-  if ((variable == 'assign_issue' || variable == 'assignee' || variable == 'reporter') && value != "Unassigned")
-    let value =  split(value,' \~ ')[1]
-  endif
-  
+ 
   if variable[:1] == 'g:'
     execute 'let ' . variable . ' = "' . value . '"'
     if variable == 'g:vira_serv'
@@ -398,7 +396,7 @@ function! vira#_set() "{{{2
     endif
   
   elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
-    execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+    execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), ' . value . ')'
 
   else
     if s:vira_filter[:0] == '"'
