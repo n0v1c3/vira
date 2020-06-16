@@ -3,28 +3,20 @@ if exists('b:current_syntax') | finish|  endif
 
 " Syntax matching {{{1
 syntax match viraHTML "https://.*"hs=s,he=e
-syntax match viraIssuesDescription "\~  .*"hs=s+3 contains=viraIssuesStatus nextgroup=viraIssuesStatus
-syntax match viraIssuesStatus "| .* -> .*" contains=viraIssuesAssignee,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus
-syntax match viraDetailsStatusInProgress "In Progress  ->"he=e-4
-syntax match viraDetailsStatusBacklog "Backlog  ->"he=e-3
-syntax match viraDetailsStatusComplete "Complete  ->"he=e-3
-syntax match viraDetailsStatusDone "Done  ->"he=e-3
-syntax match viraDetailsStatusSelected "Selected for Development  ->"he=e-3
-syntax match viraDetailsStatusTodo "To Do  ->"he=e-3
-syntax match viraDetailsTypeBug "|  Bug"hs=s+3
-syntax match viraDetailsTypeEpic "|  Epic"hs=s+3
-syntax match viraDetailsTypeStory "|  Story"hs=s+3
-syntax match viraDetailsTypeTask "|  Task"hs=s+3
-syntax match viraIssuesAssignee "  ->  "
-" syntax match viraIssuesStatus "| .* |" contained
+syntax match viraIssuesIssue ".*-.* │.*" contains=viraIssuesDescription,viraIssuesStatus nextgroup=viraIssuesDescription
+syntax match viraIssuesDescription "│.*│"hs=s+2,he=e-2 nextgroup=viraIssuesStatus contained
+syntax match viraIssuesStatus "│ .* │ .*" contains=viraIssuesDates,viraIssuesAssignee,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
+syntax match viraIssuesAssignee " │ "
 
-syntax match viraIssuesIssue ".*-.*  \~"he=e contains=viraIssuesDescription nextgroup=viraIssuesDescription
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
 syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
 syntax match viraCommentClose "}}}"
 syntax match viraCommentDate /@.*/hs=s,he=e contained
+
+" syntax match viraIssuesStatus "| .* |" contained
+
 
 " Report {{{2
 syntax match viraDetails "┌.*"
@@ -36,8 +28,19 @@ syntax match viraDetailsC "│.*"hs=s,he=e-1
 syntax match viraDetailsE "│.*│.*"hs=e,he=e
 syntax match viraDetails "│"
 
-syntax match viraDetails "│.*Created │"
-syntax match viraDetails "│.*Updated │"
+syntax match viraDetailsStatusInProgress "In Progress │"he=e-2
+syntax match viraDetailsStatusBacklog "Backlog │"he=e-2
+syntax match viraDetailsStatusComplete "Complete │"he=e-2
+syntax match viraDetailsStatusDone "Done │"he=e-2
+syntax match viraDetailsStatusSelected "Selected for Development │"he=e-2
+syntax match viraDetailsStatusTodo "To Do │"he=e-3 syntax match viraDetailsTypeBug "Bug │"he=e-2
+syntax match viraDetailsTypeEpic "Epic │"he=e-2
+syntax match viraDetailsTypeStory "Story │"he=e-2
+syntax match viraDetailsTypeTask "Task │"he=e-2
+
+syntax match viraDetails "│.*Created.* │" contains=viraDetailsDates
+syntax match viraDetails "│.*Updated.* │" contains=viraDetailsDates
+syntax match viraDetailsDates "│ .*.-.*.-.* │"hs=s+17,he=e-2 contained
 
 syntax match viraDetails "│.*Type │"
 syntax match viraDetailsTypeBug "Bug  "he=e-2
@@ -124,6 +127,8 @@ highlight default link viraTitleFold Statement
 highlight default link viraDetailsTypeAssignee Statement
 highlight default link viraDetailsTypeReporter Statement
 highlight default link viraIssuesAssignee Statement
+highlight default link viraDetailsDates Statement
+highlight viraDetailsDates ctermfg=yellow guifg=yellow
 highlight viraBold cterm=bold gui=bold
 highlight viraDetailsHigh ctermfg=red guifg=red
 highlight viraDetailsHighest ctermfg=darkred guifg=darkred
