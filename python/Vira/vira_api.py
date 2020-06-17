@@ -418,12 +418,30 @@ class ViraAPI():
         component = ', '.join([c['name'] for c in issue['components']])
         version = ', '.join([v['name'] for v in issue['fixVersions']])
         description = str(issue.get('description'))
-        comments = '\n'.join(
-            [
-                comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
-                ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
-                for comment in issue['comment']['comments']
-            ])
+        #  comments += '\n'.join(
+            #  [
+                #  comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
+                #  ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
+                #  #  '}}}' if idx == 4 else ''
+                #  for idx, comment in enumerate(issue['comment']['comments'])
+            #  ])
+        #  comments = '\n'.join(['Old Comments {{{1']) + ('\n' + comments
+                #  ) if idx >= 4 else comments = comments
+
+        comments = ''
+        idx = 0
+        for idx, comment in enumerate((issue['comment']['comments'])):
+            comments += ''.join([comment['author']['displayName'] + ' @ ' +
+                                #  comment['body'] + '\n}}}\n'
+                                 comment['updated'][0:10] + ' ' +
+                                 comment['updated'][11:16] + ' {{{2\n' +
+                                 comment['body'] + '\n}}}\n'])
+                                #  ('}}}\n' if idx == 3 else '\n')])
+            #  comments += ''.join('}}}') if idx == 4 else comments = comments
+        #  comments = comments.join([str(idx)])
+        comments = ''.join(['Old Comments {{{1\n']) + comments if idx > 3 else comments
+        comments = comments.replace('}}}', '}}}}}}', idx - 3)
+        comments = comments.replace('}}}}}}', '}}}', idx - 4)
 
         # Find the length of the longest word [-1]
         words = [
