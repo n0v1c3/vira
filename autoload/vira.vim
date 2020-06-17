@@ -249,6 +249,8 @@ function! vira#_menu(type) abort " {{{2
   silent! normal GV3kzogg
   " silent! execute 'g/^$/d'
   silent! execute 'g/\n\n\n/\n\n/g'
+  " silent! normal zCGkjzokjzo2kjzo2kjzo2kjzogg
+  silent! normal zCGzokjzo2kjzo2kjzo2kjzogg
 
   " Ensure wrap and linebreak are enabled
   if type == 'menu' | silent execut 'set nowrap'
