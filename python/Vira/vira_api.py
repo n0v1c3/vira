@@ -315,6 +315,13 @@ class ViraAPI():
         for project in self.jira.projects():
             print(project)
 
+    def get_priority(self):
+        '''
+        Build a vim popup menu for a list of projects
+        '''
+
+        self.get_priorities()
+
     def get_prompt_text(self, prompt_type):
         '''
         Get prompt text used for inputting text into jira
@@ -537,6 +544,13 @@ Comments
         '''
 
         self.get_statuses()
+
+    def get_version(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_versions()
 
     def get_users(self):
         '''

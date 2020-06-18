@@ -247,8 +247,12 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraIssues` - Get and Set the active **issue**.
 - `ViraReport` - Get report for active issue.
 - `ViraServers` - Get and Set active Jira server.
+- `ViraEditDescription` - Update the description of the current issue.
+- `ViraEditSummary` - Update the summary of the current issue
 - `ViraSetAssignee` - Select user to assign the current issue.
+- `ViraSetPriority` - Select priority of the current issue.
 - `ViraSetStatus` - Select the status of the current issue.
+- `ViraSetVersion` - Select the version of the current issue
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 
@@ -279,16 +283,24 @@ nnoremap <silent> <leader>vt :ViraTodos<cr>
 
 " Sets
 nnoremap <silent> <leader>vsa :ViraSetAssignee<cr>
+nnoremap <silent> <leader>vsp :ViraSetPriority<cr>
 nnoremap <silent> <leader>vss :ViraSetStatus<cr>
+nnoremap <silent> <leader>vsv :ViraSetVersion<cr>
+
+" Edits
+nnoremap <silent> <leader>ved :ViraEditDescription<cr>
+nnoremap <silent> <leader>ves :ViraEditSummary<cr>
 
 " Filter search
-nnoremap <silent> <leader>v/ ViraFilterText<cr>
+nnoremap <silent> <leader>vfR :ViraFilterReset<cr>
+
+nnoremap <silent> <leader>v/ :ViraFilterText<cr>
+
 nnoremap <silent> <leader>vfP :ViraFilterPriorities<cr>
 nnoremap <silent> <leader>vfa :ViraFilterAssignees<cr>
 nnoremap <silent> <leader>vfp :ViraFilterProjects<cr>
-nnoremap <silent> <leader>vfs :ViraFilterStatuses<cr>
 nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
-nnoremap <silent> <leader>vfR :ViraFilterReset<cr>
+nnoremap <silent> <leader>vfs :ViraFilterStatuses<cr>
 nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
 
 " Status

@@ -42,7 +42,13 @@ command! -nargs=0 -bang ViraTodos call vira#_todos()
 
 " Sets
 command! -nargs=0 -bang ViraSetAssignee call vira#_menu('assign_issue');
+command! -nargs=0 -bang ViraSetPriority call vira#_menu('priority');
 command! -nargs=0 -bang ViraSetStatus call vira#_menu('set_status');
+command! -nargs=0 -bang ViraSetVersion call vira#_menu('version');
+
+" Edit
+command! -nargs=0 -bang ViraEditDescription call vira#_menu('description')
+command! -nargs=0 -bang ViraEditSummary call vira#_menu('summary')
 
 " Filters
 command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
