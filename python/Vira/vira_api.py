@@ -538,6 +538,13 @@ Comments
 
         self.get_statuses()
 
+    def get_version(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.get_versions()
+
     def get_users(self):
         '''
         Get my issues with JQL

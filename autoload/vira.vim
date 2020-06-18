@@ -34,6 +34,7 @@ let s:vira_set_lookup = {
       \'reporters': 'reporter',
       \'servers': 'g:vira_serv',
       \'set_status': 'transition_issue',
+      \'version': 'fixVersions',
       \'statusCategories': 'statusCategory',
       \'statuses': 'status',
       \'summary': 'summary',
@@ -103,9 +104,11 @@ function! vira#_check_project(type) abort "{{{2
   if a:type != 'components' && a:type != 'versions'
     return 1
   endif
+
   if (execute('python3 print(Vira.api.userconfig_filter["project"])')[1:] == "")
     return 0
   endif
+
   return 1
 endfunction
 
@@ -394,6 +397,11 @@ function! vira#_set() "{{{2
       let s:vira_connected = 0
       call vira#_connect()
     endif
+  elseif variable == 'fixVersions'
+    if value != "null" | let value = '"' . value . '"'
+    else | let value = "None"
+    endif
+    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(fields={"' . variable . '": [{"name": ' . value . '}]})'
   elseif variable == 'summary' || variable == 'description'
     execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable .'="' . value . '")'
   elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
