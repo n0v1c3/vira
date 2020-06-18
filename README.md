@@ -293,6 +293,10 @@ nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
 nnoremap <silent> <leader>vfR :ViraFilterReset<cr>
 nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
 
+" Update
+nnoremap <silent> <leader>vus :ViraUpdateSummary<cr>
+nnoremap <silent> <leader>vud :ViraUpdateDescription<cr>
+
 " Status
 statusline+=%{ViraStatusline()}
 ```
