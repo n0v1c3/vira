@@ -60,10 +60,10 @@ syntax match viraDetailsStatusSelected "Selected for Development "he=e-1
 syntax match viraDetails "│.*Story Points │"
 
 syntax match viraDetails "│.*Priority │"
-syntax match viraDetailsHigh "High  "hs=s+16
-syntax match viraDetailsHighest "Highest  "hs=s+16
-syntax match viraDetailsLow "Low  "hs=s+16
-syntax match viraDetailsLowest "Lowest  "hs=s+16
+syntax match viraDetailsHigh "High  "he=s+4
+syntax match viraDetailsHighest "Highest  "he=s+7
+syntax match viraDetailsLow "Low  "he=s+3
+syntax match viraDetailsLowest "Lowest  "he=s+6
 syntax match viraDetailsMedium "Medium  "he=s+6
 
 syntax match viraDetails "│.*Component │"

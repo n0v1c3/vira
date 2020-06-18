@@ -29,6 +29,7 @@ let s:vira_set_lookup = {
       \'description': 'description',
       \'issues': 'g:vira_active_issue',
       \'issuetypes': 'issuetype',
+      \'priority': 'priorities',
       \'priorities': 'priority',
       \'projects': 'project',
       \'reporters': 'reporter',
@@ -397,6 +398,9 @@ function! vira#_set() "{{{2
       let s:vira_connected = 0
       call vira#_connect()
     endif
+  elseif variable == 'priorities'
+    let variable = 'priority'
+    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable . ' = {"name": "' . value . '"})'
   elseif variable == 'fixVersions'
     if value != "null" | let value = '"' . value . '"'
     else | let value = "None"
