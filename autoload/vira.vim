@@ -26,15 +26,17 @@ let s:vira_set_lookup = {
       \'assign_issue': 'assign_issue',
       \'assignees': 'assignee',
       \'components': 'component',
+      \'description': 'description',
       \'issues': 'g:vira_active_issue',
-      \'servers': 'g:vira_serv',
       \'issuetypes': 'issuetype',
       \'priorities': 'priority',
       \'projects': 'project',
       \'reporters': 'reporter',
+      \'servers': 'g:vira_serv',
+      \'set_status': 'transition_issue',
       \'statusCategories': 'statusCategory',
       \'statuses': 'status',
-      \'set_status': 'transition_issue',
+      \'summary': 'summary',
       \'versions': 'fixVersion',
       \}
 
@@ -196,6 +198,12 @@ function! vira#_menu(type) abort " {{{2
     let list = ''
   elseif a:type == 'text'
     execute 'python3 Vira.api.userconfig_filter["text"] = "' . input('text ~ ') . '"'
+    call vira#_refresh()
+    return
+  elseif a:type == 'summary' || a:type == 'description'
+    let s:vira_menu_type = a:type
+    call vira#_set()
+    call vira#_refresh()
     return
   else
     if !vira#_check_project(a:type)
@@ -285,6 +293,7 @@ function! vira#_refresh() " {{{2
       silent! set norelativenumber
     endif
   endfor
+  echo ''
 endfunction
 
 function! vira#_reset_filters() " {{{2
@@ -339,6 +348,8 @@ function! vira#_getter() "{{{2
   " Return the proper form of the selected data
   if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
     return expand('<cWORD>')
+  elseif s:vira_menu_type == 'summary' || s:vira_menu_type == 'description'
+    return input(substitute(s:vira_menu_type, '\<\(\k\)\(\k*''*\k*\)\>', '\u\1\L\2', 'g') . ': ')
   elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignee' || s:vira_menu_type == 'reporter'
     if getline('.') == 'Unassigned' | return '-1'
     else | return  split(getline('.'),' \~ ')[1] | endif
@@ -383,21 +394,19 @@ function! vira#_set() "{{{2
       let s:vira_connected = 0
       call vira#_connect()
     endif
-  
+  elseif variable == 'summary' || variable == 'description'
+    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable .'="' . value . '")'
   elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
     execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
-
   else
     if s:vira_filter[:0] == '"'
       let value = substitute(s:vira_filter,'|',', ','')
     else | let value = '"' . value . '"' | endif
-
     execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
 
     if variable == 'status'
       execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
     endif
-    " call vira#_menu('issues')
   endif
 
   call vira#_filter_reset()

@@ -248,7 +248,9 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraReport` - Get report for active issue.
 - `ViraServers` - Get and Set active Jira server.
 - `ViraSetAssignee` - Select user to assign the current issue.
+- `ViraSetDescription` - Update the description of the current issue.
 - `ViraSetStatus` - Select the status of the current issue.
+- `ViraSetSummary` - Update the summary of the current issue
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 
