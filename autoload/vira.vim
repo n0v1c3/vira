@@ -231,6 +231,8 @@ function! vira#_menu(type) abort " {{{2
   " Open buffer into a window
   if type == 'report'
     silent! execute 'botright vnew ' . fnameescape('vira_' . type)
+    silent! execute 'vertical resize 70'
+    call feedkeys("h:vnew\<cr>:q\<cr>l")
   else
     silent! execute 'botright new ' . fnameescape('vira_' . type)
     silent! execute 'resize 7'
@@ -252,16 +254,13 @@ function! vira#_menu(type) abort " {{{2
   " Clean-up extra output and remove blank lines
   silent! execute '%s/\^M//g'
   silent! normal gg2dd
-  silent! normal GV3kzogg
-  " silent! execute 'g/^$/d'
   silent! execute 'g/\n\n\n/\n\n/g'
-  " silent! normal zCGkjzokjzo2kjzo2kjzo2kjzogg
-  silent! normal zCGzokjzo2kjzo2kjzo2kjzogg
+  silent! normal zCGzoV3kzogg
 
   " Ensure wrap and linebreak are enabled
   if type == 'menu' | silent execut 'set nowrap'
-  else | silent! execute 'set wrap'
-  endif
+  else | silent! execute 'set wrap' | endif
+
   silent! execute 'set linebreak'
 endfunction
 
