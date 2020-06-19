@@ -280,7 +280,7 @@ class ViraAPI():
         columns = vim.eval("&columns")
         min_summary_length = 25
         max_summary_length = int(
-            columns) - key_length - issuetype_length - status_length - 23
+            columns) - key_length - issuetype_length - status_length - 28
         summary_length = min_summary_length if max_summary_length < min_summary_length else max_summary_length if summary_length > max_summary_length else summary_length
 
         for issue in issues:
