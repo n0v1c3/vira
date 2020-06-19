@@ -150,4 +150,4 @@ highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername cterm=underline gui=underline
 
-let b:current_syntax = 'vira'
+let b:current_syntax = 'vira_report'
