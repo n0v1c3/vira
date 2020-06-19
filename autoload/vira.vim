@@ -15,7 +15,7 @@ let s:vira_end_time = 0
 let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_menu_type = ''
-  
+
 let s:vira_select_init = 0
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
@@ -94,7 +94,7 @@ function! vira#_prompt_end() "{{{2
   let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
 
   if (g:vira_input_text  == "") | redraw | echo "No vira actions performed"
-  else 
+  else
     python3 Vira.api.write_jira()
     call vira#_refresh()
   endif
@@ -195,8 +195,8 @@ function! vira#_menu(type) abort " {{{2
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
   if a:type == 'report'
     if (vira#_get_active_issue() == g:vira_null_issue)
-      call vira#_menu('issues') 
-      return 
+      call vira#_menu('issues')
+      return
     endif
     let type = 'report'
     let list = ''
@@ -216,7 +216,7 @@ function! vira#_menu(type) abort " {{{2
     endif
     let type = 'menu'
     let list = execute('python3 Vira.api.get_' . a:type . '()')
-    
+
     " Save current menu type
     let s:vira_menu_type = a:type
   endif
@@ -235,15 +235,9 @@ function! vira#_menu(type) abort " {{{2
     silent! execute 'botright new ' . fnameescape('vira_' . type)
     silent! execute 'resize 7'
   endif
-  silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nonumber nobuflisted
+  silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   silent! redraw
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
-
-  " TODO: VIRA-46 [190927] - Make the fold and line numbers only affect the window type
-  " Remove folding and line numbers from the report
-  silent! let &foldcolumn=0
-  silent! set norelativenumber
-  silent! set nonumber
 
   " Clean-up existing report buffer
   silent! normal ggVGd
@@ -287,14 +281,11 @@ function! vira#_refresh() " {{{2
     let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
     if (winnr > 0)
       execute winnr . ' wincmd q'
-      
+
       if (vira_window == 'report') | call vira#_menu(vira_window)
       else | call vira#_menu(s:vira_menu_type)
-      endif  
-      
-      silent! set syntax=vira
-      silent! set nonumber
-      silent! set norelativenumber
+      endif
+
     endif
   endfor
   echo ''
@@ -386,9 +377,8 @@ function! vira#_set() "{{{2
   execute 'normal 0'
 
   let value = vira#_getter()
-  let g:testvar = value
   let variable = s:vira_set_lookup[s:vira_menu_type]
- 
+
   if variable[:1] == 'g:'
     execute 'let ' . variable . ' = "' . value . '"'
     if variable == 'g:vira_serv'
