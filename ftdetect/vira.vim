@@ -9,7 +9,7 @@ augroup Vira
   autocmd BufNewFile,BufRead vira_menu setf vira_menu
 
   " Report
-  autocmd Filetype vira_report set noequalalways
+  autocmd Filetype vira_report setlocal winfixwidth
   autocmd Filetype vira_report setlocal nonumber
   autocmd Filetype vira_report setlocal norelativenumber
   autocmd Filetype vira_report nnoremap <silent> <buffer> k gk
@@ -19,6 +19,7 @@ augroup Vira
   autocmd Filetype vira_report vnoremap <silent> <buffer> k gk
 
   " Menu
+  autocmd Filetype vira_menu setlocal winfixheight
   autocmd Filetype vira_menu setlocal norelativenumber
   autocmd Filetype vira_menu setlocal number
   autocmd Filetype vira_menu nnoremap <silent> <buffer> <cr> 0:call vira#_set()<cr>:q!<cr>:call vira#_refresh()<cr>
