@@ -25,6 +25,8 @@ let g:vira_config_file_servers = get(g:, 'vira_config_file_servers', $HOME.'/.co
 let g:vira_null_issue = get(g:, 'vira_null_issue', 'None')
 let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
 let g:vira_load_project_enabled = 1
+let g:vira_menu_height = 7
+let g:vira_report_width = 60
 
 " Commands {{{1
 " Basics

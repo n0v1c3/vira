@@ -96,8 +96,8 @@ function! vira#_prompt_end() "{{{2
   if (g:vira_input_text  == "") | redraw | echo "No vira actions performed"
   else
     python3 Vira.api.write_jira()
-    call vira#_refresh()
   endif
+  call vira#_refresh()
 endfunction
 
 function! vira#_check_project(type) abort "{{{2
@@ -221,21 +221,18 @@ function! vira#_menu(type) abort " {{{2
     let s:vira_menu_type = a:type
   endif
 
-  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
   " Toggle/create the report buffer
-  if (winnr >= 0)
-    silent! execute winnr .'wincmd q'
-    return
-  endif
+  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
+  if (winnr >= 0) | call vira#_refresh() | return | endif
 
   " Open buffer into a window
   if type == 'report'
     silent! execute 'botright vnew ' . fnameescape('vira_' . type)
-    silent! execute 'vertical resize 70'
-    call feedkeys("h:vnew\<cr>:q\<cr>l")
+    if g:vira_report_width > 0 | silent! execute 'vertical resize ' . g:vira_report_width | endif
+    call vira#_resize()
   else
     silent! execute 'botright new ' . fnameescape('vira_' . type)
-    silent! execute 'resize 7'
+    silent! execute 'resize ' . g:vira_menu_height
   endif
   silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   silent! redraw
@@ -272,6 +269,7 @@ function! vira#_quit() "{{{2
         execute winnr .' wincmd q'
     endif
   endfor
+  call vira#_resize()
 endfunction
 
 function! vira#_refresh() " {{{2
@@ -280,11 +278,13 @@ function! vira#_refresh() " {{{2
     let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
     if (winnr > 0)
       execute winnr . ' wincmd q'
-
-      if (vira_window == 'report') | call vira#_menu(vira_window)
-      else | call vira#_menu(s:vira_menu_type)
-      endif
-
+      if (vira_window == 'report')
+        silent! call vira#_menu(vira_window)
+        silent! setlocal nonumber
+        silent! setlocal norelativenumber
+        call vira#_resize()
+      else | call vira#_menu(s:vira_menu_type) | endif
+      execute 'silent! set syntax=vira_' . vira_window
     endif
   endfor
   echo ''
@@ -413,7 +413,11 @@ function! vira#_set() "{{{2
   call vira#_filter_reset()
 endfunction
 
-function! vira#_filter_reset()
+function! vira#_filter_reset() " {{{2
   let s:vira_select_init = 0
   let @/ = s:vira_filter_hold
+endfunction
+
+function! vira#_resize() " {{{2
+  execute "normal! h:vnew\<cr>:q\<cr>l"
 endfunction

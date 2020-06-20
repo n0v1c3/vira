@@ -13,7 +13,7 @@ augroup Vira
   autocmd Filetype vira_report setlocal nonumber
   autocmd Filetype vira_report setlocal norelativenumber
   autocmd Filetype vira_report nnoremap <silent> <buffer> k gk
-  autocmd Filetype vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_filter_reset()<cr>
+  autocmd Filetype vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_filter_reset()<cr>:call vira#_resize()<cr>
   autocmd Filetype vira_report nnoremap <silent> <buffer> s :call vira#_select()<cr>
   autocmd Filetype vira_report vnoremap <silent> <buffer> j gj
   autocmd Filetype vira_report vnoremap <silent> <buffer> k gk
