@@ -97,7 +97,7 @@ function! vira#_prompt_end() "{{{2
   else
     python3 Vira.api.write_jira()
   endif
-  call vira#_refresh()
+  " call vira#_refresh()
 endfunction
 
 function! vira#_check_project(type) abort "{{{2
@@ -353,7 +353,7 @@ endfunction
 function! vira#_select() "{{{2
   execute 'normal mm'
   execute 'normal 0'
-  call feedkeys(":set hlsearch\<cr>")
+  silent! call feedkeys(":set hlsearch\<cr>")
 
   let value = vira#_getter()
 
@@ -365,10 +365,42 @@ function! vira#_select() "{{{2
     let s:vira_filter = '"' . value . '"'
     let s:vira_select_init = 1
   endif
+
   let @/ = '\v' . s:vira_highlight
   execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   execute 'normal `m'
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
+endfunction
+
+function! vira#_unselect() "{{{2
+  execute 'normal mm'
+  execute 'normal 0'
+
+  let value = vira#_getter()
+
+  let s:vira_highlight = substitute(s:vira_highlight,value,'','')
+  let s:vira_highlight = substitute(s:vira_highlight,'||','|','')
+  if s:vira_highlight[0] == '|' | let s:vira_highlight  = s:vira_highlight[1:] | endif
+  if s:vira_highlight[len(s:vira_highlight)-1] == '|'
+    let s:vira_highlight = s:vira_highlight[0:len(s:vira_highlight)-2]
+  endif
+
+  let s:vira_filter = substitute(s:vira_filter,'"' . value . '"' ,'','')
+  let s:vira_filter = substitute(s:vira_filter,',,',',','')
+  if s:vira_filter[0] == ',' | let s:vira_filter  = s:vira_filter[1:] | endif
+  if s:vira_filter[len(s:vira_filter)-1] == ','
+    let s:vira_filter = s:vira_filter[0:len(s:vira_filter)-2]
+  endif
+
+  if s:vira_highlight == '|' || s:vira_highlight == ''
+    let s:vira_highlight = ''
+    let s:vira_select_init = 0
+    call vira#_filter_reset()
+  else
+    let @/ = '\v' . s:vira_highlight
+    execute "normal! /\\v" . s:vira_highlight . "\<cr>"
+    execute 'normal `m'
+  endif
 endfunction
 
 function! vira#_set() "{{{2
@@ -419,5 +451,6 @@ function! vira#_filter_reset() " {{{2
 endfunction
 
 function! vira#_resize() " {{{2
+  autocmd Filetype vira_report call vira#_resize()
   execute "normal! h:vnew\<cr>:q\<cr>l"
 endfunction

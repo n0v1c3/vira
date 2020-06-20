@@ -26,6 +26,7 @@ augroup Vira
   autocmd Filetype vira_menu nnoremap <silent> <buffer> k gk
   autocmd Filetype vira_menu nnoremap <silent> <buffer> q :q!<cr>:call vira#_filter_reset()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> s :call vira#_select()<cr>
+  autocmd Filetype vira_menu nnoremap <silent> <buffer> u :call vira#_unselect()<cr>
   autocmd Filetype vira_menu vnoremap <silent> <buffer> j gj
   autocmd Filetype vira_menu vnoremap <silent> <buffer> k gk
 augroup END
