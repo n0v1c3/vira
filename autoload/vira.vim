@@ -86,6 +86,7 @@ function! vira#_prompt_start(type) "{{{2
   let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'sp ' . s:vira_prompt_file
+  silent! setlocal buftype=
   silent! setlocal spell
 endfunction
 
@@ -96,8 +97,8 @@ function! vira#_prompt_end() "{{{2
   if (g:vira_input_text  == "") | redraw | echo "No vira actions performed"
   else
     python3 Vira.api.write_jira()
-    call vira#_refresh()
   endif
+  call vira#_refresh()
 endfunction
 
 function! vira#_check_project(type) abort "{{{2
@@ -221,28 +222,27 @@ function! vira#_menu(type) abort " {{{2
     let s:vira_menu_type = a:type
   endif
 
+  " Open buffer into a window
   silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
-  " Toggle/create the report buffer
-  if (winnr >= 0)
-    silent! execute winnr .'wincmd q'
-    return
+  if type == 'report'
+    if (winnr <= 0)
+      silent! execute 'botright vnew ' . fnameescape('vira_' . type)
+      if g:vira_report_width > 0 | silent! execute 'vertical resize ' . g:vira_report_width | endif
+      silent! call vira#_resize()
+    else | call execute(winnr . ' windo e') | endif
+  else
+    if (winnr <= 0)
+      silent! execute 'botright new ' . fnameescape('vira_' . type)
+      silent! execute 'resize ' . g:vira_menu_height
+    endif
   endif
 
-  " Open buffer into a window
-  if type == 'report'
-    silent! execute 'botright vnew ' . fnameescape('vira_' . type)
-    silent! execute 'vertical resize 70'
-    call feedkeys("h:vnew\<cr>:q\<cr>l")
-  else
-    silent! execute 'botright new ' . fnameescape('vira_' . type)
-    silent! execute 'resize 7'
-  endif
   silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   silent! redraw
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
 
   " Clean-up existing report buffer
-  silent! normal ggVGd
+  execute winnr . ' wincmd "' . execute("normal ggVGd") . '"'
 
   " Write report output into buffer
   if type == 'menu'
@@ -272,6 +272,7 @@ function! vira#_quit() "{{{2
         execute winnr .' wincmd q'
     endif
   endfor
+  silent! call vira#_resize()
 endfunction
 
 function! vira#_refresh() " {{{2
@@ -279,12 +280,10 @@ function! vira#_refresh() " {{{2
   for vira_window in vira_windows
     let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
     if (winnr > 0)
-      execute winnr . ' wincmd q'
-
-      if (vira_window == 'report') | call vira#_menu(vira_window)
-      else | call vira#_menu(s:vira_menu_type)
-      endif
-
+      if (vira_window == 'report')
+        silent! call vira#_menu(vira_window)
+      else | call vira#_menu(s:vira_menu_type) | endif
+      execute 'silent! set syntax=vira_' . vira_window
     endif
   endfor
   echo ''
@@ -292,6 +291,16 @@ endfunction
 
 function! vira#_reset_filters() " {{{2
   python3 Vira.api.reset_filters()
+endfunction
+
+function! vira#_resize() " {{{2
+  let vira_windows = ['menu', 'report']
+  for vira_window in vira_windows
+    let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
+      if (vira_window == 'report') | execute "normal! h:vnew\<cr>:q\<cr>l"
+      else | execute "normal! h:new\<cr>:q\<cr>l"
+      endif
+  endfor
 endfunction
 
 function! vira#_todo() "{{{2
@@ -353,7 +362,7 @@ endfunction
 function! vira#_select() "{{{2
   execute 'normal mm'
   execute 'normal 0'
-  call feedkeys(":set hlsearch\<cr>")
+  silent! call feedkeys(":set hlsearch\<cr>")
 
   let value = vira#_getter()
 
@@ -365,10 +374,42 @@ function! vira#_select() "{{{2
     let s:vira_filter = '"' . value . '"'
     let s:vira_select_init = 1
   endif
+
   let @/ = '\v' . s:vira_highlight
   execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   execute 'normal `m'
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
+endfunction
+
+function! vira#_unselect() "{{{2
+  execute 'normal mm'
+  execute 'normal 0'
+
+  let value = vira#_getter()
+
+  let s:vira_highlight = substitute(s:vira_highlight,value,'','')
+  let s:vira_highlight = substitute(s:vira_highlight,'||','|','')
+  if s:vira_highlight[0] == '|' | let s:vira_highlight  = s:vira_highlight[1:] | endif
+  if s:vira_highlight[len(s:vira_highlight)-1] == '|'
+    let s:vira_highlight = s:vira_highlight[0:len(s:vira_highlight)-2]
+  endif
+
+  let s:vira_filter = substitute(s:vira_filter,'"' . value . '"' ,'','')
+  let s:vira_filter = substitute(s:vira_filter,',,',',','')
+  if s:vira_filter[0] == ',' | let s:vira_filter  = s:vira_filter[1:] | endif
+  if s:vira_filter[len(s:vira_filter)-1] == ','
+    let s:vira_filter = s:vira_filter[0:len(s:vira_filter)-2]
+  endif
+
+  if s:vira_highlight == '|' || s:vira_highlight == ''
+    let s:vira_highlight = ''
+    let s:vira_select_init = 0
+    call vira#_filter_reset()
+  else
+    let @/ = '\v' . s:vira_highlight
+    execute "normal! /\\v" . s:vira_highlight . "\<cr>"
+    execute 'normal `m'
+  endif
 endfunction
 
 function! vira#_set() "{{{2
@@ -413,7 +454,7 @@ function! vira#_set() "{{{2
   call vira#_filter_reset()
 endfunction
 
-function! vira#_filter_reset()
+function! vira#_filter_reset() " {{{2
   let s:vira_select_init = 0
   let @/ = s:vira_filter_hold
 endfunction

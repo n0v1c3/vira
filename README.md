@@ -265,6 +265,8 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 #### Nulls
 
+- `g:vira_menu_height` - Set the height of the menu (default 7)
+- `g:vira_report_width` - Set the width of the report (default 0)
 - `g:vira_null_issue` - Text used when there is no issue.
 
 ### Examples:

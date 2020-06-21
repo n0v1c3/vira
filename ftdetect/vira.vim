@@ -9,23 +9,25 @@ augroup Vira
   autocmd BufNewFile,BufRead vira_menu setf vira_menu
 
   " Report
-  autocmd Filetype vira_report setlocal winfixwidth
-  autocmd Filetype vira_report setlocal nonumber
-  autocmd Filetype vira_report setlocal norelativenumber
-  autocmd Filetype vira_report nnoremap <silent> <buffer> k gk
-  autocmd Filetype vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_filter_reset()<cr>
-  autocmd Filetype vira_report nnoremap <silent> <buffer> s :call vira#_select()<cr>
-  autocmd Filetype vira_report vnoremap <silent> <buffer> j gj
-  autocmd Filetype vira_report vnoremap <silent> <buffer> k gk
+  autocmd BufEnter vira_report setlocal winfixwidth
+  autocmd BufEnter vira_report setlocal nonumber
+  autocmd BufEnter vira_report setlocal norelativenumber
+  autocmd BufEnter vira_report cnoremap <silent> <buffer> q<cr> :q!<cr>:call vira#_filter_reset()<cr>:call vira#_resize()<cr>
+  autocmd BufEnter vira_report nnoremap <silent> <buffer> k gk
+  autocmd BufEnter vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_filter_reset()<cr>:call vira#_resize()<cr>
+  autocmd BufEnter vira_report nnoremap <silent> <buffer> s :call vira#_select()<cr>
+  autocmd BufEnter vira_report vnoremap <silent> <buffer> j gj
+  autocmd BufEnter vira_report vnoremap <silent> <buffer> k gk
 
   " Menu
-  autocmd Filetype vira_menu setlocal winfixheight
-  autocmd Filetype vira_menu setlocal norelativenumber
-  autocmd Filetype vira_menu setlocal number
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> <cr> 0:call vira#_set()<cr>:q!<cr>:call vira#_refresh()<cr>
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> k gk
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> q :q!<cr>:call vira#_filter_reset()<cr>
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> s :call vira#_select()<cr>
-  autocmd Filetype vira_menu vnoremap <silent> <buffer> j gj
-  autocmd Filetype vira_menu vnoremap <silent> <buffer> k gk
+  autocmd BufEnter vira_menu setlocal winfixheight
+  autocmd BufEnter vira_menu setlocal norelativenumber
+  autocmd BufEnter vira_menu setlocal number
+  autocmd BufEnter vira_menu nnoremap <silent> <buffer> <cr> 0:call vira#_set()<cr>:q!<cr>:call vira#_refresh()<cr>
+  autocmd BufEnter vira_menu nnoremap <silent> <buffer> k gk
+  autocmd BufEnter vira_menu nnoremap <silent> <buffer> q :q!<cr>:call vira#_filter_reset()<cr>
+  autocmd BufEnter vira_menu nnoremap <silent> <buffer> s :call vira#_select()<cr>
+  autocmd BufEnter vira_menu nnoremap <silent> <buffer> u :call vira#_unselect()<cr>
+  autocmd BufEnter vira_menu vnoremap <silent> <buffer> j gj
+  autocmd BufEnter vira_menu vnoremap <silent> <buffer> k gk
 augroup END
