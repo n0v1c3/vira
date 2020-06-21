@@ -53,28 +53,6 @@ class ViraAPI():
             'status': '',
         }
 
-    def report_set_lines_update(self, description, comments):
-        '''
-        Create dictionary for vira report that shows relationship
-        between line numbers and fields to be edited
-        '''
-
-        self.report_set_lines = {
-            6: '!issuetype',
-            7: 'set_status',
-            9: 'priority',
-            10: '!component',
-            11: 'version',
-            12: 'assign_issue',
-            15: 'summary',
-            16: 'summary',
-            17: 'summary',
-        }
-
-        description_len = description.count('\n') + 3
-        for x in range(18, 18 + description_len):
-            self.report_set_lines[x] = 'description'
-
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
@@ -520,7 +498,7 @@ Description
 Comments
 {comments}'''.format(**locals())
 
-        self.report_set_lines_update(description, comments)
+        self.set_report_lines(description, comments)
 
         # # TODO-MB [200621] - TEST
         # import pickle
@@ -668,6 +646,28 @@ Comments
         '''
 
         self.userconfig_filter = dict(self.userconfig_filter_default)
+
+    def set_report_lines(self, description, comments):
+        '''
+        Create dictionary for vira report that shows relationship
+        between line numbers and fields to be edited
+        '''
+
+        self.report_lines = {
+            6: '!issuetype',
+            7: 'set_status',
+            9: 'priority',
+            10: '!component',
+            11: 'version',
+            12: 'assign_issue',
+            15: 'summary',
+            16: 'summary',
+            17: 'summary',
+        }
+
+        description_len = description.count('\n') + 3
+        for x in range(18, 18 + description_len):
+            self.report_lines[x] = 'description'
 
     def write_jira(self):
         '''

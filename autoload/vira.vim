@@ -130,12 +130,12 @@ endfunction
 function! vira#_edit_report() abort "{{{2
   " Edit the report field matching to cursor line
   try
-    let field = execute('python3 print(Vira.api.report_set_lines['.line('.').'])')[1:-1]
-    echom field
+    let field = execute('python3 print(Vira.api.report_lines['.line('.').'])')[1:-1]
+    " echom field
+    call vira#_menu(field)
   catch
     echo 'This field can not be changed.'
   endtry
-  " call vira#_menu('description')
 endfunction
 
 function! vira#_get_active_issue() "{{{2
