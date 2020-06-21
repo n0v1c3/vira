@@ -53,6 +53,28 @@ class ViraAPI():
             'status': '',
         }
 
+    def report_set_lines_update(self, description, comments):
+        '''
+        Create dictionary for vira report that shows relationship
+        between line numbers and fields to be edited
+        '''
+
+        self.report_set_lines = {
+            6: '!issuetype',
+            7: 'set_status',
+            9: 'priority',
+            10: '!component',
+            11: 'version',
+            12: 'assign_issue',
+            15: 'summary',
+            16: 'summary',
+            17: 'summary',
+        }
+
+        description_len = description.count('\n') + 3
+        for x in range(18, 18 + description_len):
+            self.report_set_lines[x] = 'description'
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
@@ -416,7 +438,7 @@ class ViraAPI():
             11:16]
         updated = issue['updated'][0:10] + ' ' + issues['issues'][0]['fields']['updated'][
             11:16]
-        task_type = issue['issuetype']['name']
+        issuetype = issue['issuetype']['name']
         status = issue['status']['name']
         priority = issue['priority']['name']
         assignee = issue['assignee']['displayName'] if type(
@@ -425,15 +447,6 @@ class ViraAPI():
         component = ', '.join([c['name'] for c in issue['components']])
         version = ', '.join([v['name'] for v in issue['fixVersions']])
         description = str(issue.get('description'))
-        #  comments += '\n'.join(
-            #  [
-                #  comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
-                #  ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
-                #  #  '}}}' if idx == 4 else ''
-                #  for idx, comment in enumerate(issue['comment']['comments'])
-            #  ])
-        #  comments = '\n'.join(['Old Comments {{{1']) + ('\n' + comments
-                #  ) if idx >= 4 else comments = comments
 
         comments = ''
         idx = 0
@@ -443,47 +456,44 @@ class ViraAPI():
                                  comment['updated'][0:10] + ' ' +
                                  comment['updated'][11:16] + ' {{{2\n' +
                                  comment['body'] + '\n}}}\n'])
-                                #  ('}}}\n' if idx == 3 else '\n')])
-            #  comments += ''.join('}}}') if idx == 4 else comments = comments
-        #  comments = comments.join([str(idx)])
         comments = ''.join(['Old Comments {{{1\n']) + comments if idx > 3 else comments
         comments = comments.replace('}}}', '}}}}}}', idx - 3)
         comments = comments.replace('}}}}}}', '}}}', idx - 4)
 
         # Find the length of the longest word [-1]
         words = [
-            created, updated, task_type, status, story_points, priority, component,
+            created, updated, issuetype, status, story_points, priority, component,
             version, assignee, reporter
         ]
         wordslength = sorted(words, key=len)[-1]
-        s = '''─'''
+        s = '─'
         dashlength = s.join([char * len(wordslength) for char in s])
 
         active_issue_spacing = int((16 + len(dashlength)) / 2 - len(active_issue) / 2)
-        active_issue_spaces = ''' '''.join(
+        active_issue_spaces = ' '.join(
             [char * (active_issue_spacing) for char in ' '])
-        active_issue_space = ''' '''.join(
+        active_issue_space = ' '.join(
             [char * (len(active_issue) % 2) for char in ' '])
 
-        created_spaces = ''' '''.join(
+        created_spaces = ' '.join(
             [char * (len(dashlength) - len(created)) for char in ' '])
-        updated_spaces = ''' '''.join(
+        updated_spaces = ' '.join(
             [char * (len(dashlength) - len(updated)) for char in ' '])
-        task_type_spaces = ''' '''.join(
-            [char * (len(dashlength) - len(task_type)) for char in ' '])
-        status_spaces = ''' '''.join(
+        task_type_spaces = ' '.join(
+            [char * (len(dashlength) - len(issuetype)) for char in ' '])
+        status_spaces = ' '.join(
             [char * (len(dashlength) - len(status)) for char in ' '])
-        story_points_spaces = ''' '''.join(
+        story_points_spaces = ''.join(
             [char * (len(dashlength) - len(story_points)) for char in ' '])
-        priority_spaces = ''' '''.join(
+        priority_spaces = ''.join(
             [char * (len(dashlength) - len(priority)) for char in ' '])
-        component_spaces = ''' '''.join(
+        component_spaces = ''.join(
             [char * (len(dashlength) - len(component)) for char in ' '])
-        version_spaces = ''' '''.join(
+        version_spaces = ''.join(
             [char * (len(dashlength) - len(version)) for char in ' '])
-        assignee_spaces = ''' '''.join(
+        assignee_spaces = ''.join(
             [char * (len(dashlength) - len(assignee)) for char in ' '])
-        reporter_spaces = ''' '''.join(
+        reporter_spaces = ''.join(
             [char * (len(dashlength) - len(reporter)) for char in ' '])
 
         # Create report template and fill with data
@@ -492,7 +502,7 @@ class ViraAPI():
 ├──────────────┬─{dashlength}─┤
 │      Created │ {created}{created_spaces} │
 │      Updated │ {updated}{updated_spaces} │
-│         Type │ {task_type}{task_type_spaces} │
+│         Type │ {issuetype}{task_type_spaces} │
 │       Status │ {status}{status_spaces} │
 │ Story Points │ {story_points}{story_points_spaces} │
 │     Priority │ {priority}{priority_spaces} │
@@ -509,6 +519,14 @@ Description
 
 Comments
 {comments}'''.format(**locals())
+
+        self.report_set_lines_update(description, comments)
+
+        # # TODO-MB [200621] - TEST
+        # import pickle
+        # pickle_file = '/tmp/test.pkl'
+        # with open(pickle_file, 'wb') as o:
+            # pickle.dump((report, summary, description), o)
 
         return report
 

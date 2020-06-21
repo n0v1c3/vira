@@ -13,6 +13,7 @@ augroup Vira
   autocmd BufEnter vira_report setlocal nonumber
   autocmd BufEnter vira_report setlocal norelativenumber
   autocmd BufEnter vira_report cnoremap <silent> <buffer> q<cr> :q!<cr>:call vira#_filter_reset()<cr>:call vira#_resize()<cr>
+  autocmd BufEnter vira_report nnoremap <silent> <buffer> <cr> :call vira#_edit_report()<cr>
 
   " Menu
   autocmd BufEnter vira_menu setlocal winfixheight

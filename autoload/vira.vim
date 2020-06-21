@@ -127,6 +127,17 @@ function! vira#_connect() abort "{{{2
   let s:vira_connected = 1
 endfunction
 
+function! vira#_edit_report() abort "{{{2
+  " Edit the report field matching to cursor line
+  try
+    let field = execute('python3 print(Vira.api.report_set_lines['.line('.').'])')[1:-1]
+    echom field
+  catch
+    echo 'This field can not be changed.'
+  endtry
+  " call vira#_menu('description')
+endfunction
+
 function! vira#_get_active_issue() "{{{2
   return g:vira_active_issue
 endfunction
