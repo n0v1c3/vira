@@ -9,7 +9,7 @@ augroup Vira
   autocmd BufNewFile,BufRead vira_menu setf vira_menu
 
   " Report
-  autocmd BufEnter vira_report setlocal winfixwidth
+  " autocmd BufEnter vira_report setlocal winfixwidth
   autocmd BufEnter vira_report setlocal nonumber
   autocmd BufEnter vira_report setlocal norelativenumber
   autocmd BufEnter vira_report cnoremap <silent> <buffer> q<cr> :q!<cr>:call vira#_filter_reset()<cr>:call vira#_resize()<cr>
