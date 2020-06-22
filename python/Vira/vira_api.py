@@ -327,18 +327,23 @@ class ViraAPI():
         '''
 
         # Simple field edits
+        self.prompt_type = prompt_type
         active_issue = vim.eval("g:vira_active_issue")
         if prompt_type == 'summary':
+            self.prompt_text_commented = '\n# Edit issue summary'
             return self.jira.search_issues(
                 'issue = "' + active_issue + '"',
                 fields=','.join(['summary']),
-                json_result='True')['issues'][0]['fields']['summary']
+                json_result='True'
+            )['issues'][0]['fields']['summary'] + self.prompt_text_commented
 
         if prompt_type == 'description':
+            self.prompt_text_commented = '\n# Edit issue description'
             return self.jira.search_issues(
                 'issue = "' + active_issue + '"',
                 fields=','.join(['description']),
-                json_result='True')['issues'][0]['fields'].get('description').replace('\r\n', '\n')
+                json_result='True')['issues'][0]['fields'].get('description').replace(
+                    '\r\n', '\n') + self.prompt_text_commented
 
         # Prepare dynamic variables for prompt text
         query = 'ORDER BY updated DESC'
@@ -368,7 +373,6 @@ class ViraAPI():
         ] if self.userconfig_filter['project'] != '' else ''
         projects = [x.key for x in self.jira.projects()]
 
-        self.prompt_type = prompt_type
         self.prompt_text_commented = f'''
 # Please enter the {prompt_type} above this line
 # Lines starting with '#' will be ignored. An empty message will abort the operation.
@@ -686,9 +690,14 @@ Comments
 
         # Check if anything was actually entered by user
         if input_stripped == '':
+            print("No vira actions performed")
             return
 
         if self.prompt_type == 'comment':
             return self.jira.add_comment(issue, input_stripped)
+        elif self.prompt_type == 'summary':
+            return self.jira.issue(issue).update(summary=input_stripped)
+        elif self.prompt_type == 'description':
+            return self.jira.issue(issue).update(description=input_stripped)
         elif self.prompt_type == 'issue':
             return self.create_issue(input_stripped)
