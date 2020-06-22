@@ -288,8 +288,7 @@ class ViraAPI():
                 ('{: <' + str(key_length) + '}').format(issue[0]) + " │ " +
                 ('{: <' + str(summary_length) + '}').format(issue[1][:summary_length]) +
                 "  │ " + ('{: <' + str(issuetype_length) + '}').format(issue[2]) + " │ " +
-                ('{: <' + str(status_length) + '}').format(issue[3]) + ' │ ' +
-                issue[4])
+                ('{: <' + str(status_length) + '}').format(issue[3]) + ' │ ' + issue[4])
 
     def get_issuetypes(self):
         '''
@@ -327,9 +326,21 @@ class ViraAPI():
         Get prompt text used for inputting text into jira
         '''
 
+        # Simple field edits
+        active_issue = vim.eval("g:vira_active_issue")
+        if prompt_type == 'summary':
+            return self.jira.search_issues(
+                'issue = "' + active_issue + '"',
+                fields=','.join(['summary']),
+                json_result='True')['issues'][0]['fields']['summary']
+
+        if prompt_type == 'description':
+            return self.jira.search_issues(
+                'issue = "' + active_issue + '"',
+                fields=','.join(['description']),
+                json_result='True')['issues'][0]['fields'].get('description').replace('\r\n', '\n')
+
         # Prepare dynamic variables for prompt text
-        #  for user in self.jira.search_users(".")
-        #  for user in self.jira.search_assignable_users_for_projects('*','*')
         query = 'ORDER BY updated DESC'
         issues = self.jira.search_issues(
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
@@ -429,11 +440,13 @@ class ViraAPI():
         comments = ''
         idx = 0
         for idx, comment in enumerate((issue['comment']['comments'])):
-            comments += ''.join([comment['author']['displayName'] + ' @ ' +
-                                #  comment['body'] + '\n}}}\n'
-                                 comment['updated'][0:10] + ' ' +
-                                 comment['updated'][11:16] + ' {{{2\n' +
-                                 comment['body'] + '\n}}}\n'])
+            comments += ''.join(
+                [
+                    comment['author']['displayName'] + ' @ ' +
+                    #  comment['body'] + '\n}}}\n'
+                    comment['updated'][0:10] + ' ' + comment['updated'][11:16] +
+                    ' {{{2\n' + comment['body'] + '\n}}}\n'
+                ])
         comments = ''.join(['Old Comments {{{1\n']) + comments if idx > 3 else comments
         comments = comments.replace('}}}', '}}}}}}', idx - 3)
         comments = comments.replace('}}}}}}', '}}}', idx - 4)
@@ -448,10 +461,8 @@ class ViraAPI():
         dashlength = s.join([char * len(wordslength) for char in s])
 
         active_issue_spacing = int((16 + len(dashlength)) / 2 - len(active_issue) / 2)
-        active_issue_spaces = ' '.join(
-            [char * (active_issue_spacing) for char in ' '])
-        active_issue_space = ' '.join(
-            [char * (len(active_issue) % 2) for char in ' '])
+        active_issue_spaces = ' '.join([char * (active_issue_spacing) for char in ' '])
+        active_issue_space = ' '.join([char * (len(active_issue) % 2) for char in ' '])
 
         created_spaces = ' '.join(
             [char * (len(dashlength) - len(created)) for char in ' '])
@@ -459,8 +470,7 @@ class ViraAPI():
             [char * (len(dashlength) - len(updated)) for char in ' '])
         task_type_spaces = ' '.join(
             [char * (len(dashlength) - len(issuetype)) for char in ' '])
-        status_spaces = ' '.join(
-            [char * (len(dashlength) - len(status)) for char in ' '])
+        status_spaces = ' '.join([char * (len(dashlength) - len(status)) for char in ' '])
         story_points_spaces = ''.join(
             [char * (len(dashlength) - len(story_points)) for char in ' '])
         priority_spaces = ''.join(
@@ -499,12 +509,6 @@ Comments
 {comments}'''.format(**locals())
 
         self.set_report_lines(description, comments)
-
-        # # TODO-MB [200621] - TEST
-        # import pickle
-        # pickle_file = '/tmp/test.pkl'
-        # with open(pickle_file, 'wb') as o:
-            # pickle.dump((report, summary, description), o)
 
         return report
 
@@ -654,20 +658,20 @@ Comments
         '''
 
         self.report_lines = {
-            6: '!issuetype',
-            7: 'set_status',
-            9: 'priority',
-            10: '!component',
-            11: 'version',
-            12: 'assign_issue',
-            15: 'summary',
-            16: 'summary',
-            17: 'summary',
+            6: 'ViraSetType',
+            7: 'ViraSetStatus',
+            9: 'ViraSetPriority',
+            10: 'ViraSetComponent',
+            11: 'ViraSetVersion',
+            12: 'ViraSetAssignee',
+            15: 'ViraEditSummary',
+            16: 'ViraEditSummary',
+            17: 'ViraEditSummary',
         }
 
         description_len = description.count('\n') + 3
         for x in range(18, 18 + description_len):
-            self.report_lines[x] = 'description'
+            self.report_lines[x] = 'ViraEditDescription'
 
     def write_jira(self):
         '''

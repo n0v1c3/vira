@@ -76,14 +76,14 @@ endfunction
 
 function! vira#_prompt_start(type) "{{{2
   " Make sure vira has all the required inputs selected
-  if a:type == 'comment'
+  if a:type == 'comment' || a:type == 'summary' || a:type == 'description'
     if (vira#_get_active_issue() == g:vira_null_issue)
-      echo "Please select an issue before commenting"
+      echo "Please select an issue before performing this action"
       return
     endif
   endif
 
-  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]
+  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-1]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'sp ' . s:vira_prompt_file
   silent! setlocal buftype=
@@ -130,9 +130,8 @@ endfunction
 function! vira#_edit_report() abort "{{{2
   " Edit the report field matching to cursor line
   try
-    let field = execute('python3 print(Vira.api.report_lines['.line('.').'])')[1:-1]
-    " echom field
-    call vira#_menu(field)
+    let set_command = execute('python3 print(Vira.api.report_lines['.line('.').'])')[1:-1]
+    execute set_command
   catch
     echo 'This field can not be changed.'
   endtry
