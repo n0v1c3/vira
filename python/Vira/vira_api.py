@@ -331,19 +331,23 @@ class ViraAPI():
         active_issue = vim.eval("g:vira_active_issue")
         if prompt_type == 'summary':
             self.prompt_text_commented = '\n# Edit issue summary'
-            return self.jira.search_issues(
+            summary = self.jira.search_issues(
                 'issue = "' + active_issue + '"',
                 fields=','.join(['summary']),
-                json_result='True'
-            )['issues'][0]['fields']['summary'] + self.prompt_text_commented
+                json_result='True')['issues'][0]['fields']['summary']
+            return summary + self.prompt_text_commented
 
         if prompt_type == 'description':
             self.prompt_text_commented = '\n# Edit issue description'
-            return self.jira.search_issues(
+            description = self.jira.search_issues(
                 'issue = "' + active_issue + '"',
                 fields=','.join(['description']),
-                json_result='True')['issues'][0]['fields'].get('description').replace(
-                    '\r\n', '\n') + self.prompt_text_commented
+                json_result='True')['issues'][0]['fields'].get('description')
+            if description:
+                description = description.replace('\r\n', '\n')
+            else:
+                description = ''
+            return description + self.prompt_text_commented
 
         # Prepare dynamic variables for prompt text
         query = 'ORDER BY updated DESC'
