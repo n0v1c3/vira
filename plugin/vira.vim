@@ -51,7 +51,7 @@ command! -nargs=0 -bang ViraSetVersion call vira#_menu('version');
 
 " Edit
 command! -nargs=0 -bang ViraEditDescription call vira#_prompt_start('description')
-command! -nargs=0 -bang ViraEditSummary call vira#_prompt_start('summary') 
+command! -nargs=0 -bang ViraEditSummary call vira#_prompt_start('summary')
 
 " Filters
 command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
