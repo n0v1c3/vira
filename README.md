@@ -263,13 +263,49 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 ### Variables
 
-#### Nulls
-
 - `g:vira_menu_height` - Set the height of the menu (default 7)
 - `g:vira_report_width` - Set the width of the report (default 0)
 - `g:vira_null_issue` - Text used when there is no issue.
 
-### Examples:
+### Report
+
+This is an example of a typical jira issue report (except the report looks colorized and fancy in vim):
+
+```
+┌─────────────────────────────────┐
+│            VIRA-134             │
+├──────────────┬──────────────────┤
+│      Created │ 2020-04-06 12:06 │
+│      Updated │ 2020-06-23 01:43 │
+│         Type │ Task             │
+│       Status │ In Progress      │
+│ Story Points │ None             │
+│     Priority │ Highest          │
+│    Component │                  │
+│      Version │ 1.0.0            │
+│     Assignee │ Mike Boiko       │
+│     Reporter │ Mike Boiko       │
+└──────────────┴──────────────────┘
+Summary
+Edit any jira field
+
+Description
+A user should be able to edit any field that is shown on a vira issue report.
+
+I would suggest to use a default key of <CR> for editing a report field and allow the user to customize this mapping.
+
+The edit command would bring up the vira_prompt buffer, in the same manner as creating new issues/comments.
+
+Comments
+...
+```
+
+Most issue fields can be edited by pressing `<CR>`
+
+For the text entry fields (Summary, Description, Comments), if the text entry is left blank,
+the write action will be aborted.
+
+### .vimrc examples
 
 ```
 " Basics

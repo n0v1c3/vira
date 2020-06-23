@@ -288,8 +288,7 @@ class ViraAPI():
                 ('{: <' + str(key_length) + '}').format(issue[0]) + " │ " +
                 ('{: <' + str(summary_length) + '}').format(issue[1][:summary_length]) +
                 "  │ " + ('{: <' + str(issuetype_length) + '}').format(issue[2]) + " │ " +
-                ('{: <' + str(status_length) + '}').format(issue[3]) + ' │ ' +
-                issue[4])
+                ('{: <' + str(status_length) + '}').format(issue[3]) + ' │ ' + issue[4])
 
     def get_issuetypes(self):
         '''
@@ -322,29 +321,66 @@ class ViraAPI():
 
         self.get_priorities()
 
-    def get_prompt_text(self, prompt_type):
+    def get_prompt_text(self, prompt_type, comment_id=None):
         '''
         Get prompt text used for inputting text into jira
         '''
 
+        # Edit summary
+        self.prompt_type = prompt_type
+        active_issue = vim.eval("g:vira_active_issue")
+        if prompt_type == 'summary':
+            self.prompt_text_commented = '\n# Edit issue summary'
+            summary = self.jira.search_issues(
+                'issue = "' + active_issue + '"',
+                fields=','.join(['summary']),
+                json_result='True')['issues'][0]['fields']['summary']
+            return summary + self.prompt_text_commented
+
+        # Edit description
+        if prompt_type == 'description':
+            self.prompt_text_commented = '\n# Edit issue description'
+            description = self.jira.search_issues(
+                'issue = "' + active_issue + '"',
+                fields=','.join(['description']),
+                json_result='True')['issues'][0]['fields'].get('description')
+            if description:
+                description = description.replace('\r\n', '\n')
+            else:
+                description = ''
+            return description + self.prompt_text_commented
+
         # Prepare dynamic variables for prompt text
-        #  for user in self.jira.search_users(".")
-        #  for user in self.jira.search_assignable_users_for_projects('*','*')
         query = 'ORDER BY updated DESC'
         issues = self.jira.search_issues(
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
         users = []
         for issue in issues["issues"]:
-
             user = str(issue['fields']['reporter']['displayName'])
             if user not in users:
                 users.append(user)
-
             user = str(issue['fields']['assignee']['displayName']) if type(
                 issue['fields']['assignee']) == dict else 'Unassigned'
             if user not in users and user != 'Unassigned':
                 users.append(user)
+
+        self.prompt_text_commented = f'''
+# Please enter the text above this line
+# Lines starting with '#' will be ignored. An empty message will abort the operation.
+#
+# Below is a list of acceptable values for each input field.
+# Users: {users}
+'''
+        # Add comment
+        if self.prompt_type == 'add_comment':
+            return self.prompt_text_commented
+
+        # Edit comment
+        if self.prompt_type == 'edit_comment':
+            self.active_comment = self.jira.comment(active_issue, comment_id)
+            return self.active_comment.body + self.prompt_text_commented
+
         statuses = [x.name for x in self.jira.statuses()]
         issuetypes = [x.name for x in self.jira.issue_types()]
         priorities = [x.name for x in self.jira.priorities()]
@@ -356,17 +392,6 @@ class ViraAPI():
             x.name for x in self.jira.project_versions(self.userconfig_filter['project'])
         ] if self.userconfig_filter['project'] != '' else ''
         projects = [x.key for x in self.jira.projects()]
-
-        self.prompt_type = prompt_type
-        self.prompt_text_commented = f'''
-# Please enter the {prompt_type} above this line
-# Lines starting with '#' will be ignored. An empty message will abort the operation.
-#
-# Below is a list of acceptable values for each input field.
-# Users: {users}
-'''
-        if self.prompt_type == 'comment':
-            return self.prompt_text_commented
 
         # Extra info for prompt_type == 'issue'
         self.prompt_text_commented += f'''# Projects: {projects}
@@ -400,9 +425,9 @@ class ViraAPI():
             #  fields='*',
             fields=','.join(
                 [
-                    'summary,', 'comment,', 'component', 'description', 'issuetype,',
-                    'priority', 'status,', 'created', 'updated,', 'assignee', 'reporter,',
-                    'fixVersion', 'customfield_10106,'
+                    'summary', 'comment', 'component', 'description', 'issuetype',
+                    'priority', 'status', 'created', 'updated', 'assignee', 'reporter',
+                    'fixVersion', 'customfield_10106'
                 ]),
             json_result='True')
         issue = issues['issues'][0]['fields']
@@ -416,7 +441,7 @@ class ViraAPI():
             11:16]
         updated = issue['updated'][0:10] + ' ' + issues['issues'][0]['fields']['updated'][
             11:16]
-        task_type = issue['issuetype']['name']
+        issuetype = issue['issuetype']['name']
         status = issue['status']['name']
         priority = issue['priority']['name']
         assignee = issue['assignee']['displayName'] if type(
@@ -425,65 +450,52 @@ class ViraAPI():
         component = ', '.join([c['name'] for c in issue['components']])
         version = ', '.join([v['name'] for v in issue['fixVersions']])
         description = str(issue.get('description'))
-        #  comments += '\n'.join(
-            #  [
-                #  comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
-                #  ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] + '\n}}}'
-                #  #  '}}}' if idx == 4 else ''
-                #  for idx, comment in enumerate(issue['comment']['comments'])
-            #  ])
-        #  comments = '\n'.join(['Old Comments {{{1']) + ('\n' + comments
-                #  ) if idx >= 4 else comments = comments
 
         comments = ''
         idx = 0
         for idx, comment in enumerate((issue['comment']['comments'])):
-            comments += ''.join([comment['author']['displayName'] + ' @ ' +
-                                #  comment['body'] + '\n}}}\n'
-                                 comment['updated'][0:10] + ' ' +
-                                 comment['updated'][11:16] + ' {{{2\n' +
-                                 comment['body'] + '\n}}}\n'])
-                                #  ('}}}\n' if idx == 3 else '\n')])
-            #  comments += ''.join('}}}') if idx == 4 else comments = comments
-        #  comments = comments.join([str(idx)])
+            comments += ''.join(
+                [
+                    comment['author']['displayName'] + ' @ ' +
+                    #  comment['body'] + '\n}}}\n'
+                    comment['updated'][0:10] + ' ' + comment['updated'][11:16] +
+                    ' {{{2\n' + comment['body'] + '\n}}}\n'
+                ])
         comments = ''.join(['Old Comments {{{1\n']) + comments if idx > 3 else comments
         comments = comments.replace('}}}', '}}}}}}', idx - 3)
         comments = comments.replace('}}}}}}', '}}}', idx - 4)
 
         # Find the length of the longest word [-1]
         words = [
-            created, updated, task_type, status, story_points, priority, component,
+            created, updated, issuetype, status, story_points, priority, component,
             version, assignee, reporter
         ]
         wordslength = sorted(words, key=len)[-1]
-        s = '''─'''
+        s = '─'
         dashlength = s.join([char * len(wordslength) for char in s])
 
         active_issue_spacing = int((16 + len(dashlength)) / 2 - len(active_issue) / 2)
-        active_issue_spaces = ''' '''.join(
-            [char * (active_issue_spacing) for char in ' '])
-        active_issue_space = ''' '''.join(
-            [char * (len(active_issue) % 2) for char in ' '])
+        active_issue_spaces = ' '.join([char * (active_issue_spacing) for char in ' '])
+        active_issue_space = ' '.join([char * (len(active_issue) % 2) for char in ' '])
 
-        created_spaces = ''' '''.join(
+        created_spaces = ' '.join(
             [char * (len(dashlength) - len(created)) for char in ' '])
-        updated_spaces = ''' '''.join(
+        updated_spaces = ' '.join(
             [char * (len(dashlength) - len(updated)) for char in ' '])
-        task_type_spaces = ''' '''.join(
-            [char * (len(dashlength) - len(task_type)) for char in ' '])
-        status_spaces = ''' '''.join(
-            [char * (len(dashlength) - len(status)) for char in ' '])
-        story_points_spaces = ''' '''.join(
+        task_type_spaces = ' '.join(
+            [char * (len(dashlength) - len(issuetype)) for char in ' '])
+        status_spaces = ' '.join([char * (len(dashlength) - len(status)) for char in ' '])
+        story_points_spaces = ''.join(
             [char * (len(dashlength) - len(story_points)) for char in ' '])
-        priority_spaces = ''' '''.join(
+        priority_spaces = ''.join(
             [char * (len(dashlength) - len(priority)) for char in ' '])
-        component_spaces = ''' '''.join(
+        component_spaces = ''.join(
             [char * (len(dashlength) - len(component)) for char in ' '])
-        version_spaces = ''' '''.join(
+        version_spaces = ''.join(
             [char * (len(dashlength) - len(version)) for char in ' '])
-        assignee_spaces = ''' '''.join(
+        assignee_spaces = ''.join(
             [char * (len(dashlength) - len(assignee)) for char in ' '])
-        reporter_spaces = ''' '''.join(
+        reporter_spaces = ''.join(
             [char * (len(dashlength) - len(reporter)) for char in ' '])
 
         # Create report template and fill with data
@@ -492,7 +504,7 @@ class ViraAPI():
 ├──────────────┬─{dashlength}─┤
 │      Created │ {created}{created_spaces} │
 │      Updated │ {updated}{updated_spaces} │
-│         Type │ {task_type}{task_type_spaces} │
+│         Type │ {issuetype}{task_type_spaces} │
 │       Status │ {status}{status_spaces} │
 │ Story Points │ {story_points}{story_points_spaces} │
 │     Priority │ {priority}{priority_spaces} │
@@ -508,9 +520,11 @@ Description
 {description}
 
 Comments
-{comments}'''.format(**locals())
+{comments}'''
 
-        return report
+        self.set_report_lines(report, description, issue)
+
+        return report.format(**locals())
 
     def get_reporters(self):
         '''
@@ -651,6 +665,46 @@ Comments
 
         self.userconfig_filter = dict(self.userconfig_filter_default)
 
+    def set_report_lines(self, report, description, issue):
+        '''
+        Create dictionary for vira report that shows relationship
+        between line numbers and fields to be edited
+        '''
+
+        writable_fields = {
+            'Assignee': 'ViraSetAssignee',
+            'Component': 'ViraSetComponent',
+            'Priority': 'ViraSetPriority',
+            'Status': 'ViraSetStatus',
+            'Type': 'ViraSetType',
+            'Version': 'ViraSetVersion',
+            'Summary': 'ViraEditSummary',
+        }
+
+        self.report_lines = {
+        }
+
+        for idx, line in enumerate(report.split('\n')):
+            for field, command in writable_fields.items():
+                if field in line:
+                    self.report_lines[idx + 1] = command
+                    if field == 'Summary':
+                        self.report_lines[idx + 2] = command
+                        self.report_lines[idx + 3] = command
+                    continue
+
+        description_len = description.count('\n') + 3
+        for x in range(18, 18 + description_len):
+            self.report_lines[x] = 'ViraEditDescription'
+
+        offset = 2 if len(issue['comment']['comments']) > 4 else 1
+        comment_line = 18 + description_len + offset
+        for comment in issue['comment']['comments']:
+            comment_len = comment['body'].count('\n') + 3
+            for x in range(comment_line, comment_line + comment_len):
+                self.report_lines[x] = 'ViraEditComment ' + comment['id']
+            comment_line = comment_line + comment_len
+
     def write_jira(self):
         '''
         Write to jira
@@ -664,9 +718,16 @@ Comments
 
         # Check if anything was actually entered by user
         if input_stripped == '':
+            print("No vira actions performed")
             return
 
-        if self.prompt_type == 'comment':
+        if self.prompt_type == 'add_comment':
             return self.jira.add_comment(issue, input_stripped)
+        if self.prompt_type == 'edit_comment':
+            return self.active_comment.update(body=input_stripped)
+        elif self.prompt_type == 'summary':
+            return self.jira.issue(issue).update(summary=input_stripped)
+        elif self.prompt_type == 'description':
+            return self.jira.issue(issue).update(description=input_stripped)
         elif self.prompt_type == 'issue':
             return self.create_issue(input_stripped)

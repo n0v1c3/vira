@@ -26,7 +26,6 @@ let s:vira_set_lookup = {
       \'assign_issue': 'assign_issue',
       \'assignees': 'assignee',
       \'components': 'component',
-      \'description': 'description',
       \'issues': 'g:vira_active_issue',
       \'issuetypes': 'issuetype',
       \'priority': 'priorities',
@@ -38,7 +37,6 @@ let s:vira_set_lookup = {
       \'version': 'fixVersions',
       \'statusCategories': 'statusCategory',
       \'statuses': 'status',
-      \'summary': 'summary',
       \'versions': 'fixVersion',
       \}
 
@@ -74,16 +72,23 @@ function! vira#_browse() "{{{2
   execute 'term ++close ' . l:browser . ' "' . l:url . '"'
 endfunction
 
-function! vira#_prompt_start(type) "{{{2
+function! vira#_prompt_start(type, ...) abort "{{{2
   " Make sure vira has all the required inputs selected
-  if a:type == 'comment'
+  if a:type != 'issue'
     if (vira#_get_active_issue() == g:vira_null_issue)
-      echo "Please select an issue before commenting"
+      echo 'Please select an issue before performing this action'
       return
     endif
   endif
 
-  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-2]
+  " Used for comment id
+  if a:0 > 0
+    let comment_id = a:1
+  else
+    let comment_id = ''
+  end
+
+  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'", '.comment_id.'))')[1:-1]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'sp ' . s:vira_prompt_file
   silent! setlocal buftype=
@@ -93,11 +98,7 @@ endfunction
 function! vira#_prompt_end() "{{{2
   " Write contents of the prompt buffer to jira server
   let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
-
-  if (g:vira_input_text  == "") | redraw | echo "No vira actions performed"
-  else
-    python3 Vira.api.write_jira()
-  endif
+  python3 Vira.api.write_jira()
   call vira#_refresh()
 endfunction
 
@@ -125,6 +126,16 @@ function! vira#_connect() abort "{{{2
 
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
+endfunction
+
+function! vira#_edit_report() abort "{{{2
+  " Edit the report field matching to cursor line
+  try
+    let set_command = execute('python3 print(Vira.api.report_lines['.line('.').'])')[1:-1]
+    execute set_command
+  catch
+    echo 'This field can not be changed.'
+  endtry
 endfunction
 
 function! vira#_get_active_issue() "{{{2
@@ -203,11 +214,6 @@ function! vira#_menu(type) abort " {{{2
     let list = ''
   elseif a:type == 'text'
     execute 'python3 Vira.api.userconfig_filter["text"] = "' . input('text ~ ') . '"'
-    call vira#_refresh()
-    return
-  elseif a:type == 'summary' || a:type == 'description'
-    let s:vira_menu_type = a:type
-    call vira#_set()
     call vira#_refresh()
     return
   else
@@ -353,8 +359,6 @@ function! vira#_getter() "{{{2
   " Return the proper form of the selected data
   if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
     return expand('<cWORD>')
-  elseif s:vira_menu_type == 'summary' || s:vira_menu_type == 'description'
-    return input(substitute(s:vira_menu_type, '\<\(\k\)\(\k*''*\k*\)\>', '\u\1\L\2', 'g') . ': ')
   elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignee' || s:vira_menu_type == 'reporter'
     if getline('.') == 'Unassigned' | return '-1'
     else | return  split(getline('.'),' \~ ')[1] | endif
@@ -438,8 +442,6 @@ function! vira#_set() "{{{2
     else | let value = "None"
     endif
     execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(fields={"' . variable . '": [{"name": ' . value . '}]})'
-  elseif variable == 'summary' || variable == 'description'
-    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable .'="' . value . '")'
   elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
     execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
   else
