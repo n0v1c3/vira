@@ -72,16 +72,23 @@ function! vira#_browse() "{{{2
   execute 'term ++close ' . l:browser . ' "' . l:url . '"'
 endfunction
 
-function! vira#_prompt_start(type) "{{{2
+function! vira#_prompt_start(type, ...) abort "{{{2
   " Make sure vira has all the required inputs selected
-  if a:type == 'comment' || a:type == 'summary' || a:type == 'description'
+  if a:type != 'issue'
     if (vira#_get_active_issue() == g:vira_null_issue)
-      echo "Please select an issue before performing this action"
+      echo 'Please select an issue before performing this action'
       return
     endif
   endif
 
-  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'"))')[1:-1]
+  " Used for comment id
+  if a:0 > 0
+    let comment_id = a:1
+  else
+    let comment_id = ''
+  end
+
+  let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'", '.comment_id.'))')[1:-1]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
   execute 'sp ' . s:vira_prompt_file
   silent! setlocal buftype=

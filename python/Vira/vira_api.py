@@ -321,12 +321,12 @@ class ViraAPI():
 
         self.get_priorities()
 
-    def get_prompt_text(self, prompt_type):
+    def get_prompt_text(self, prompt_type, comment_id=None):
         '''
         Get prompt text used for inputting text into jira
         '''
 
-        # Simple field edits
+        # Edit summary
         self.prompt_type = prompt_type
         active_issue = vim.eval("g:vira_active_issue")
         if prompt_type == 'summary':
@@ -337,6 +337,7 @@ class ViraAPI():
                 json_result='True')['issues'][0]['fields']['summary']
             return summary + self.prompt_text_commented
 
+        # Edit description
         if prompt_type == 'description':
             self.prompt_text_commented = '\n# Edit issue description'
             description = self.jira.search_issues(
@@ -356,15 +357,30 @@ class ViraAPI():
 
         users = []
         for issue in issues["issues"]:
-
             user = str(issue['fields']['reporter']['displayName'])
             if user not in users:
                 users.append(user)
-
             user = str(issue['fields']['assignee']['displayName']) if type(
                 issue['fields']['assignee']) == dict else 'Unassigned'
             if user not in users and user != 'Unassigned':
                 users.append(user)
+
+        self.prompt_text_commented = f'''
+# Please enter the {prompt_type} above this line
+# Lines starting with '#' will be ignored. An empty message will abort the operation.
+#
+# Below is a list of acceptable values for each input field.
+# Users: {users}
+'''
+        # Add comment
+        if self.prompt_type == 'add_comment':
+            return self.prompt_text_commented
+
+        # Edit comment
+        if self.prompt_type == 'edit_comment':
+            self.active_comment = self.jira.comment(active_issue, comment_id)
+            return self.active_comment.body + self.prompt_text_commented
+
         statuses = [x.name for x in self.jira.statuses()]
         issuetypes = [x.name for x in self.jira.issue_types()]
         priorities = [x.name for x in self.jira.priorities()]
@@ -376,16 +392,6 @@ class ViraAPI():
             x.name for x in self.jira.project_versions(self.userconfig_filter['project'])
         ] if self.userconfig_filter['project'] != '' else ''
         projects = [x.key for x in self.jira.projects()]
-
-        self.prompt_text_commented = f'''
-# Please enter the {prompt_type} above this line
-# Lines starting with '#' will be ignored. An empty message will abort the operation.
-#
-# Below is a list of acceptable values for each input field.
-# Users: {users}
-'''
-        if self.prompt_type == 'comment':
-            return self.prompt_text_commented
 
         # Extra info for prompt_type == 'issue'
         self.prompt_text_commented += f'''# Projects: {projects}
@@ -419,9 +425,9 @@ class ViraAPI():
             #  fields='*',
             fields=','.join(
                 [
-                    'summary,', 'comment,', 'component', 'description', 'issuetype,',
-                    'priority', 'status,', 'created', 'updated,', 'assignee', 'reporter,',
-                    'fixVersion', 'customfield_10106,'
+                    'summary', 'comment', 'component', 'description', 'issuetype',
+                    'priority', 'status', 'created', 'updated', 'assignee', 'reporter',
+                    'fixVersion', 'customfield_10106'
                 ]),
             json_result='True')
         issue = issues['issues'][0]['fields']
@@ -516,7 +522,7 @@ Description
 Comments
 {comments}'''.format(**locals())
 
-        self.set_report_lines(description, comments)
+        self.set_report_lines(description, issue)
 
         return report
 
@@ -659,7 +665,7 @@ Comments
 
         self.userconfig_filter = dict(self.userconfig_filter_default)
 
-    def set_report_lines(self, description, comments):
+    def set_report_lines(self, description, issue):
         '''
         Create dictionary for vira report that shows relationship
         between line numbers and fields to be edited
@@ -681,6 +687,14 @@ Comments
         for x in range(18, 18 + description_len):
             self.report_lines[x] = 'ViraEditDescription'
 
+        offset = 2 if len(issue['comment']['comments']) > 4 else 1
+        comment_line = 18 + description_len + offset
+        for comment in issue['comment']['comments']:
+            comment_len = comment['body'].count('\n') + 3
+            for x in range(comment_line, comment_line + comment_len):
+                self.report_lines[x] = 'ViraEditComment ' + comment['id']
+            comment_line = comment_line + comment_len
+
     def write_jira(self):
         '''
         Write to jira
@@ -697,8 +711,10 @@ Comments
             print("No vira actions performed")
             return
 
-        if self.prompt_type == 'comment':
+        if self.prompt_type == 'add_comment':
             return self.jira.add_comment(issue, input_stripped)
+        if self.prompt_type == 'edit_comment':
+            return self.active_comment.update(body=input_stripped)
         elif self.prompt_type == 'summary':
             return self.jira.issue(issue).update(summary=input_stripped)
         elif self.prompt_type == 'description':

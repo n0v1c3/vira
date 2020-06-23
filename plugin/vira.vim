@@ -32,7 +32,7 @@ let g:vira_menu_height = get(g:, 'vira_menu_height', 7)
 " Commands {{{1
 " Basics
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
-command! -nargs=0 -bang ViraComment call vira#_prompt_start('comment')
+command! -nargs=0 -bang ViraComment call vira#_prompt_start('add_comment')
 command! -nargs=0 -bang ViraEpics call vira#_menu("epics")
 command! -nargs=0 -bang ViraIssue call vira#_prompt_start('issue')
 command! -nargs=0 -bang ViraIssues call vira#_menu("issues")
@@ -52,6 +52,7 @@ command! -nargs=0 -bang ViraSetVersion call vira#_menu('version');
 " Edit
 command! -nargs=0 -bang ViraEditDescription call vira#_prompt_start('description')
 command! -nargs=0 -bang ViraEditSummary call vira#_prompt_start('summary')
+command! -nargs=1 -bang ViraEditComment call vira#_prompt_start('edit_comment', '<args>')
 
 " Filters
 command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
