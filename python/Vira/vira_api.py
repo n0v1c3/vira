@@ -366,8 +366,9 @@ class ViraAPI():
                 users.append(user)
 
         self.prompt_text_commented = f'''
-# Please enter the text above this line
-# Lines starting with '#' will be ignored. An empty message will abort the operation.
+# -------------------------------------
+# Please enter text above this line
+# An empty message will abort the operation.
 #
 # Below is a list of acceptable values for each input field.
 # Users: {users}
