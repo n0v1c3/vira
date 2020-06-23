@@ -269,7 +269,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 ### Report
 
-This is an example of a typical jira issue report:
+This is an example of a typical jira issue report (except the report looks colorized and fancy in vim):
 
 ```
 ┌─────────────────────────────────┐
@@ -290,7 +290,11 @@ Summary
 Edit any jira field
 
 Description
-None
+A user should be able to edit any field that is shown on a vira issue report.
+
+I would suggest to use a default key of <CR> for editing a report field and allow the user to customize this mapping.
+
+The edit command would bring up the vira_prompt buffer, in the same manner as creating new issues/comments.
 
 Comments
 ...
