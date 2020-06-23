@@ -366,7 +366,7 @@ class ViraAPI():
                 users.append(user)
 
         self.prompt_text_commented = f'''
-# Please enter the {prompt_type} above this line
+# Please enter the text above this line
 # Lines starting with '#' will be ignored. An empty message will abort the operation.
 #
 # Below is a list of acceptable values for each input field.
@@ -520,11 +520,11 @@ Description
 {description}
 
 Comments
-{comments}'''.format(**locals())
+{comments}'''
 
-        self.set_report_lines(description, issue)
+        self.set_report_lines(report, description, issue)
 
-        return report
+        return report.format(**locals())
 
     def get_reporters(self):
         '''
@@ -665,23 +665,33 @@ Comments
 
         self.userconfig_filter = dict(self.userconfig_filter_default)
 
-    def set_report_lines(self, description, issue):
+    def set_report_lines(self, report, description, issue):
         '''
         Create dictionary for vira report that shows relationship
         between line numbers and fields to be edited
         '''
 
-        self.report_lines = {
-            6: 'ViraSetType',
-            7: 'ViraSetStatus',
-            9: 'ViraSetPriority',
-            10: 'ViraSetComponent',
-            11: 'ViraSetVersion',
-            12: 'ViraSetAssignee',
-            15: 'ViraEditSummary',
-            16: 'ViraEditSummary',
-            17: 'ViraEditSummary',
+        writable_fields = {
+            'Assignee': 'ViraSetAssignee',
+            'Component': 'ViraSetComponent',
+            'Priority': 'ViraSetPriority',
+            'Status': 'ViraSetStatus',
+            'Type': 'ViraSetType',
+            'Version': 'ViraSetVersion',
+            'Summary': 'ViraEditSummary',
         }
+
+        self.report_lines = {
+        }
+
+        for idx, line in enumerate(report.split('\n')):
+            for field, command in writable_fields.items():
+                if field in line:
+                    self.report_lines[idx + 1] = command
+                    if field == 'Summary':
+                        self.report_lines[idx + 2] = command
+                        self.report_lines[idx + 3] = command
+                    continue
 
         description_len = description.count('\n') + 3
         for x in range(18, 18 + description_len):
