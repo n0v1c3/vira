@@ -355,15 +355,17 @@ class ViraAPI():
         issues = self.jira.search_issues(
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
-        users = []
-        for issue in issues["issues"]:
-            user = str(issue['fields']['reporter']['displayName'])
-            if user not in users:
-                users.append(user)
-            user = str(issue['fields']['assignee']['displayName']) if type(
-                issue['fields']['assignee']) == dict else 'Unassigned'
-            if user not in users and user != 'Unassigned':
-                users.append(user)
+        # Determine cloud/server jira
+        id = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
+        users = set()
+        for issue in issues['issues']:
+            user = str(issue['fields']['reporter']
+                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][id]
+            users.add(user)
+            if type(issue['fields']['assignee']) == dict:
+                user = str(issue['fields']['assignee']['displayName']
+                          ) + ' ~ ' + issue['fields']['assignee'][id]
+            users.add(user)
 
         self.prompt_text_commented = f'''
 # -------------------------------------
