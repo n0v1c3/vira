@@ -359,8 +359,13 @@ function! vira#_getter() "{{{2
   " Return the proper form of the selected data
   if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
     return expand('<cWORD>')
-  elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignee' || s:vira_menu_type == 'reporter'
-    if getline('.') == 'Unassigned' | return '-1'
+  elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
+    if getline('.') == 'Unassigned'
+      if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
+        return 'Unassigned'
+      elseif s:vira_menu_type == 'assign_issue'
+        return '-1'
+      endif
     else | return  split(getline('.'),' \~ ')[1] | endif
   else | return getline('.') | endif
 endfunction
