@@ -213,7 +213,17 @@ function! vira#_menu(type) abort " {{{2
     let type = 'report'
     let list = ''
   elseif a:type == 'text'
-    execute 'python3 Vira.api.userconfig_filter["text"] = "' . input('text ~ ') . '"'
+    let value = input('text ~ ')
+    execute 'python3 Vira.api.userconfig_filter["text"] = "' . value . '"'
+
+    if value == ''
+      silent! call feedkeys(":set hls!\<cr>")
+    else
+      silent! call feedkeys(":set hls\<cr>")
+      let value = substitute(value, ' ', '|', 'g')
+      let @/ = '\v' . value
+    endif
+
     call vira#_refresh()
     return
   else
