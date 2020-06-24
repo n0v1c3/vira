@@ -345,6 +345,24 @@ nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
 statusline+=%{ViraStatusline()}
 ```
 
+## Troubleshooting/Tips
+### Report edits are slow
+
+If you are experiencing laggy report Set/Edits, you are not alone.
+
+There is a bug in the pycontribs/jira library:
+[Issue 622](https://github.com/pycontribs/jira/issues/622)
+
+We are working on coming up with a permanent solution to this problem. In the meantime, you can patch your own
+version of pycontribs/jira in the following manner.
+
+Comment line 297 in `~/.local/lib/python3.8/site-packages/jira/resources.py`:
+```
+time.sleep(4)
+```
+
+Please note that the jira python library may be in a different location on your machine.
+
 ## Support
 
 ### Private and Cloud Jira Hosting
