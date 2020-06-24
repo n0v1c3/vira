@@ -38,6 +38,8 @@ let s:vira_set_lookup = {
       \'statusCategories': 'statusCategory',
       \'statuses': 'status',
       \'versions': 'fixVersion',
+      \'issuetype': 'issuetypes',
+      \'component': 'components',
       \}
 
 " AutoCommands {{{1
@@ -440,6 +442,7 @@ function! vira#_set() "{{{2
   let value = vira#_getter()
   let variable = s:vira_set_lookup[s:vira_menu_type]
 
+  " GLOBAL
   if variable[:1] == 'g:'
     execute 'let ' . variable . ' = "' . value . '"'
     if variable == 'g:vira_serv'
@@ -449,8 +452,16 @@ function! vira#_set() "{{{2
       let s:vira_connected = 0
       call vira#_connect()
     endif
+
+  " SET
   elseif variable == 'priorities'
     let variable = 'priority'
+    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable . ' = {"name": "' . value . '"})'
+  elseif variable == 'components'
+    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable . ' = [{"add": {"name": "' . value . '"},}])'
+    " execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable . ' = [{"remove": {"name": "' . value . '"}}])'
+  elseif variable == 'issuetypes'
+    let variable = 'issuetype'
     execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable . ' = {"name": "' . value . '"})'
   elseif variable == 'fixVersions'
     if value != "null" | let value = '"' . value . '"'
@@ -459,6 +470,8 @@ function! vira#_set() "{{{2
     execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(fields={"' . variable . '": [{"name": ' . value . '}]})'
   elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
     execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+
+  " FILTER
   else
     if s:vira_filter[:0] == '"'
       let value = substitute(s:vira_filter,'|',', ','')
