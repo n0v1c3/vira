@@ -222,6 +222,13 @@ class ViraAPI():
         for component in self.jira.project_components(self.userconfig_filter['project']):
             print(component.name)
 
+    def get_component(self):
+        '''
+        Build a vim popup menu for a list of components
+        '''
+
+        self.get_components()
+
     def get_epics(self):
         '''
         Get my issues with JQL
@@ -291,6 +298,14 @@ class ViraAPI():
                 ('{: <' + str(status_length) + '}').format(issue[3]) + ' │ ' + issue[4])
 
     def get_issuetypes(self):
+        '''
+        Get my issues with JQL
+        '''
+
+        for issuetype in self.jira.issue_types():
+            print(issuetype)
+
+    def get_issuetype(self):
         '''
         Get my issues with JQL
         '''
