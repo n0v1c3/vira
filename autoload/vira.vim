@@ -95,6 +95,7 @@ function! vira#_prompt_start(type, ...) abort "{{{2
   execute 'sp ' . s:vira_prompt_file
   silent! setlocal buftype=
   silent! setlocal spell
+  silent! setlocal wrap
 endfunction
 
 function! vira#_prompt_end() "{{{2
