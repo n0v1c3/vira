@@ -226,8 +226,8 @@ from the current column.
 
 _NOTE:_ These keys are only mapped to the Vira windows.
 
-- `s` - Select current line within menu
-- `<cr>` - Apply selections or current line
+- `s` - Select current line within menu.
+- `<cr>` - Apply selections or current line.
 
 ### Commands
 
@@ -247,12 +247,15 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraIssues` - Get and Set the active **issue**.
 - `ViraReport` - Get report for active issue.
 - `ViraServers` - Get and Set active Jira server.
+- `ViraEditComment` - Update the comment relative to position in report.
 - `ViraEditDescription` - Update the description of the current issue.
 - `ViraEditSummary` - Update the summary of the current issue
 - `ViraSetAssignee` - Select user to assign the current issue.
+- `ViraSetComponent` - Select compnent to appent the current issue.
 - `ViraSetPriority` - Select priority of the current issue.
 - `ViraSetStatus` - Select the status of the current issue.
-- `ViraSetVersion` - Select the version of the current issue
+- `ViraSetVersion` - Select the version to appent the current issue.
+- `ViraSetType` - Select the issuetype of the current issue.
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 
@@ -263,8 +266,8 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 ### Variables
 
-- `g:vira_menu_height` - Set the height of the menu (default 7)
-- `g:vira_report_width` - Set the width of the report (default 0)
+- `g:vira_menu_height` - Set the height of the menu (default 7).
+- `g:vira_report_width` - Set the width of the report (default 0).
 - `g:vira_null_issue` - Text used when there is no issue.
 
 ### Report
