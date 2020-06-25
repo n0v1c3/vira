@@ -672,7 +672,7 @@ Comments
             query,
             fields='summary,comment,status,statusCategory,issuetype,assignee',
             json_result='True',
-            maxResults=-1)
+            maxResults=vim.eval('g:vira_issue_limit'))
 
         return issues['issues']
 

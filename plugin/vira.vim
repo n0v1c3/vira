@@ -27,7 +27,7 @@ let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
 let g:vira_load_project_enabled = 1
 let g:vira_report_width = get(g:, 'vira_report_width', 0)
 let g:vira_menu_height = get(g:, 'vira_menu_height', 7)
-" let g:vira_report_width = 0
+let g:vira_issue_limit = get(g:, 'vira_issue_limit', 50)
 
 " Commands {{{1
 " Basics
