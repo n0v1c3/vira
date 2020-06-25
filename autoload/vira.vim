@@ -454,20 +454,12 @@ function! vira#_set() "{{{2
     endif
 
   " SET
-  elseif variable == 'priorities'
-    let variable = 'priority'
-    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable . ' = {"name": "' . value . '"})'
-  elseif variable == 'components'
-    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(fields = {"components": []})'
-    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable . ' = [{"add": {"name": "' . value . '"}}])'
-  elseif variable == 'issuetypes'
-    let variable = 'issuetype'
-    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(' . variable . ' = {"name": "' . value . '"})'
-  elseif variable == 'fixVersions'
+  elseif variable == 'issuetypes' || variable == 'priorities'
+    execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(' . s:vira_menu_type . '={"name":"' . value . '"})'
+  elseif variable == 'fixVersions' || variable == 'components'
     if value != "null" | let value = '"' . value . '"'
-    else | let value = "None"
-    endif
-    execute 'silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(fields={"' . variable . '": [{"name": ' . value . '}]})'
+    else | let value = "None" | endif
+    execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[{"name":' . value . '}]})'
   elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
     execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
