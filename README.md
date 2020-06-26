@@ -5,6 +5,8 @@ Vim JIRA interface plugin.
 Stay inside vim while following and updating Jira issues
 along with creating new issues on the go.
 
+![](https://filedn.com/lMrnNUG92dHJKVkjrgbb0dL/vira-demo-1.gif)
+
 ## Installation
 
 Example of vim-plug post-update hook to automatically install python dependencies along with vira:
