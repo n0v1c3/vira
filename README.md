@@ -226,8 +226,8 @@ from the current column.
 
 _NOTE:_ These keys are only mapped to the Vira windows.
 
-- `s` - Select current line within menu
-- `<cr>` - Apply selections or current line
+- `s` - Select current line within menu.
+- `<cr>` - Apply selections or current line.
 
 ### Commands
 
@@ -247,12 +247,15 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraIssues` - Get and Set the active **issue**.
 - `ViraReport` - Get report for active issue.
 - `ViraServers` - Get and Set active Jira server.
+- `ViraEditComment` - Update the comment relative to position in report.
 - `ViraEditDescription` - Update the description of the current issue.
 - `ViraEditSummary` - Update the summary of the current issue
 - `ViraSetAssignee` - Select user to assign the current issue.
+- `ViraSetComponent` - Select compnent to appent the current issue.
 - `ViraSetPriority` - Select priority of the current issue.
 - `ViraSetStatus` - Select the status of the current issue.
-- `ViraSetVersion` - Select the version of the current issue
+- `ViraSetVersion` - Select the version to appent the current issue.
+- `ViraSetType` - Select the issuetype of the current issue.
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 
@@ -261,13 +264,52 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraGetActiveIssue()` - Get the currently selected active issue.
 - `ViraStatusline()` - Quick statusline drop-in.
 
-### Variables
+### Config Variables
 
-#### Nulls
-
+- `g:vira_menu_height` - Set the height of the menu (default 7).
+- `g:vira_report_width` - Set the width of the report (default 0).
+- `g:vira_issue_limit` - Set the maximum issue limit for jira query (default 50).
 - `g:vira_null_issue` - Text used when there is no issue.
 
-### Examples:
+### Report
+
+This is an example of a typical jira issue report (except the report looks colorized and fancy in vim):
+
+```
+┌─────────────────────────────────┐
+│            VIRA-134             │
+├──────────────┬──────────────────┤
+│      Created │ 2020-04-06 12:06 │
+│      Updated │ 2020-06-23 01:43 │
+│         Type │ Task             │
+│       Status │ In Progress      │
+│ Story Points │ None             │
+│     Priority │ Highest          │
+│    Component │                  │
+│      Version │ 1.0.0            │
+│     Assignee │ Mike Boiko       │
+│     Reporter │ Mike Boiko       │
+└──────────────┴──────────────────┘
+Summary
+Edit any jira field
+
+Description
+A user should be able to edit any field that is shown on a vira issue report.
+
+I would suggest to use a default key of <CR> for editing a report field and allow the user to customize this mapping.
+
+The edit command would bring up the vira_prompt buffer, in the same manner as creating new issues/comments.
+
+Comments
+...
+```
+
+Most issue fields can be edited by pressing `<CR>`
+
+For the text entry fields (Summary, Description, Comments), if the text entry is left blank,
+the write action will be aborted.
+
+### .vimrc examples
 
 ```
 " Basics
@@ -306,6 +348,24 @@ nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
 " Status
 statusline+=%{ViraStatusline()}
 ```
+
+## Troubleshooting/Tips
+### Report edits are slow
+
+If you are experiencing laggy report Set/Edits, you are not alone.
+
+There is a bug in the pycontribs/jira library:
+[Issue 622](https://github.com/pycontribs/jira/issues/622)
+
+We are working on coming up with a permanent solution to this problem. In the meantime, you can patch your own
+version of pycontribs/jira in the following manner.
+
+Comment line 297 in `~/.local/lib/python3.8/site-packages/jira/resources.py`:
+```
+time.sleep(4)
+```
+
+Please note that the jira python library may be in a different location on your machine.
 
 ## Support
 
