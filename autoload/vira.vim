@@ -247,15 +247,16 @@ function! vira#_menu(type) abort " {{{2
     if (winnr <= 0)
       silent! execute 'botright vnew ' . fnameescape('vira_' . type)
       if g:vira_report_width > 0
-        silent! execute 'vertical resize ' . g:vira_report_width
         autocmd BufEnter vira_report setlocal winfixwidth
+        silent! execute 'vertical resize ' . g:vira_report_width
       endif
     else | call execute(winnr . ' windo e') | endif
   else
     if (winnr <= 0)
       silent! execute 'botright new ' . fnameescape('vira_' . type)
+      autocmd BufEnter vira_report setlocal winfixheight
       silent! execute 'resize ' . g:vira_menu_height
-    endif
+    else | call execute(winnr . ' windo e') | endif
   endif
 
   silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
