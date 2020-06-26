@@ -70,6 +70,16 @@ In order for vira to use the previous yaml example, set the following variable i
 may be required if you are using the Atlassian Cloud service.
 Once an `API token` has been created that key can be used for `password`.
 
+### Quick Start
+
+- Configure your Jira Server(s) as per above section
+- Run `:ViraServers` and press `<CR>` to select server
+- Run `:ViraServers` and press `<CR>` to select server
+- Run `:ViraIssues` and press `<CR>` to select issue
+- Run `:ViraReport` to view report
+- Press `<CR>` to edit any field
+- Rejoice because you have one less reason to leave vim
+
 ### Jira projects
 
 The configuration for your jira project(s) needs to be done in a json or yaml file.
@@ -350,6 +360,7 @@ statusline+=%{ViraStatusline()}
 ```
 
 ## Troubleshooting/Tips
+
 ### Report edits are slow
 
 If you are experiencing laggy report Set/Edits, you are not alone.
@@ -361,6 +372,7 @@ We are working on coming up with a permanent solution to this problem. In the me
 version of pycontribs/jira in the following manner.
 
 Comment line 297 in `~/.local/lib/python3.8/site-packages/jira/resources.py`:
+
 ```
 time.sleep(4)
 ```
