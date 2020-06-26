@@ -72,7 +72,7 @@ Once an `API token` has been created that key can be used for `password`.
 
 ### Quick Start
 
-- Configure `~/.config/vira/vira_servers.json as per above section`
+- Configure `~/.config/vira/vira_servers.json` as per [Jira servers](#jira-servers-required)
 - Run `:ViraServers` and press `<CR>` to select server
 - Run `:ViraIssues` and press `<CR>` to select issue
 - Run `:ViraReport` to view report
