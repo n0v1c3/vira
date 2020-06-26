@@ -5,6 +5,8 @@ Vim JIRA interface plugin.
 Stay inside vim while following and updating Jira issues
 along with creating new issues on the go.
 
+![](https://raw.githubusercontent.com/n0v1c3/vira/VIRA-136/vira-demo.gif)
+
 ## Installation
 
 Example of vim-plug post-update hook to automatically install python dependencies along with vira:
@@ -69,6 +71,15 @@ In order for vira to use the previous yaml example, set the following variable i
 [Atlassian Cloud Jira Key](https://id.atlassian.com/manage-profile/security/api-tokens)
 may be required if you are using the Atlassian Cloud service.
 Once an `API token` has been created that key can be used for `password`.
+
+### Quick Start
+
+- Configure `~/.config/vira/vira_servers.json` as per [Jira servers](#jira-servers-required)
+- Run `:ViraServers` and press `<CR>` to select server
+- Run `:ViraIssues` and press `<CR>` to select issue
+- Run `:ViraReport` to view report
+- Press `<CR>` to edit any field
+- Rejoice because you have one less reason to leave vim
 
 ### Jira projects
 
@@ -350,6 +361,7 @@ statusline+=%{ViraStatusline()}
 ```
 
 ## Troubleshooting/Tips
+
 ### Report edits are slow
 
 If you are experiencing laggy report Set/Edits, you are not alone.
@@ -361,6 +373,7 @@ We are working on coming up with a permanent solution to this problem. In the me
 version of pycontribs/jira in the following manner.
 
 Comment line 297 in `~/.local/lib/python3.8/site-packages/jira/resources.py`:
+
 ```
 time.sleep(4)
 ```
