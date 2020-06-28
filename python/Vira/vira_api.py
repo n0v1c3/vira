@@ -383,7 +383,7 @@ class ViraAPI():
             users.add(user)
 
         self.prompt_text_commented = f'''
-# -------------------------------------
+# ---------------------------------
 # Please enter text above this line
 # An empty message will abort the operation.
 #

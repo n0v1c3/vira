@@ -427,3 +427,9 @@ out the proper way to do it.
 ```
 let g:airline_section_z = '%{ViraStatusLine()}'
 ```
+## Contributions
+
+A big thank you to @mikeboiko for being an active vira contributor
+[@mikeboiko](https://github.com/mikeboiko)
+
+All user feedback and contributions are welcome!
