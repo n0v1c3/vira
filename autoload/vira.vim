@@ -64,14 +64,12 @@ function! vira#_browse() "{{{2
     let l:browser = g:vira_browser
   else | let l:browser = $BROWSER | endif
 
-  " User needs to define a browser
-  if l:browser == ''
-    echoerr 'Please set $BROWSER environment variable or g:vira_browser vim variable before running :ViraBrowse'
-    return
-  endif
-
   " Open current issue in browser
-  execute 'term ++close ' . l:browser . ' "' . l:url . '"'
+  if l:browser == ''
+    execute '!open ' . ' "' . l:url . '"'
+  else
+    execute '!' . l:browser . ' "' . l:url . '"'
+  endif
 endfunction
 
 function! vira#_prompt_start(type, ...) abort "{{{2
