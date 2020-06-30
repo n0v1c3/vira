@@ -169,16 +169,6 @@ function! vira#_print_report(list) " {{{2
   silent! put x
 endfunction
 
-function! vira#_print_menu(list) " {{{2
-  " Write menu output
-  " execute ':normal! o' . list . "\<esc>"
-  if (type(a:list) == type([]))
-    for line in a:list
-      execute ':normal! o' . line . "\<esc>"
-    endfor
-  else | execute ':normal! o' . a:list . "\<esc>" | endif
-endfunction
-
 function! vira#_load_project_config() " {{{2
   " Save current directory and switch to file direcotry
   let s:current_dir = getcwd()
@@ -270,7 +260,7 @@ function! vira#_menu(type) abort " {{{2
   if type == 'menu'
     let s:vira_filter = ''
     let s:vira_filter_hold = @/
-    call vira#_print_menu(list)
+    silent! put=list
   else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
