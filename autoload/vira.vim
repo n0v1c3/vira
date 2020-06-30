@@ -135,7 +135,7 @@ function! vira#_edit_report() abort "{{{2
   " Edit the report field matching to cursor line
   try
     let set_command = execute('python3 print(Vira.api.report_lines['.line('.').'])')[1:-1]
-    execute set_command
+    silent! execute set_command
   catch
     echo 'This field can not be changed.'
   endtry
@@ -280,7 +280,7 @@ function! vira#_menu(type) abort " {{{2
   silent! normal zCGzoV3kzogg
 
   " Ensure wrap and linebreak are enabled
-  if type == 'menu' | silent execut 'set nowrap'
+  if type == 'menu' | silent execute 'set nowrap'
   else | silent! execute 'set wrap' | endif
 
   silent! execute 'set linebreak'
