@@ -217,8 +217,9 @@ __default__:
 
 ### Browser
 
-The default browser used for `:ViraBrowse` is the environment
-variable `$BROWSER`. Override this by setting `g:vira_browser`.
+By default, the `open` command will be used for `:ViraBrowse`. This will open
+the current issue in the default browser. Override this by setting
+`g:vira_browser`.
 
 ```
 let g:vira_browser = 'chromium'

@@ -60,18 +60,20 @@ function! vira#_browse() "{{{2
   let l:url = g:vira_serv . '/browse/' . vira#_get_active_issue()
 
   " Set browser - either user defined or $BROWSER
-  if exists('g:vira_browser')
-    let l:browser = g:vira_browser
-  else | let l:browser = $BROWSER | endif
-
-  " User needs to define a browser
-  if l:browser == ''
-    echoerr 'Please set $BROWSER environment variable or g:vira_browser vim variable before running :ViraBrowse'
-    return
-  endif
+  if exists('g:vira_browser') | let l:browser = g:vira_browser
+  elseif exists('$BROWSER') | let l:browser = $BROWSER
+  elseif has('os2') || has('macunix') | let l:browser = 'open'
+  else | let l:browser = 'xdg-open' | endif
 
   " Open current issue in browser
-  execute 'term ++close ' . l:browser . ' "' . l:url . '"'
+  silent! call execute('!' . l:browser . ' "' . l:url . '" > /dev/null 2>&1 &')
+  redraw!
+endfunction
+
+function! vira#_msg_error(string) "{{{2
+  echohl ErrorMsg
+  echo a:string
+  echohl None
 endfunction
 
 function! vira#_prompt_start(type, ...) abort "{{{2
