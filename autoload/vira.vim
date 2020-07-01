@@ -65,16 +65,14 @@ function! vira#_browse() "{{{2
   else | let l:browser = $BROWSER | endif
 
   " Open current issue in browser
-  if l:browser == ''
-    if has('nvim')
-      call execute('!open ' . ' "' . l:url . '"')
-    else
+  if l:browser != ''
+    silent! execute '!' . l:browser . ' "' . l:url . '" > /dev/null 2>&1 &'
+  else
+    if !execute('!open ' . ' "' . l:url . '"')
       echoerr 'Please set $BROWSER environment variable or g:vira_browser vim variable before running :ViraBrowse'
     endif
-  else
-    call execute('!' . l:browser . ' "' . l:url . '"')
   endif
-  call execute('color ' . execute('color')[1:])
+  redraw!
 endfunction
 
 function! vira#_prompt_start(type, ...) abort "{{{2
