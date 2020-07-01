@@ -67,12 +67,20 @@ function! vira#_browse() "{{{2
   " Open current issue in browser
   if l:browser != ''
     silent! execute '!' . l:browser . ' "' . l:url . '" > /dev/null 2>&1 &'
+    redraw!
   else
     if !execute('!open ' . ' "' . l:url . '"')
-      echoerr 'Please set $BROWSER environment variable or g:vira_browser vim variable before running :ViraBrowse'
+      let errorMsg = 'Please set $BROWSER environment variable or g:vira_browser vim variable before running :ViraBrowse'
+      redraw!
+      call vira#_msg_error(errorMsg)
     endif
   endif
-  redraw!
+endfunction
+
+function! vira#_msg_error(string) "{{{2
+  echohl ErrorMsg
+  echo a:string
+  echohl None
 endfunction
 
 function! vira#_prompt_start(type, ...) abort "{{{2
