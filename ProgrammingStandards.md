@@ -2,13 +2,13 @@
 
 All code changes and additional features shall be initiated by Jira issues. This is the workflow:
 
-- A new branch shall be created from the dev branch, with the name of the Jira issue key
+- A new branch shall be created from the `dev` branch, with the name of the Jira issue key.
 - Prefix all commits with issue number.
-- `no-ff` Git commits will be created on this branch with adequate descriptions
-- The new branch will be merged back into dev, using the Jira issue key in the commit message
-- Goal completement ant team agregreement will be required for `master` pushes
-- `no-ff` Version control on `master` merge with `dev`
-- FAST-FORWARD `dev` with `master`
+- `no-ff` Git commits will be created on this branch with adequate descriptions.
+- The new branch will be merged back into `dev`, using the Jira issue key in the commit message.
+- Goal complement and team agreement will be required for `master` pushes.
+- `no-ff` version control on `master` merge with `dev`.
+- Fast-forward `dev` with `master`.
 
 Refer to the `dev` example of VIRA-134:
 
@@ -31,7 +31,7 @@ Install `flake8`:
 
 `pip install --user flake8`
 
-The `flake8` configuration is found in python/setup.cfg
+The `flake8` configuration is found in python/setup.cfg.
 
 ## Vimscript
 
@@ -53,7 +53,7 @@ Install `yapf` linter:
 
 `pip install --user yapf`
 
-The `yapf` configuration is found in python/setup.cfg
+The `yapf` configuration is found in `python/setup.cfg`.
 
 ## YAML
 
@@ -63,9 +63,9 @@ Prettier requires `npm` to be installed. Install `prettier`:
 
 # ALE (Vim Plugin) - Optional
 
-ALE (Asynchronous Lint Engine) is a great Vim plugin for performing linting and auto-formatting of code. Follow the instructions to install/configure it: https://github.com/dense-analysis/ale
+ALE (Asynchronous Lint Engine) is a great Vim plugin for performing linting and auto-formatting of code. Follow the instructions to `install/configure` it: `https://github.com/dense-analysis/ale`.
 
-ALE is also an LSP (Language Server Protocol) client. Read more about LSP and why it's awesome at https://langserver.org
+ALE is also an LSP (Language Server Protocol) client. Read more about LSP and why it's awesome at `https://langserver.org`.
 
 The following the recommended `.vimrc` configuration for ALE:
 
