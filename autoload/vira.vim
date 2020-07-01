@@ -62,7 +62,7 @@ function! vira#_browse() "{{{2
   " Set browser - either user defined or $BROWSER
   if exists('g:vira_browser') | let l:browser = g:vira_browser
   elseif exists('$BROWSER') | let l:browser = $BROWSER
-  elseif has('os2') | let l:browser = 'open'
+  elseif has('os2') || has('macunix') | let l:browser = 'open'
   else | let l:browser = 'xdg-open' | endif
 
   " Open current issue in browser
