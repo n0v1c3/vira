@@ -1,13 +1,12 @@
-*vira.txt*         For Vim version 8.1.      Last change: 2020 Jul 01
+*vira.txt*         For Vim version 8.1            Last change: 2020 Jul 01
 
 
 Vim JIRA Atlassian~
 https://github.com/n0v1c3/vira
 
 
-		 VIM REFERENCE MANUAL      by Travis Gall
+		 VIM REFERENCE MANUAL       by n0v1c3
 ==============================================================================
-
 INTRODUCTION                                |vira-intro|
 INSTALL                                     |vira-install|
 CONFIGURATION                               |vira-config|
@@ -16,7 +15,6 @@ COMMANDS                                    |vira-commands|
 FUNCTIONS                                   |vira-functions|
 EXAMPLES                                    |vira-examples|
 ABOUT                                       |vira-about|
-
 ==============================================================================
 
 INTRODUCTION                                *vira-intro*
