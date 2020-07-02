@@ -1,18 +1,264 @@
-*vira*  Vira: Vim Jira
+*vira.txt*   For Vim version 8.1.  Last change: 2020 Jul 01
 
-Author: n0v1c3 (Travis Gall) <travis.gall@gmail.com>
+Vim JIRA interface plugin.
 
-Interface for Jira issues.
+		  VIM REFERENCE MANUAL      by Travis Gall
+==============================================================================
+
+INTRODUCTION                                |vira-intro|
+INSTALL                                     |vira-install|
+CONFIGURATION                               |vira-config|
+COMMANDS                                    |vira-commands|
+FUNCTIONS                                   |vira-functions|
+KEY MAPPING                                 |vira-keymaps|
+ABOUT                                       |vira-about|
 
 ==============================================================================
-Vira                                        *vira*
 
-1. Introduction                             |vira-intro|
+INTRODUCTION                                *vira-intro*
 
-==============================================================================
-1. Introduction                             *supertab-intro*
+Stay inside vim while following and updating Jira issues
+along with creating new issues on the go.
 
-Vira is a plugin which allows you to connect with a Jira server and generate 
+------------------------------------------------------------------------------
+
+INSTALL                                     *vira-install*
+
+Example of vim-plug post-update hook to automatically install python
+dependencies along with vira: >
+  Plug 'n0v1c3/vira', { 'do': './install.sh' }
+
+Alternatively, manually install the python3 dependencies: >
+  pip install --user jira
+
+------------------------------------------------------------------------------
+
+CONFIGURATION                               *vira-config*
+
+Jira Servers: (REQUIRED)~
+
+The configuration for your jira server(s) needs to be done in a json or yaml
+file. The default file file-type is json, because it comes with the python
+standard library.
+
+The default file location is `~/.config/vira/vira_servers.json`
+
+The following is an example of a typical `vira_servers.json` configuration: >
+  {
+    "https://jira.site.com": {
+      "username": "user1",
+      "password_cmd": "lpass show --password account",
+      "skip_cert_verify": true
+    },
+    "https://jira.othersite.com": {
+      "username": "user2",
+      "password": "SuperSecretPassword"
+    }
+  }
+
+For each jira server, the following configuration variables are available:
+
+- `username` - Jira server username.
+- `password_cmd` - Run a CLI password manager such as `pass` or `lpass`.
+- `password` - Enter jira server password in plain text.
+- `skip_cert_verify` - severs with TLS certificates.
+
+If you can bear to install one additional python pip dependency, `PyYAML`,
+you can configure your settings in yaml: >
+  https://jira.site.com:
+    username: user1
+    password_cmd: lpass show --password account
+    skip_cert_verify: true
+  https://jira.othersite.com:
+    username: user2
+    password: SuperSecretPassword
+
+In order for vira to use the previous yaml example, set the following
+variable in your .vimrc: >
+  let g:vira_config_file_servers = $HOME.'/vira_servers.yaml'
+
+Atlassian Cloud Tokens:
+If you are on Atlassian Cloud service use your `api-token` as your password.
+You should be able to see your account details with the link below.
+
+https://id.atlassian.com/manage-profile/security/api-tokens
+
+Jira Projects:~
+
+The configuration for your jira project(s) needs to be done in a json or yaml
+file. Similar to jira servers, default file file-type is json. The default
+file location is `~/.config/vira/vira_projects.json`.
+
+When you're in a git repo, vira will auto-load your pre-defined settings by
+matching the local repo name from file path.
+
+For each jira project, set:
+
+- `server` - The jira server to connect to (using authentication details
+           from vira_servers.json/yaml).
+
+The following is an example of a typical `vira_project.json` configuration:
+
+json: >
+  {
+    "vira": {
+      "server": "https://jira.site.com"
+    },
+    "OtherProject": {
+      "server": "https://jira.othersite.com"
+    }
+  }
+
+The following is an example of the same configuration in yaml:
+
+yaml: >
+  vira:
+    server: https://jira.site.com
+  OtherProject:
+    server: https://jira.othersite.com
+
+In order for vira to use the previous yaml example, set the following variable
+in your .vimrc: >
+  let g:vira_config_file_projects = $HOME.'/vira_projects.yaml'
+
+Note: Vira will only load the vira_projects.json/yaml configuration
+automatically once per vim session. You can, however, manually switch servers
+and filters as many times as you want after that. See Usage section.
+
+Filters:~
+
+Default repo filters can be defined under a `filter` key as such:
+
+yaml >
+  vira:
+    server: https://jira.site.com
+    filter:
+      project: VIRA
+      assignee: mike
+      priority: [High, Highest]
+      fixVersion: [1.1.1, 1.1.2]
+  OtherProject:
+    server: https://jira.othersite.com
+    filter:
+      project: MAIN
+      assignee: travis
+      status: In-Progress
+
+The acceptable values for the filter key are:
+
+- `project` - Filter these projects. Can be a single item or list.
+- `assignee` - Filter these assignees. Can be a single item or list.
+- `component` - Filter these components. Can be a single item or list.
+- `fixVersion` - Filter these versions. Can be a single item or list.
+- `issuetype` - Filter these issuetypes. Can be a single item or list.
+- `priority` - Filter these priorities. Can be a single item or list.
+- `reporter` - Filter these reporters. Can be a single item or list.
+- `status` - Filter these statuses. Can be a single item or list.
+
+New Issues:~
+
+Similar to the `filter` key, you can define a `newissue` key to set repo-based
+default configuration for the new-issue fields.
+
+yaml >
+  vira:
+    server: https://jira.site.com
+    newissue:
+      issuetype: Task
+  OtherProject:
+    server: https://jira.othersite.com
+    newissue:
+      assignee: travis
+    filter:
+      assignee: travis
+      status: In-Progress
+
+The acceptable values for filter keys are:
+
+- `assignee` - Define assignee.
+- `component` - Define component. Note - these are project specific.
+- `fixVersion` - Define fixVersion. Note - these are project specific.
+- `issuetype` - Define issue type. The default is Bug.
+- `priority` - Define priority.
+- `status` - Define status. Vira will transition issue to this status.
+
+Project Templates:~
+
+Templates can be defined in the same way that projects are defined. These
+templates can be referenced for multiple projects, by using the template key.
+Any name can be used for a template, but it is recommended to use the
+pythonic syntax of `__name__` in order to make a distinction from a project.
+Refer to the yaml example below. Note that the priority in `repo2` will
+override the `__maintemplate__` priority.
+
+yaml: >
+  __maintemplate__:
+    server: https://jira.site.com
+    filter:
+      project: VIRA
+      assignee: travis
+      priority: [High, Highest]
+  repo1:
+    template: __maintemplate__
+  repo2:
+    template: __maintemplate__
+    filter:
+      priority: High
+
+Default Project Template:~
+
+If you would like to have a catch-all project configuration template, define
+a `__default__` key in your vira_projects.json/yaml file. Yaml example below.
+
+yaml: >
+  __default__:
+    server: https://jira.site.com
+    filter:
+      assignee: mike
+    newissue:
+      issuetype: Task
+
+Browser:~
+
+By default, the sytem `default` browser will be used for `:ViraBrowse`. This will
+open the current issue in the default browser.
+
+Override this by setting `g:vira_browser`: >
+
+  let g:vira_browser = 'chromium'
+
+------------------------------------------------------------------------------
+
+COMMANDS                                    *vira-commands*
+
+Vira is a plugin which allows you to connect with a Jira server and generate
 the reports.
+
+------------------------------------------------------------------------------
+
+FUNCTIONS                                   *vira-functions*
+
+Vira is a plugin which allows you to connect with a Jira srver and generate
+the reports.
+
+------------------------------------------------------------------------------
+
+KEY MAPPING                                 *vira-keymaps*
+
+Vira is a plugin which allows you to connect with a Jira server and generate
+the reports.
+
+------------------------------------------------------------------------------
+
+ABOUT                                       *vira-about*
+
+Vira is a plugin which allows you to connect with a Jira server and generate
+the reports.
+
+https://github.com/n0v1c3/vira
+
+Authors:
+- n0v1c3 (Travis Gall) <n0v1c3@gmail.com>
+- mikeboiko (Mike Boiko)
 
 vim:tw=78:ts=8:ft=help:norl:
