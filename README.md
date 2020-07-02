@@ -84,13 +84,13 @@ Once an `API token` has been created that key can be used for `password`.
 ### Jira projects
 
 The configuration for your jira project(s) needs to be done in a json or yaml file.
-Similar to jira servers, default file file-type is json. The default file location is `~/.config/vira/vira_projects.json`
+Similar to jira servers, default file file-type is json. The default file location is `~/.config/vira/vira_projects.json`.
 
 When you're in a git repo, vira will auto-load your pre-defined settings by matching the local repo name from file path.
 
 For each jira project, set:
 
-- `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml)
+- `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml).
 
 The following is an example of a typical `vira_project.json` configuration:
 
@@ -152,7 +152,7 @@ The acceptable values for the filter key are:
 
 #### New Issues
 
-Similar to the `filter` key, you can define a `newissue` key to set repo-based
+Similar to the `filter` key, you can define a `newissue` key to set repo-based.
 default configuration for the new-issue fields.
 
 For example:
@@ -217,7 +217,7 @@ __default__:
 
 ### Browser
 
-By default, the `open` command will be used for `:ViraBrowse`. This will open
+By default, the `default` command will be used for `:ViraBrowse`. This will open
 the current issue in the default browser. Override this by setting
 `g:vira_browser`.
 
@@ -280,7 +280,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 - `g:vira_menu_height` - Set the height of the menu (default 7).
 - `g:vira_report_width` - Set the width of the report (default 0).
-- `g:vira_issue_limit` - Set the maximum issue limit for jira query (default 50).
+- `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
 - `g:vira_null_issue` - Text used when there is no issue.
 
 ### Report
@@ -428,6 +428,7 @@ out the proper way to do it.
 ```
 let g:airline_section_z = '%{ViraStatusLine()}'
 ```
+
 ## Contributions
 
 A big thank you to [@mikeboiko](https://github.com/mikeboiko) for his active development on vira
