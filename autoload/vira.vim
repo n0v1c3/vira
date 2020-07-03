@@ -377,8 +377,7 @@ function! vira#_getter() "{{{2
 endfunction
 
 function! vira#_select() "{{{2
-  execute 'normal mm'
-  execute 'normal 0'
+  normal mm0
   silent! call feedkeys(":set hlsearch\<cr>")
 
   let value = vira#_getter()
@@ -394,13 +393,23 @@ function! vira#_select() "{{{2
 
   let @/ = '\v' . s:vira_highlight
   execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-  execute 'normal `m'
+  normal `m
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
+function! vira#_select_all() "{{{2
+  normal! mn0gg
+  let lines = 0
+  while lines < line('$')
+    call vira#_select()
+    normal! j
+    let lines += 1
+  endwhile
+  normal `n0
+endfunction
+
 function! vira#_unselect() "{{{2
-  execute 'normal mm'
-  execute 'normal 0'
+  normal mm0
 
   let value = vira#_getter()
 
@@ -425,8 +434,19 @@ function! vira#_unselect() "{{{2
   else
     let @/ = '\v' . s:vira_highlight
     execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-    execute 'normal `m'
+    normal `m
   endif
+endfunction
+
+function! vira#_unselect_all() "{{{2
+  normal! mn0gg
+  let lines = 0
+  while lines < line('$')
+    call vira#_unselect()
+    normal! j
+    let lines += 1
+  endwhile
+  normal `n0
 endfunction
 
 function! vira#_set() "{{{2
