@@ -32,12 +32,12 @@ The following is an example of a typical `vira_servers.json` configuration:
 
 ```json
 {
-  "https://jira.site.com": {
+  "https://n0v1c3.atlassian.net": {
     "username": "user1",
     "password_cmd": "lpass show --password account",
     "skip_cert_verify": true
   },
-  "https://jira.othersite.com": {
+  "https://jira.career.com": {
     "username": "user2",
     "password": "SuperSecretPassword"
   }
@@ -54,11 +54,11 @@ For each jira server, the following configuration variables are available:
 If you can bear to install one additional python pip dependency, `PyYAML`, you can configure your settings in yaml:
 
 ```yaml
-https://jira.site.com:
+https://n0v1c3.atlassian.net:
   username: user1
   password_cmd: lpass show --password account
   skip_cert_verify: true
-https://jira.othersite.com:
+https://jira.career.com:
   username: user2
   password: SuperSecretPassword
 ```
@@ -97,10 +97,10 @@ The following is an example of a typical `vira_project.json` configuration:
 ```json
 {
   "vira": {
-    "server": "https://jira.site.com"
+    "server": "https://n0v1c3.atlassian.net"
   },
   "OtherProject": {
-    "server": "https://jira.othersite.com"
+    "server": "https://jira.career.com"
   }
 }
 ```
@@ -109,9 +109,9 @@ The following is an example of the same configuration in yaml:
 
 ```yaml
 vira:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
 OtherProject:
-  server: https://jira.othersite.com
+  server: https://jira.career.com
 ```
 
 In order for vira to use the previous yaml example, set the following variable in your .vimrc:
@@ -125,14 +125,14 @@ Default repo filters can be defined under a `filter` key as such:
 
 ```yaml
 vira:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
   filter:
     project: VIRA
     assignee: mike
     priority: [High, Highest]
     fixVersion: [1.1.1, 1.1.2]
 OtherProject:
-  server: https://jira.othersite.com
+  server: https://jira.career.com
   filter:
     project: MAIN
     assignee: travis
@@ -159,11 +159,11 @@ For example:
 
 ```yaml
 vira:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
   newissue:
     issuetype: Task
 OtherProject:
-  server: https://jira.othersite.com
+  server: https://jira.career.com
   newissue:
     assignee: travis
   filter:
@@ -188,7 +188,7 @@ Refer to the yaml example below. Note that the priority in `repo2` will override
 
 ```yaml
 __maintemplate__:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
   filter:
     project: VIRA
     assignee: travis
@@ -208,7 +208,7 @@ Refer to the yaml example below.
 
 ```yaml
 __default__:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
   filter:
     assignee: mike
   newissue:
