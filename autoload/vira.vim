@@ -395,11 +395,11 @@ function! vira#_select() "{{{2
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
-function! vira#_select_all() "{{{2
+function! vira#_select_all(mode) "{{{2
   normal! mn0gg
   let lines = 0
   while lines < line('$')
-    call vira#_select()
+    execute 'call vira#_' . a:mode . '()'
     normal! j
     let lines += 1
   endwhile
@@ -433,17 +433,6 @@ function! vira#_unselect() "{{{2
     execute "normal! /\\v" . s:vira_highlight . "\<cr>"
     normal `m
   endif
-endfunction
-
-function! vira#_unselect_all() "{{{2
-  normal! mn0gg
-  let lines = 0
-  while lines < line('$')
-    call vira#_unselect()
-    normal! j
-    let lines += 1
-  endwhile
-  normal `n0
 endfunction
 
 function! vira#_set() "{{{2

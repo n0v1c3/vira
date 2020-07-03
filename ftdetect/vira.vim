@@ -19,8 +19,8 @@ augroup Vira
   autocmd BufEnter vira_menu setlocal norelativenumber
   autocmd BufEnter vira_menu setlocal number
   autocmd BufEnter vira_menu nnoremap <silent> <buffer> <cr> 0:call vira#_set()<cr>:q!<cr>:call vira#_refresh()<cr>
-  autocmd BufEnter vira_menu nnoremap <silent> <buffer> S :call vira#_select_all()<cr>
-  autocmd BufEnter vira_menu nnoremap <silent> <buffer> U :call vira#_unselect_all()<cr>
+  autocmd BufEnter vira_menu nnoremap <silent> <buffer> S :call vira#_select_all('select')<cr>
+  autocmd BufEnter vira_menu nnoremap <silent> <buffer> U :call vira#_select_all('unselect')<cr>
   autocmd BufEnter vira_menu nnoremap <silent> <buffer> s :call vira#_select()<cr>
   autocmd BufEnter vira_menu nnoremap <silent> <buffer> u :call vira#_unselect()<cr>
 
