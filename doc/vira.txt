@@ -1,18 +1,351 @@
-*vira*  Vira: Vim Jira
+*vira.txt*         For Vim version 8.1            Last change: 2020 Jul 01
 
-Author: n0v1c3 (Travis Gall) <travis.gall@gmail.com>
 
-Interface for Jira issues.
+Vim JIRA Atlassian~
+https://github.com/n0v1c3/vira
 
+
+		 VIM REFERENCE MANUAL       by n0v1c3
 ==============================================================================
-Vira                                        *vira*
-
-1. Introduction                             |vira-intro|
-
+INTRODUCTION                                |vira-intro|
+INSTALL                                     |vira-install|
+CONFIGURATION                               |vira-config|
+KEYBOARD                                    |vira-keyboard|
+COMMANDS                                    |vira-commands|
+FUNCTIONS                                   |vira-functions|
+EXAMPLES                                    |vira-examples|
+ABOUT                                       |vira-about|
 ==============================================================================
-1. Introduction                             *supertab-intro*
 
-Vira is a plugin which allows you to connect with a Jira server and generate 
+INTRODUCTION                                *vira-intro*
+
+Stay inside vim while following and updating Jira issues
+along with creating new issues on the go.
+
+------------------------------------------------------------------------------
+
+INSTALL                                     *vira-install*
+
+Example of vim-plug post-update hook to automatically install python
+dependencies along with vira: >
+  Plug 'n0v1c3/vira', { 'do': './install.sh' }
+
+Alternatively, manually install the python3 dependencies: >
+  pip install --user jira
+
+------------------------------------------------------------------------------
+
+CONFIGURATION                               *vira-config*
+
+Config Variables:~
+- `g:vira_config_file_servers` - Set path to your server files.
+- `g:vira_config_file_projects` - Set path to project config files.
+- `g:vira_menu_height` - Set the height of the menu (default 7).
+- `g:vira_report_width` - Set the width of the report (default 0).
+- `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
+- `g:vira_null_issue` - Text used when there is no issue.
+
+Jira Servers: (REQUIRED)~
+
+The configuration for your jira server(s) needs to be done in a json or yaml
+file. The default file file-type is json, because it comes with the python
+standard library.
+
+The default file location is `~/.config/vira/vira_servers.json`
+
+The following is an example of a typical `vira_servers.json` configuration: >
+  {
+    "https://n0v1c3.atlassian.net": {
+      "username": "user1",
+      "password_cmd": "lpass show --password account",
+      "skip_cert_verify": true
+    },
+    "https://jira.career.com": {
+      "username": "user2",
+      "password": "SuperSecretPassword"
+    }
+  }
+
+For each jira server, the following configuration variables are available:
+
+- `username` - Jira server username.
+- `password_cmd` - Run a CLI password manager such as `pass` or `lpass`.
+- `password` - Enter jira server password in plain text.
+- `skip_cert_verify` - severs with TLS certificates.
+
+If you can bear to install one additional python pip dependency, `PyYAML`,
+you can configure your settings in yaml: >
+  https://n0v1c3.atlassian.net:
+    username: user1
+    password_cmd: lpass show --password account
+    skip_cert_verify: true
+  https://jira.career.com:
+    username: user2
+    password: SuperSecretPassword
+
+In order for vira to use the previous yaml example, set the following
+variable in your .vimrc: >
+  let g:vira_config_file_servers = $HOME.'/vira_servers.yaml'
+
+Atlassian Cloud Tokens:
+If you are on Atlassian Cloud service use your `api-token` as your password.
+You should be able to see your account details with the link below.
+
+https://id.atlassian.com/manage-profile/security/api-tokens
+
+Jira Projects:~
+
+The configuration for your jira project(s) needs to be done in a json or yaml
+file. Similar to jira servers, default file file-type is json. The default
+file location is `~/.config/vira/vira_projects.json`.
+
+When you're in a git repo, vira will auto-load your pre-defined settings by
+matching the local repo name from file path.
+
+For each jira project, set:
+
+- `server` - The jira server to connect to (using authentication details
+           from vira_servers.json/yaml).
+
+The following is an example of a typical `vira_project.json` configuration:
+
+json: >
+  {
+    "vira": {
+      "server": "https://n0v1c3.atlassian.net"
+    },
+    "OtherProject": {
+      "server": "https://jira.career.com"
+    }
+  }
+
+The following is an example of the same configuration in yaml:
+
+yaml: >
+  vira:
+    server: https://n0v1c3.atlassian.net
+  OtherProject:
+    server: https://jira.career.com
+
+In order for vira to use the previous yaml example, set the following variable
+in your .vimrc: >
+  let g:vira_config_file_projects = $HOME.'/vira_projects.yaml'
+
+Note: Vira will only load the vira_projects.json/yaml configuration
+automatically once per vim session. You can, however, manually switch servers
+and filters as many times as you want after that. See Usage section.
+
+Filters:~
+
+Default repo filters can be defined under a `filter` key as such:
+
+yaml >
+  vira:
+    server: https://n0v1c3.atlassian.net
+    filter:
+      project: VIRA
+      assignee: mike
+      priority: [High, Highest]
+      fixVersion: [1.1.1, 1.1.2]
+  OtherProject:
+    server: https://jira.career.com
+    filter:
+      project: MAIN
+      assignee: travis
+      status: In-Progress
+
+The acceptable values for the filter key are:
+
+- `project` - Filter these projects. Can be a single item or list.
+- `assignee` - Filter these assignees. Can be a single item or list.
+- `component` - Filter these components. Can be a single item or list.
+- `fixVersion` - Filter these versions. Can be a single item or list.
+- `issuetype` - Filter these issuetypes. Can be a single item or list.
+- `priority` - Filter these priorities. Can be a single item or list.
+- `reporter` - Filter these reporters. Can be a single item or list.
+- `status` - Filter these statuses. Can be a single item or list.
+
+New Issues:~
+
+Similar to the `filter` key, you can define a `newissue` key to set repo-based
+default configuration for the new-issue fields.
+
+yaml >
+  vira:
+    server: https://n0v1c3.atlassian.net
+    newissue:
+      issuetype: Task
+  OtherProject:
+    server: https://jira.career.com
+    newissue:
+      assignee: travis
+    filter:
+      assignee: travis
+      status: In-Progress
+
+The acceptable values for filter keys are:
+
+- `assignee` - Define assignee.
+- `component` - Define component. Note - these are project specific.
+- `fixVersion` - Define fixVersion. Note - these are project specific.
+- `issuetype` - Define issue type. The default is Bug.
+- `priority` - Define priority.
+- `status` - Define status. Vira will transition issue to this status.
+
+Project Templates:~
+
+Templates can be defined in the same way that projects are defined. These
+templates can be referenced for multiple projects, by using the template key.
+Any name can be used for a template, but it is recommended to use the
+pythonic syntax of `__name__` in order to make a distinction from a project.
+Refer to the yaml example below. Note that the priority in `repo2` will
+override the `__maintemplate__` priority.
+
+yaml: >
+  __maintemplate__:
+    server: https://n0v1c3.atlassian.net
+    filter:
+      project: VIRA
+      assignee: travis
+      priority: [High, Highest]
+  repo1:
+    template: __maintemplate__
+  repo2:
+    template: __maintemplate__
+    filter:
+      priority: High
+
+Default Project Template:~
+
+If you would like to have a catch-all project configuration template, define
+a `__default__` key in your vira_projects.json/yaml file. Yaml example below.
+
+yaml: >
+  __default__:
+    server: https://n0v1c3.atlassian.net
+    filter:
+      assignee: mike
+    newissue:
+      issuetype: Task
+
+Browser:~
+
+By default, the sytem `default` browser will be used for `:ViraBrowse`. This will
+open the current issue in the default browser.
+
+Override this by setting `g:vira_browser`: >
+
+  let g:vira_browser = 'chromium'
+
+------------------------------------------------------------------------------
+
+KEYBOARD                                    *vira-keyboard*
+
+Vira is a plugin which allows you to connect with a Jira server and generate
 the reports.
+It is possible to _select multiple_ items from all menus,
+if nothing is selected prior to the item will be selected
+from the current column.
+
+Note: These keys are only mapped to the Vira windows.
+
+- `s` - Select current line within menu.
+- `<cr>` - Apply selections or current line.
+
+------------------------------------------------------------------------------
+
+COMMANDS                                    *vira-commands*
+
+- `ViraBrowse` - View Jira issue in web-browser.
+- `ViraComment` - Insert a comment for active issue.
+- `ViraEpics` - Get and Set Project(s) epic issues.
+- `ViraFilterAssignees` - Add assignees to filter.
+- `ViraFilterComponents` - Add components to filter.
+- `ViraFilterPriorities` - Add priorities to filter.
+- `ViraFilterProjects` - Add projects to filter.
+- `ViraFilterReset` - Reset filter to default.
+- `ViraFilterStatuses` - Add statuses to filter.
+- `ViraFilterText` - Add flexible issue text to filter.
+- `ViraFilterTypes` - Add issuetypes to filter.
+- `ViraFilterVersions` - Add versions to filter.
+- `ViraIssue` - Create a new issue. The required fields are indicated by.
+- `ViraIssues` - Get and Set the active issue.
+- `ViraReport` - Get report for active issue.
+- `ViraServers` - Get and Set active Jira server.
+- `ViraEditComment` - Update the comment relative to position in report.
+- `ViraEditDescription` - Update the description of the current issue.
+- `ViraEditSummary` - Update the summary of the current issue
+- `ViraSetAssignee` - Select user to assign the current issue.
+- `ViraSetComponent` - Select compnent to appent the current issue.
+- `ViraSetPriority` - Select priority of the current issue.
+- `ViraSetStatus` - Select the status of the current issue.
+- `ViraSetVersion` - Select the version to appent the current issue.
+- `ViraSetType` - Select the issuetype of the current issue.
+- `ViraTodo` - Make a TODO note for current issue.
+- `ViraTodos`- Get a list of the remaining TODOs.
+
+------------------------------------------------------------------------------
+
+FUNCTIONS                                   *vira-functions*
+
+- `ViraGetActiveIssue()` - Get the currently selected active issue.
+- `ViraStatusline()` - Quick statusline drop-in.
+
+------------------------------------------------------------------------------
+
+EXAMPLES                                    *vira-examples*
+
+This is a key mapping template for your `.vimrc` or related files.
+>
+  " Basics
+  nnoremap <silent> <leader>vI :ViraIssue<cr>
+  nnoremap <silent> <leader>vS :ViraServers<cr>
+  nnoremap <silent> <leader>vT :ViraTodo<cr>
+  nnoremap <silent> <leader>vb :ViraBrowse<cr>
+  nnoremap <silent> <leader>vc :ViraComment<cr>
+  nnoremap <silent> <leader>ve :ViraEpics<cr>
+  nnoremap <silent> <leader>vi :ViraIssues<cr>
+  nnoremap <silent> <leader>vr :ViraReport<cr>
+  nnoremap <silent> <leader>vt :ViraTodos<cr>
+
+  " Sets
+  nnoremap <silent> <leader>vsa :ViraSetAssignee<cr>
+  nnoremap <silent> <leader>vsp :ViraSetPriority<cr>
+  nnoremap <silent> <leader>vss :ViraSetStatus<cr>
+  nnoremap <silent> <leader>vsv :ViraSetVersion<cr>
+
+  " Edits
+  nnoremap <silent> <leader>ved :ViraEditDescription<cr>
+  nnoremap <silent> <leader>ves :ViraEditSummary<cr>
+
+  " Filter search
+  nnoremap <silent> <leader>vfR :ViraFilterReset<cr>
+
+  nnoremap <silent> <leader>v/ :ViraFilterText<cr>
+
+  nnoremap <silent> <leader>vfP :ViraFilterPriorities<cr>
+  nnoremap <silent> <leader>vfa :ViraFilterAssignees<cr>
+  nnoremap <silent> <leader>vfp :ViraFilterProjects<cr>
+  nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
+  nnoremap <silent> <leader>vfs :ViraFilterStatuses<cr>
+  nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
+
+  " Status
+  statusline+=%{ViraStatusline()}
+
+------------------------------------------------------------------------------
+
+ABOUT                                       *vira-about*
+
+Vim JIRA Atlassian~
+
+Vira is a JIRA Atlassian plugin which allows you to connect with a Jira server
+and generate the reports.
+
+https://github.com/n0v1c3/vira
+
+Authors:~
+- n0v1c3 (Travis Gall) <n0v1c3@gmail.com>
+- mikeboiko (Mike Boiko) <michaelboiko@gmail.com>
 
 vim:tw=78:ts=8:ft=help:norl:

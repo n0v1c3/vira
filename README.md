@@ -1,11 +1,11 @@
 # vira
 
-Vim JIRA interface plugin.
+**Vim JIRA Atlassian**
 
 Stay inside vim while following and updating Jira issues
 along with creating new issues on the go.
 
-![](https://raw.githubusercontent.com/n0v1c3/vira/VIRA-136/vira-demo.gif)
+![](https://raw.githubusercontent.com/n0v1c3/viravid/video/vira-demo.gif)
 
 ## Installation
 
@@ -32,12 +32,12 @@ The following is an example of a typical `vira_servers.json` configuration:
 
 ```json
 {
-  "https://jira.site.com": {
+  "https://n0v1c3.atlassian.net": {
     "username": "user1",
     "password_cmd": "lpass show --password account",
     "skip_cert_verify": true
   },
-  "https://jira.othersite.com": {
+  "https://jira.career.com": {
     "username": "user2",
     "password": "SuperSecretPassword"
   }
@@ -54,11 +54,11 @@ For each jira server, the following configuration variables are available:
 If you can bear to install one additional python pip dependency, `PyYAML`, you can configure your settings in yaml:
 
 ```yaml
-https://jira.site.com:
+https://n0v1c3.atlassian.net:
   username: user1
   password_cmd: lpass show --password account
   skip_cert_verify: true
-https://jira.othersite.com:
+https://jira.career.com:
   username: user2
   password: SuperSecretPassword
 ```
@@ -84,23 +84,23 @@ Once an `API token` has been created that key can be used for `password`.
 ### Jira projects
 
 The configuration for your jira project(s) needs to be done in a json or yaml file.
-Similar to jira servers, default file file-type is json. The default file location is `~/.config/vira/vira_projects.json`
+Similar to jira servers, default file file-type is json. The default file location is `~/.config/vira/vira_projects.json`.
 
 When you're in a git repo, vira will auto-load your pre-defined settings by matching the local repo name from file path.
 
 For each jira project, set:
 
-- `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml)
+- `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml).
 
 The following is an example of a typical `vira_project.json` configuration:
 
 ```json
 {
   "vira": {
-    "server": "https://jira.site.com"
+    "server": "https://n0v1c3.atlassian.net"
   },
   "OtherProject": {
-    "server": "https://jira.othersite.com"
+    "server": "https://jira.career.com"
   }
 }
 ```
@@ -109,9 +109,9 @@ The following is an example of the same configuration in yaml:
 
 ```yaml
 vira:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
 OtherProject:
-  server: https://jira.othersite.com
+  server: https://jira.career.com
 ```
 
 In order for vira to use the previous yaml example, set the following variable in your .vimrc:
@@ -125,14 +125,14 @@ Default repo filters can be defined under a `filter` key as such:
 
 ```yaml
 vira:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
   filter:
     project: VIRA
     assignee: mike
     priority: [High, Highest]
     fixVersion: [1.1.1, 1.1.2]
 OtherProject:
-  server: https://jira.othersite.com
+  server: https://jira.career.com
   filter:
     project: MAIN
     assignee: travis
@@ -152,18 +152,18 @@ The acceptable values for the filter key are:
 
 #### New Issues
 
-Similar to the `filter` key, you can define a `newissue` key to set repo-based
+Similar to the `filter` key, you can define a `newissue` key to set repo-based.
 default configuration for the new-issue fields.
 
 For example:
 
 ```yaml
 vira:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
   newissue:
     issuetype: Task
 OtherProject:
-  server: https://jira.othersite.com
+  server: https://jira.career.com
   newissue:
     assignee: travis
   filter:
@@ -188,7 +188,7 @@ Refer to the yaml example below. Note that the priority in `repo2` will override
 
 ```yaml
 __maintemplate__:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
   filter:
     project: VIRA
     assignee: travis
@@ -208,7 +208,7 @@ Refer to the yaml example below.
 
 ```yaml
 __default__:
-  server: https://jira.site.com
+  server: https://n0v1c3.atlassian.net
   filter:
     assignee: mike
   newissue:
@@ -217,8 +217,9 @@ __default__:
 
 ### Browser
 
-The default browser used for `:ViraBrowse` is the environment
-variable `$BROWSER`. Override this by setting `g:vira_browser`.
+By default, the `default` command will be used for `:ViraBrowse`. This will open
+the current issue in the default browser. Override this by setting
+`g:vira_browser`.
 
 ```
 let g:vira_browser = 'chromium'
@@ -279,7 +280,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 - `g:vira_menu_height` - Set the height of the menu (default 7).
 - `g:vira_report_width` - Set the width of the report (default 0).
-- `g:vira_issue_limit` - Set the maximum issue limit for jira query (default 50).
+- `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
 - `g:vira_null_issue` - Text used when there is no issue.
 
 ### Report
@@ -427,3 +428,9 @@ out the proper way to do it.
 ```
 let g:airline_section_z = '%{ViraStatusLine()}'
 ```
+
+## Contributions
+
+A big thank you to [@mikeboiko](https://github.com/mikeboiko) for his active development on vira
+
+All user feedback and contributions are welcome!

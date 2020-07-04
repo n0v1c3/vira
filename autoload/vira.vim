@@ -16,7 +16,6 @@ let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_menu_type = ''
 
-let s:vira_select_init = 0
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
 
@@ -60,18 +59,20 @@ function! vira#_browse() "{{{2
   let l:url = g:vira_serv . '/browse/' . vira#_get_active_issue()
 
   " Set browser - either user defined or $BROWSER
-  if exists('g:vira_browser')
-    let l:browser = g:vira_browser
-  else | let l:browser = $BROWSER | endif
-
-  " User needs to define a browser
-  if l:browser == ''
-    echoerr 'Please set $BROWSER environment variable or g:vira_browser vim variable before running :ViraBrowse'
-    return
-  endif
+  if exists('g:vira_browser') | let l:browser = g:vira_browser
+  elseif exists('$BROWSER') | let l:browser = $BROWSER
+  elseif has('os2') || has('macunix') | let l:browser = 'open'
+  else | let l:browser = 'xdg-open' | endif
 
   " Open current issue in browser
-  execute 'term ++close ' . l:browser . ' "' . l:url . '"'
+  silent! call execute('!' . l:browser . ' "' . l:url . '" > /dev/null 2>&1 &')
+  redraw!
+endfunction
+
+function! vira#_msg_error(string) "{{{2
+  echohl ErrorMsg
+  echo a:string
+  echohl None
 endfunction
 
 function! vira#_prompt_start(type, ...) abort "{{{2
@@ -135,7 +136,7 @@ function! vira#_edit_report() abort "{{{2
   " Edit the report field matching to cursor line
   try
     let set_command = execute('python3 print(Vira.api.report_lines['.line('.').'])')[1:-1]
-    execute set_command
+    silent! execute set_command
   catch
     echo 'This field can not be changed.'
   endtry
@@ -167,16 +168,6 @@ function! vira#_print_report(list) " {{{2
   silent! execute 'python3 print(Vira.api.get_report())'
   silent! redir END
   silent! put x
-endfunction
-
-function! vira#_print_menu(list) " {{{2
-  " Write menu output
-  " execute ':normal! o' . list . "\<esc>"
-  if (type(a:list) == type([]))
-    for line in a:list
-      execute ':normal! o' . line . "\<esc>"
-    endfor
-  else | execute ':normal! o' . a:list . "\<esc>" | endif
 endfunction
 
 function! vira#_load_project_config() " {{{2
@@ -270,7 +261,7 @@ function! vira#_menu(type) abort " {{{2
   if type == 'menu'
     let s:vira_filter = ''
     let s:vira_filter_hold = @/
-    call vira#_print_menu(list)
+    silent! put=list
   else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
@@ -280,7 +271,7 @@ function! vira#_menu(type) abort " {{{2
   silent! normal zCGzoV3kzogg
 
   " Ensure wrap and linebreak are enabled
-  if type == 'menu' | silent execut 'set nowrap'
+  if type == 'menu' | silent execute 'set nowrap'
   else | silent! execute 'set wrap' | endif
 
   silent! execute 'set linebreak'
@@ -385,30 +376,37 @@ function! vira#_getter() "{{{2
 endfunction
 
 function! vira#_select() "{{{2
-  execute 'normal mm'
-  execute 'normal 0'
+  normal mm0
   silent! call feedkeys(":set hlsearch\<cr>")
 
   let value = vira#_getter()
-
-  if s:vira_select_init == 1
+  if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
     let s:vira_highlight = s:vira_highlight . "|" . value
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
-  else
+  elseif s:vira_filter == ''
     let s:vira_highlight = value
     let s:vira_filter = '"' . value . '"'
-    let s:vira_select_init = 1
   endif
 
   let @/ = '\v' . s:vira_highlight
   execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-  execute 'normal `m'
+  normal `m
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
+function! vira#_select_all(mode) "{{{2
+  normal! mn0gg
+  let lines = 0
+  while lines < line('$')
+    execute 'call vira#_' . a:mode . '()'
+    normal! j
+    let lines += 1
+  endwhile
+  normal `n0
+endfunction
+
 function! vira#_unselect() "{{{2
-  execute 'normal mm'
-  execute 'normal 0'
+  normal mm0
 
   let value = vira#_getter()
 
@@ -428,12 +426,11 @@ function! vira#_unselect() "{{{2
 
   if s:vira_highlight == '|' || s:vira_highlight == ''
     let s:vira_highlight = ''
-    let s:vira_select_init = 0
     call vira#_filter_reset()
   else
     let @/ = '\v' . s:vira_highlight
     execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-    execute 'normal `m'
+    normal `m
   endif
 endfunction
 
@@ -481,6 +478,5 @@ function! vira#_set() "{{{2
 endfunction
 
 function! vira#_filter_reset() " {{{2
-  let s:vira_select_init = 0
   let @/ = s:vira_filter_hold
 endfunction
