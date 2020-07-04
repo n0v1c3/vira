@@ -16,7 +16,6 @@ let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
 
 let s:vira_menu_type = ''
 
-let s:vira_select_init = 0
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
 
@@ -381,14 +380,12 @@ function! vira#_select() "{{{2
   silent! call feedkeys(":set hlsearch\<cr>")
 
   let value = vira#_getter()
-
-  if s:vira_select_init == 1
+  if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
     let s:vira_highlight = s:vira_highlight . "|" . value
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
-  else
+  elseif s:vira_filter == ''
     let s:vira_highlight = value
     let s:vira_filter = '"' . value . '"'
-    let s:vira_select_init = 1
   endif
 
   let @/ = '\v' . s:vira_highlight
@@ -397,11 +394,11 @@ function! vira#_select() "{{{2
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
-function! vira#_select_all() "{{{2
+function! vira#_select_all(mode) "{{{2
   normal! mn0gg
   let lines = 0
   while lines < line('$')
-    call vira#_select()
+    execute 'call vira#_' . a:mode . '()'
     normal! j
     let lines += 1
   endwhile
@@ -429,24 +426,12 @@ function! vira#_unselect() "{{{2
 
   if s:vira_highlight == '|' || s:vira_highlight == ''
     let s:vira_highlight = ''
-    let s:vira_select_init = 0
     call vira#_filter_reset()
   else
     let @/ = '\v' . s:vira_highlight
     execute "normal! /\\v" . s:vira_highlight . "\<cr>"
     normal `m
   endif
-endfunction
-
-function! vira#_unselect_all() "{{{2
-  normal! mn0gg
-  let lines = 0
-  while lines < line('$')
-    call vira#_unselect()
-    normal! j
-    let lines += 1
-  endwhile
-  normal `n0
 endfunction
 
 function! vira#_set() "{{{2
@@ -493,6 +478,5 @@ function! vira#_set() "{{{2
 endfunction
 
 function! vira#_filter_reset() " {{{2
-  let s:vira_select_init = 0
   let @/ = s:vira_filter_hold
 endfunction

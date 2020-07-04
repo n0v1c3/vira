@@ -1,11 +1,11 @@
 # vira
 
-Vim JIRA interface plugin.
+**Vim JIRA Atlassian**
 
 Stay inside vim while following and updating Jira issues
 along with creating new issues on the go.
 
-![](https://raw.githubusercontent.com/n0v1c3/vira/VIRA-136/vira-demo.gif)
+![](https://raw.githubusercontent.com/n0v1c3/viravid/video/vira-demo.gif)
 
 ## Installation
 
