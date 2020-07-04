@@ -220,6 +220,7 @@ __default__:
 By default, the `open` or `xdg-open` command will be used by `:ViraBrowse` to open the current issue in the default
 browser. If either command is missing or you wish to override the default browser, you may set the `g:vira_browser`
 variable or provide the `BROWSER` environment variable.
+
 ```
 let g:vira_browser = 'chromium'
 ```
