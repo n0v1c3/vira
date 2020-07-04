@@ -380,11 +380,10 @@ function! vira#_select() "{{{2
   silent! call feedkeys(":set hlsearch\<cr>")
 
   let value = vira#_getter()
-
-  if s:vira_filter != ''
+  if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
     let s:vira_highlight = s:vira_highlight . "|" . value
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
-  else
+  elseif s:vira_filter == ''
     let s:vira_highlight = value
     let s:vira_filter = '"' . value . '"'
   endif
