@@ -341,13 +341,14 @@ function! vira#_todo() "{{{2
     " Jira comment
     let file_path = "{code}\n" . @% . "\n{code}"
     if !(vira#_get_active_issue() == g:vira_null_issue)
-      python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
+      python3 Vira.api.jira.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
     endif
 
     " Vim comment
-    execute "normal mmO" . comment_header . comment . "\<esc>mn"
+    let current_pos = getpos('.')
+    execute "normal O" . comment_header . comment . "\<esc>"
+    call setpos('.', current_pos)
     call NERDComment(0, "Toggle")
-    normal `m
   endif
 endfunction
 
@@ -365,6 +366,13 @@ function! vira#_timestamp() "{{{2
 endfunction
 
 " Filter {{{1
+function! vira#_all(mode) "{{{2
+  " Un/select all items in current menu
+  let current_pos = getpos('.')
+  execute '1' . ',' . line('$') . 'call vira#_' . a:mode . '()'
+  call setpos('.', current_pos)
+endfunction
+
 function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
@@ -385,7 +393,7 @@ function! vira#_getter() "{{{2
 endfunction
 
 function! vira#_select() "{{{2
-  normal mm0
+  let current_pos = getpos('.')
   silent! call feedkeys(":set hlsearch\<cr>")
 
   let value = vira#_getter()
@@ -399,23 +407,12 @@ function! vira#_select() "{{{2
 
   let @/ = '\v' . s:vira_highlight
   execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-  normal `m
+  call setpos('.', current_pos)
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
-function! vira#_select_all(mode) "{{{2
-  normal! mn0gg
-  let lines = 0
-  while lines < line('$')
-    execute 'call vira#_' . a:mode . '()'
-    normal! j
-    let lines += 1
-  endwhile
-  normal `n0
-endfunction
-
 function! vira#_unselect() "{{{2
-  normal mm0
+  let current_pos = getpos('.')
 
   let value = vira#_getter()
 
@@ -438,9 +435,11 @@ function! vira#_unselect() "{{{2
     call vira#_filter_reset()
   else
     let @/ = '\v' . s:vira_highlight
-    execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-    normal `m
+    silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   endif
+
+  call setpos('.', current_pos)
+  call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
 function! vira#_set() "{{{2
