@@ -239,6 +239,9 @@ from the current column.
 _NOTE:_ These keys are only mapped to the Vira windows.
 
 - `s` - Select current line within menu.
+- `S` - Select all lines within menu.
+- `u` - Unselect current line within menu.
+- `U` - Unselect all lines within menu.
 - `<cr>` - Apply selections or current line.
 
 ### Commands
