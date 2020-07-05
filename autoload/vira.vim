@@ -61,8 +61,17 @@ function! vira#_browse() "{{{2
   " Set browser - either user defined or $BROWSER
   if exists('g:vira_browser') | let l:browser = g:vira_browser
   elseif exists('$BROWSER') | let l:browser = $BROWSER
-  elseif has('os2') || has('macunix') | let l:browser = 'open'
-  else | let l:browser = 'xdg-open' | endif
+  elseif executable('open') | let l:browser = 'open'
+  elseif executable('xdg-open') | let l:browser = 'xdg-open'
+  else
+    echoerr 'Please set $BROWSER environment variable or g:vira_browser vim variable before running :ViraBrowse'
+  endif
+
+  " There is no guarantee that the command provided by the user exists and is executable; if it's not provide an
+  " informative error as to why we can't open the current issue in the browser.
+  if l:browser != 'open' && l:browser != 'xdg-open' && !executable(l:browser)
+    echoerr "The browser '" . l:browser . "' does not exist or is not executable"
+  endif
 
   " Open current issue in browser
   silent! call execute('!' . l:browser . ' "' . l:url . '" > /dev/null 2>&1 &')
