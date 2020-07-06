@@ -230,6 +230,8 @@ function! vira#_menu(type) abort " {{{2
     call vira#_refresh()
     return
   else
+    call vira#_filter_reset()
+
     if !vira#_check_project(a:type)
       echo 'Please select a project before applying this filter.'
       return
@@ -294,6 +296,7 @@ function! vira#_quit() "{{{2
         execute winnr .' wincmd q'
     endif
   endfor
+  call vira#_filter_reset()
   silent! call vira#_resize()
 endfunction
 
@@ -308,7 +311,7 @@ function! vira#_refresh() " {{{2
       execute 'silent! set syntax=vira_' . vira_window
     endif
   endfor
-  echo ''
+  call vira#_filter_reset()
 endfunction
 
 function! vira#_reset_filters() " {{{2
@@ -341,13 +344,14 @@ function! vira#_todo() "{{{2
     " Jira comment
     let file_path = "{code}\n" . @% . "\n{code}"
     if !(vira#_get_active_issue() == g:vira_null_issue)
-      python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
+      python3 Vira.api.jira.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
     endif
 
     " Vim comment
-    execute "normal mmO" . comment_header . comment . "\<esc>mn"
+    let current_pos = getpos('.')
+    execute "normal O" . comment_header . comment . "\<esc>"
+    call setpos('.', current_pos)
     call NERDComment(0, "Toggle")
-    normal `m
   endif
 endfunction
 
@@ -365,6 +369,13 @@ function! vira#_timestamp() "{{{2
 endfunction
 
 " Filter {{{1
+function! vira#_all(mode) "{{{2
+  " Un/select all items in current menu
+  let current_pos = getpos('.')
+  execute '1' . ',' . line('$') . 'call vira#_' . a:mode . '()'
+  call setpos('.', current_pos)
+endfunction
+
 function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
@@ -372,6 +383,7 @@ endfunction
 function! vira#_getter() "{{{2
   " Return the proper form of the selected data
   if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    normal! 0
     return expand('<cWORD>')
   elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
     if getline('.') == 'Unassigned'
@@ -385,10 +397,10 @@ function! vira#_getter() "{{{2
 endfunction
 
 function! vira#_select() "{{{2
-  normal mm0
+  let current_pos = getpos('.')
   silent! call feedkeys(":set hlsearch\<cr>")
-
   let value = vira#_getter()
+
   if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
     let s:vira_highlight = s:vira_highlight . "|" . value
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
@@ -399,48 +411,39 @@ function! vira#_select() "{{{2
 
   let @/ = '\v' . s:vira_highlight
   execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-  normal `m
+  call setpos('.', current_pos)
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
-function! vira#_select_all(mode) "{{{2
-  normal! mn0gg
-  let lines = 0
-  while lines < line('$')
-    execute 'call vira#_' . a:mode . '()'
-    normal! j
-    let lines += 1
-  endwhile
-  normal `n0
-endfunction
-
 function! vira#_unselect() "{{{2
-  normal mm0
-
+  let current_pos = getpos('.')
   let value = vira#_getter()
 
-  let s:vira_highlight = substitute(s:vira_highlight,value,'','')
-  let s:vira_highlight = substitute(s:vira_highlight,'||','|','')
-  if s:vira_highlight[0] == '|' | let s:vira_highlight  = s:vira_highlight[1:] | endif
-  if s:vira_highlight[len(s:vira_highlight)-1] == '|'
-    let s:vira_highlight = s:vira_highlight[0:len(s:vira_highlight)-2]
-  endif
-
-  let s:vira_filter = substitute(s:vira_filter,'"' . value . '"' ,'','')
-  let s:vira_filter = substitute(s:vira_filter,',,',',','')
-  if s:vira_filter[0] == ',' | let s:vira_filter  = s:vira_filter[1:] | endif
-  if s:vira_filter[len(s:vira_filter)-1] == ','
-    let s:vira_filter = s:vira_filter[0:len(s:vira_filter)-2]
-  endif
+  let s:vira_highlight = vira#_unselection(s:vira_highlight, value, '|', '')
+  let s:vira_filter = vira#_unselection(s:vira_filter, value, ',', '"')
 
   if s:vira_highlight == '|' || s:vira_highlight == ''
     let s:vira_highlight = ''
     call vira#_filter_reset()
   else
     let @/ = '\v' . s:vira_highlight
-    execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-    normal `m
+    silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   endif
+
+  call setpos('.', current_pos)
+  call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
+endfunction
+
+function vira#_unselection(filters, value, separator, quote) "{{{2
+  let filters = a:filters
+  let filters = substitute(filters,a:quote.a:value.a:quote,'','')
+  let filters = substitute(filters,a:separator.a:separator,a:separator,'')
+  if filters == a:separator | let filters[0] = '' | endif
+  if filters[0] == a:separator | let filters  = filters[1:] | endif
+  if filters[len(filters)-1] == a:separator
+    let filters = filters[0:len(filters)-2]
+  endif
+  return filters
 endfunction
 
 function! vira#_set() "{{{2
