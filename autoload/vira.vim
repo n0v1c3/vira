@@ -230,6 +230,8 @@ function! vira#_menu(type) abort " {{{2
     call vira#_refresh()
     return
   else
+    call vira#_filter_reset()
+
     if !vira#_check_project(a:type)
       echo 'Please select a project before applying this filter.'
       return
@@ -294,6 +296,7 @@ function! vira#_quit() "{{{2
         execute winnr .' wincmd q'
     endif
   endfor
+  call vira#_filter_reset()
   silent! call vira#_resize()
 endfunction
 
@@ -308,7 +311,7 @@ function! vira#_refresh() " {{{2
       execute 'silent! set syntax=vira_' . vira_window
     endif
   endfor
-  echo ''
+  call vira#_filter_reset()
 endfunction
 
 function! vira#_reset_filters() " {{{2
@@ -380,6 +383,7 @@ endfunction
 function! vira#_getter() "{{{2
   " Return the proper form of the selected data
   if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    normal! 0
     return expand('<cWORD>')
   elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
     if getline('.') == 'Unassigned'
@@ -395,8 +399,8 @@ endfunction
 function! vira#_select() "{{{2
   let current_pos = getpos('.')
   silent! call feedkeys(":set hlsearch\<cr>")
-
   let value = vira#_getter()
+
   if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
     let s:vira_highlight = s:vira_highlight . "|" . value
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
@@ -413,22 +417,10 @@ endfunction
 
 function! vira#_unselect() "{{{2
   let current_pos = getpos('.')
-
   let value = vira#_getter()
 
-  let s:vira_highlight = substitute(s:vira_highlight,value,'','')
-  let s:vira_highlight = substitute(s:vira_highlight,'||','|','')
-  if s:vira_highlight[0] == '|' | let s:vira_highlight  = s:vira_highlight[1:] | endif
-  if s:vira_highlight[len(s:vira_highlight)-1] == '|'
-    let s:vira_highlight = s:vira_highlight[0:len(s:vira_highlight)-2]
-  endif
-
-  let s:vira_filter = substitute(s:vira_filter,'"' . value . '"' ,'','')
-  let s:vira_filter = substitute(s:vira_filter,',,',',','')
-  if s:vira_filter[0] == ',' | let s:vira_filter  = s:vira_filter[1:] | endif
-  if s:vira_filter[len(s:vira_filter)-1] == ','
-    let s:vira_filter = s:vira_filter[0:len(s:vira_filter)-2]
-  endif
+  let s:vira_highlight = vira#_unselection(s:vira_highlight, value, '|', '')
+  let s:vira_filter = vira#_unselection(s:vira_filter, value, ',', '"')
 
   if s:vira_highlight == '|' || s:vira_highlight == ''
     let s:vira_highlight = ''
@@ -440,6 +432,17 @@ function! vira#_unselect() "{{{2
 
   call setpos('.', current_pos)
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
+endfunction
+
+function vira#_unselection(filters, value, separator, quote) "{{{2
+  let filters = a:filters
+  let filters = substitute(filters,a:quote.a:value.a:quote,'','')
+  let filters = substitute(filters,a:separator.a:separator,a:separator,'')
+  if filters[0] == '|' | let filters  = filters[1:] | endif
+  if filters[len(filters)-1] == a:separator
+    let filters = filters[0:len(filters)-2]
+  endif
+  return filters
 endfunction
 
 function! vira#_set() "{{{2
