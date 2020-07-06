@@ -438,7 +438,8 @@ function vira#_unselection(filters, value, separator, quote) "{{{2
   let filters = a:filters
   let filters = substitute(filters,a:quote.a:value.a:quote,'','')
   let filters = substitute(filters,a:separator.a:separator,a:separator,'')
-  if filters[0] == '|' | let filters  = filters[1:] | endif
+  if filters == a:separator | let filters[0] = '' | endif
+  if filters[0] == a:separator | let filters  = filters[1:] | endif
   if filters[len(filters)-1] == a:separator
     let filters = filters[0:len(filters)-2]
   endif
