@@ -15,6 +15,9 @@ augroup Vira
   autocmd BufEnter vira_report nnoremap <silent> <buffer> <cr> :call vira#_edit_report()<cr>
 
   " Menu
+  " autocmd BufLeave vira_menu call vira#_filter_reset()
+  autocmd BufLeave vira_menu call vira#_filter_reset()
+  autocmd BufEnter vira_menu call vira#_filter_reload()
   autocmd BufEnter vira_menu setlocal winfixheight
   autocmd BufEnter vira_menu setlocal norelativenumber
   autocmd BufEnter vira_menu setlocal number

@@ -271,7 +271,7 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     let s:vira_filter = ''
-    let s:vira_filter_hold = @/
+    " let s:vira_filter_hold = @/
     silent! put=list
   else | call vira#_print_report(list) | endif
 
@@ -402,6 +402,7 @@ function! vira#_select() "{{{2
   let value = vira#_getter()
 
   if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
+    call histdel(s:vira_highlight, -1)
     let s:vira_highlight = s:vira_highlight . "|" . value
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
   elseif s:vira_filter == ''
@@ -426,6 +427,8 @@ function! vira#_unselect() "{{{2
     let s:vira_highlight = ''
     call vira#_filter_reset()
   else
+    " call histdel("search", -1)
+    call vira#_filter_reset()
     let @/ = '\v' . s:vira_highlight
     silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   endif
@@ -490,5 +493,15 @@ function! vira#_set() "{{{2
 endfunction
 
 function! vira#_filter_reset() " {{{2
+  if exists('s:vira_highlight') && s:vira_highlight != '' && s:vira_highlight != '|'
+    call histdel("search", -1)
+  endif
   let @/ = s:vira_filter_hold
+endfunction
+
+function! vira#_filter_reload() " {{{2
+  let s:vira_filter_hold = @/
+  if exists('s:vira_highlight') && s:vira_highlight != '' && s:vira_highlight != '|'
+    let @/ = '\v' . s:vira_highlight
+  endif
 endfunction
