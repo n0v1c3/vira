@@ -26,6 +26,7 @@ augroup Vira
   autocmd BufEnter vira_menu nnoremap <silent> <buffer> U :call vira#_all('unselect')<cr>
   autocmd BufEnter vira_menu nnoremap <silent> <buffer> s :call vira#_select()<cr>
   autocmd BufEnter vira_menu nnoremap <silent> <buffer> u :call vira#_unselect()<cr>
+  autocmd CmdlineEnter vira_menu call vira#_filter_reset()
 
   " Common
   autocmd BufEnter vira_menu,vira_report cnoremap <silent> <buffer> q!<cr> :q!<cr>:call vira#_filter_reset()<cr>:call vira#_resize()<cr>

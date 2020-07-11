@@ -18,6 +18,7 @@ let s:vira_menu_type = ''
 
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
+let s:vira_filter_hold_key = 1
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = '/tmp/vira_prompt'
@@ -205,7 +206,9 @@ function! vira#_menu(type) abort " {{{2
     call vira#_menu('servers')
     return
   endif
+
   call vira#_connect()
+  call vira#_filter_reload()
 
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
   if a:type == 'report'
@@ -271,14 +274,14 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     let s:vira_filter = ''
-    " let s:vira_filter_hold = @/
+    call vira#_filter_reset()
     silent! put=list
   else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
-  silent! execute '%s/\^M//g'
+  silent! execute '%s/\^M//g' | call histdel("search", -1)
   silent! normal gg2dd
-  silent! execute 'g/\n\n\n/\n\n/g'
+  silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
   silent! normal zCGzoV3kzogg
 
   " Ensure wrap and linebreak are enabled
@@ -380,6 +383,22 @@ function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
 
+function! vira#_filter_reset() " {{{2
+  let @/ = s:vira_filter_hold
+  let s:vira_filter_hold_key = 1
+endfunction
+
+function! vira#_filter_reload() " {{{2
+  if s:vira_filter_hold_key != 0
+    call vira#_filter_reset()
+    let s:vira_filter_hold = @/
+    if exists('s:vira_highlight') && s:vira_highlight != '' && s:vira_highlight != '|'
+      let @/ = '\v' . s:vira_highlight
+    endif
+    let s:vira_filter_hold_key = 0
+  endif
+endfunction
+
 function! vira#_getter() "{{{2
   " Return the proper form of the selected data
   if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
@@ -402,7 +421,7 @@ function! vira#_select() "{{{2
   let value = vira#_getter()
 
   if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
-    call histdel(s:vira_highlight, -1)
+    call histdel("search", -1)
     let s:vira_highlight = s:vira_highlight . "|" . value
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
   elseif s:vira_filter == ''
@@ -410,6 +429,7 @@ function! vira#_select() "{{{2
     let s:vira_filter = '"' . value . '"'
   endif
 
+  let s:vira_filter_hold_key = 0
   let @/ = '\v' . s:vira_highlight
   execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   call setpos('.', current_pos)
@@ -490,18 +510,4 @@ function! vira#_set() "{{{2
   endif
 
   call vira#_filter_reset()
-endfunction
-
-function! vira#_filter_reset() " {{{2
-  if exists('s:vira_highlight') && s:vira_highlight != '' && s:vira_highlight != '|'
-    call histdel("search", -1)
-  endif
-  let @/ = s:vira_filter_hold
-endfunction
-
-function! vira#_filter_reload() " {{{2
-  let s:vira_filter_hold = @/
-  if exists('s:vira_highlight') && s:vira_highlight != '' && s:vira_highlight != '|'
-    let @/ = '\v' . s:vira_highlight
-  endif
 endfunction
