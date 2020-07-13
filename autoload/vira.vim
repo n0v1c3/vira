@@ -210,7 +210,7 @@ function! vira#_menu(type) abort " {{{2
   call vira#_connect()
   call vira#_filter_reload()
 
-  " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
+  " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
   if a:type == 'report'
     if (vira#_get_active_issue() == g:vira_null_issue)
       call vira#_menu('issues')
@@ -289,6 +289,7 @@ function! vira#_menu(type) abort " {{{2
   else | silent! execute 'set wrap' | endif
 
   silent! execute 'set linebreak'
+  " call vira#_filter_reset()
 endfunction
 
 function! vira#_quit() "{{{2
@@ -385,15 +386,18 @@ endfunction
 
 function! vira#_filter_reset() " {{{2
   let @/ = s:vira_filter_hold
+  " call histdel("search", -1)
+  " let @/ = histdel("search", -1)
+  " execute "normal! /" . s:vira_filter_hold . "\<cr>"
   let s:vira_filter_hold_key = 1
 endfunction
 
 function! vira#_filter_reload() " {{{2
   if s:vira_filter_hold_key != 0
-    call vira#_filter_reset()
     let s:vira_filter_hold = @/
+    call vira#_filter_reset()
     if exists('s:vira_highlight') && s:vira_highlight != '' && s:vira_highlight != '|'
-      let @/ = '\v' . s:vira_highlight
+      silent! let @/ = '\v' . s:vira_highlight
     endif
     let s:vira_filter_hold_key = 0
   endif
@@ -431,9 +435,9 @@ function! vira#_select() "{{{2
 
   let s:vira_filter_hold_key = 0
   let @/ = '\v' . s:vira_highlight
-  execute "normal! /\\v" . s:vira_highlight . "\<cr>"
+  silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   call setpos('.', current_pos)
-  call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
+  echo s:vira_highlight
 endfunction
 
 function! vira#_unselect() "{{{2
@@ -447,7 +451,6 @@ function! vira#_unselect() "{{{2
     let s:vira_highlight = ''
     call vira#_filter_reset()
   else
-    " call histdel("search", -1)
     call vira#_filter_reset()
     let @/ = '\v' . s:vira_highlight
     silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
@@ -457,7 +460,7 @@ function! vira#_unselect() "{{{2
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
-function vira#_unselection(filters, value, separator, quote) "{{{2
+function! vira#_unselection(filters, value, separator, quote) "{{{2
   let filters = a:filters
   let filters = substitute(filters,a:quote.a:value.a:quote,'','')
   let filters = substitute(filters,a:separator.a:separator,a:separator,'')
@@ -501,6 +504,8 @@ function! vira#_set() "{{{2
   else
     if s:vira_filter[:0] == '"'
       let value = substitute(s:vira_filter,'|',', ','')
+      call histdel("search", -1)
+      call vira#_filter_reset()
     else | let value = '"' . value . '"' | endif
     execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
 
@@ -508,6 +513,4 @@ function! vira#_set() "{{{2
       execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
     endif
   endif
-
-  call vira#_filter_reset()
 endfunction
