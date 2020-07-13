@@ -385,11 +385,14 @@ function! vira#_filter(name) "{{{2
 endfunction
 
 function! vira#_filter_reset() " {{{2
-  let @/ = s:vira_filter_hold
-  " call histdel("search", -1)
-  " let @/ = histdel("search", -1)
-  " execute "normal! /" . s:vira_filter_hold . "\<cr>"
-  let s:vira_filter_hold_key = 1
+  if s:vira_filter_hold_key != 1
+    silent! execute "normal! /" . s:vira_filter_hold . "\<cr>"
+    let @/ = s:vira_filter_hold
+    let s:vira_filter_hold_key = 1
+  else
+    let s:vira_filter_hold = @/
+    silent! execute "normal! /" . s:vira_filter_hold . "\<cr>"
+  endif
 endfunction
 
 function! vira#_filter_reload() " {{{2
@@ -437,7 +440,7 @@ function! vira#_select() "{{{2
   let @/ = '\v' . s:vira_highlight
   silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   call setpos('.', current_pos)
-  echo s:vira_highlight
+  call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
 function! vira#_unselect() "{{{2
