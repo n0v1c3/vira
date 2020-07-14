@@ -289,7 +289,6 @@ function! vira#_menu(type) abort " {{{2
   else | silent! execute 'set wrap' | endif
 
   silent! execute 'set linebreak'
-  " call vira#_filter_reset()
 endfunction
 
 function! vira#_quit() "{{{2
@@ -386,23 +385,16 @@ endfunction
 
 function! vira#_filter_reset() " {{{2
   if s:vira_filter_hold_key != 1
-    silent! execute "normal! /" . s:vira_filter_hold . "\<cr>"
-    let @/ = s:vira_filter_hold
     let s:vira_filter_hold_key = 1
-  else
-    let s:vira_filter_hold = @/
-    silent! execute "normal! /" . s:vira_filter_hold . "\<cr>"
+    silent! let @/ = s:vira_filter_hold
   endif
 endfunction
 
 function! vira#_filter_reload() " {{{2
   if s:vira_filter_hold_key != 0
     let s:vira_filter_hold = @/
-    call vira#_filter_reset()
-    if exists('s:vira_highlight') && s:vira_highlight != '' && s:vira_highlight != '|'
-      silent! let @/ = '\v' . s:vira_highlight
-    endif
     let s:vira_filter_hold_key = 0
+    silent! let @/ = '\v' . s:vira_highlight
   endif
 endfunction
 
@@ -427,8 +419,9 @@ function! vira#_select() "{{{2
   silent! call feedkeys(":set hlsearch\<cr>")
   let value = vira#_getter()
 
+  call vira#_filter_reload()
+
   if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
-    call histdel("search", -1)
     let s:vira_highlight = s:vira_highlight . "|" . value
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
   elseif s:vira_filter == ''
@@ -436,9 +429,7 @@ function! vira#_select() "{{{2
     let s:vira_filter = '"' . value . '"'
   endif
 
-  let s:vira_filter_hold_key = 0
   let @/ = '\v' . s:vira_highlight
-  silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   call setpos('.', current_pos)
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
@@ -454,7 +445,6 @@ function! vira#_unselect() "{{{2
     let s:vira_highlight = ''
     call vira#_filter_reset()
   else
-    call vira#_filter_reset()
     let @/ = '\v' . s:vira_highlight
     silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   endif
@@ -507,7 +497,6 @@ function! vira#_set() "{{{2
   else
     if s:vira_filter[:0] == '"'
       let value = substitute(s:vira_filter,'|',', ','')
-      call histdel("search", -1)
       call vira#_filter_reset()
     else | let value = '"' . value . '"' | endif
     execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''

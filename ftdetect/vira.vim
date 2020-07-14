@@ -34,5 +34,4 @@ augroup Vira
   autocmd BufEnter vira_menu,vira_report vnoremap <silent> <buffer> k gk
   autocmd BufLeave vira_menu,vira_report call vira#_filter_reset()
   autocmd CmdlineEnter vira_menu,vira_report call vira#_filter_reset()
-  autocmd CmdlineLeave vira_menu,vira_report call vira#_filter_reset()
 augroup END
