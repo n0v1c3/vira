@@ -12,7 +12,7 @@ let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
 let s:vira_end_time = 0
 
-let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
+let s:vira_root_dir = resolve(fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..')
 
 let s:vira_menu_type = ''
 
@@ -21,7 +21,7 @@ let s:vira_filter_hold = @/
 let s:vira_filter_hold_key = 1
 
 let s:vira_todo_header = 'TODO'
-let s:vira_prompt_file = '/tmp/vira_prompt'
+let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
 let s:vira_set_lookup = {
       \'assign_issue': 'assign_issue',
       \'assignees': 'assignee',
@@ -247,10 +247,10 @@ function! vira#_menu(type) abort " {{{2
   endif
 
   " Open buffer into a window
-  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
+  silent! let winnr = bufwinnr(s:vira_root_dir . '/vira_' . type . '$')
   if type == 'report'
     if (winnr <= 0)
-      silent! execute 'botright vnew ' . fnameescape('vira_' . type)
+      silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_' . type)
       if g:vira_report_width > 0
         autocmd BufEnter vira_report setlocal winfixwidth
         silent! execute 'vertical resize ' . g:vira_report_width
@@ -258,7 +258,7 @@ function! vira#_menu(type) abort " {{{2
     else | call execute(winnr . ' windo e') | endif
   else
     if (winnr <= 0)
-      silent! execute 'botright new ' . fnameescape('vira_' . type)
+      silent! execute 'botright new ' . fnameescape(s:vira_root_dir . '/vira_' . type)
       autocmd BufEnter vira_report setlocal winfixheight
       silent! execute 'resize ' . g:vira_menu_height
     else | call execute(winnr . ' windo e') | endif
@@ -294,7 +294,7 @@ endfunction
 function! vira#_quit() "{{{2
   let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
-    let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
+    let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
     if (winnr > 0)
         execute winnr .' wincmd q'
     endif
@@ -306,7 +306,7 @@ endfunction
 function! vira#_refresh() " {{{2
   let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
-    let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
+    let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
     if (winnr > 0)
       if (vira_window == 'report')
         silent! call vira#_menu(vira_window)
@@ -324,7 +324,7 @@ endfunction
 function! vira#_resize() " {{{2
   let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
-    let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
+    let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
       if (vira_window == 'report') | execute "normal! h:vnew\<cr>:q\<cr>l"
       else | execute "normal! h:new\<cr>:q\<cr>l"
       endif
