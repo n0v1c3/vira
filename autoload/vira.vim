@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.1.2'
+let s:vira_version = '0.3.0'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -18,6 +18,8 @@ let s:vira_menu_type = ''
 
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
+let s:vira_filter_setkey = 0
+let s:vira_highlight = ''
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -205,9 +207,10 @@ function! vira#_menu(type) abort " {{{2
     call vira#_menu('servers')
     return
   endif
+
   call vira#_connect()
 
-  " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
+  " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
   if a:type == 'report'
     if (vira#_get_active_issue() == g:vira_null_issue)
       call vira#_menu('issues')
@@ -230,8 +233,6 @@ function! vira#_menu(type) abort " {{{2
     call vira#_refresh()
     return
   else
-    call vira#_filter_reset()
-
     if !vira#_check_project(a:type)
       echo 'Please select a project before applying this filter.'
       return
@@ -271,14 +272,14 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     let s:vira_filter = ''
-    let s:vira_filter_hold = @/
+    call vira#_filter_unload()
     silent! put=list
   else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
-  silent! execute '%s/\^M//g'
+  silent! execute '%s/\^M//g' | call histdel("search", -1)
   silent! normal gg2dd
-  silent! execute 'g/\n\n\n/\n\n/g'
+  silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
   silent! normal zCGzoV3kzogg
 
   " Ensure wrap and linebreak are enabled
@@ -296,7 +297,6 @@ function! vira#_quit() "{{{2
         execute winnr .' wincmd q'
     endif
   endfor
-  call vira#_filter_reset()
   silent! call vira#_resize()
 endfunction
 
@@ -311,7 +311,6 @@ function! vira#_refresh() " {{{2
       execute 'silent! set syntax=vira_' . vira_window
     endif
   endfor
-  call vira#_filter_reset()
 endfunction
 
 function! vira#_reset_filters() " {{{2
@@ -380,6 +379,24 @@ function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
 
+function! vira#_filter_unload() " {{{2
+  if s:vira_filter_setkey != 1
+    let save_pos = getpos('.')
+    silent! execute "normal! /" . histget('search', -1) . "\<cr>"
+    let @/ = histget('search', -1)
+    call setpos('.', save_pos)
+    let s:vira_filter_setkey = 1
+  endif
+endfunction
+
+function! vira#_filter_load() " {{{2
+  if s:vira_filter_setkey != 0 && s:vira_highlight != ''
+    let s:vira_filter_hold = @/
+    let @/ = '\v' . s:vira_highlight
+    let s:vira_filter_setkey = 0
+  endif
+endfunction
+
 function! vira#_getter() "{{{2
   " Return the proper form of the selected data
   if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
@@ -401,6 +418,8 @@ function! vira#_select() "{{{2
   silent! call feedkeys(":set hlsearch\<cr>")
   let value = vira#_getter()
 
+  call vira#_filter_load()
+
   if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
     let s:vira_highlight = s:vira_highlight . "|" . value
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
@@ -410,9 +429,8 @@ function! vira#_select() "{{{2
   endif
 
   let @/ = '\v' . s:vira_highlight
-  execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-  call setpos('.', current_pos)
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
+  call setpos('.', current_pos)
 endfunction
 
 function! vira#_unselect() "{{{2
@@ -424,17 +442,16 @@ function! vira#_unselect() "{{{2
 
   if s:vira_highlight == '|' || s:vira_highlight == ''
     let s:vira_highlight = ''
-    call vira#_filter_reset()
+    call vira#_filter_unload()
   else
     let @/ = '\v' . s:vira_highlight
-    silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   endif
 
   call setpos('.', current_pos)
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
 endfunction
 
-function vira#_unselection(filters, value, separator, quote) "{{{2
+function! vira#_unselection(filters, value, separator, quote) "{{{2
   let filters = a:filters
   let filters = substitute(filters,a:quote.a:value.a:quote,'','')
   let filters = substitute(filters,a:separator.a:separator,a:separator,'')
@@ -486,9 +503,6 @@ function! vira#_set() "{{{2
     endif
   endif
 
-  call vira#_filter_reset()
-endfunction
-
-function! vira#_filter_reset() " {{{2
-  let @/ = s:vira_filter_hold
+  let s:vira_filter_hold = ''
+  call vira#_filter_unload()
 endfunction

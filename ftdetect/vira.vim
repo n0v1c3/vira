@@ -25,9 +25,11 @@ augroup Vira
   autocmd BufEnter vira_menu nnoremap <silent> <buffer> u :call vira#_unselect()<cr>
 
   " Common
-  autocmd BufEnter vira_menu,vira_report cnoremap <silent> <buffer> q!<cr> :q!<cr>:call vira#_filter_reset()<cr>:call vira#_resize()<cr>
-  autocmd BufEnter vira_menu,vira_report cnoremap <silent> <buffer> q<cr> :q!<cr>:call vira#_filter_reset()<cr>:call vira#_resize()<cr>
-  autocmd BufEnter vira_menu,vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_filter_reset()<cr>:call vira#_resize()<cr>
+  autocmd BufEnter vira_menu,vira_report call vira#_filter_load()
+  autocmd BufEnter vira_menu,vira_report cnoremap <silent> <buffer> q!<cr> :q!<cr>:call vira#_resize()<cr>
+  autocmd BufEnter vira_menu,vira_report cnoremap <silent> <buffer> q<cr> :q!<cr>:call vira#_resize()<cr>
+  autocmd BufEnter vira_menu,vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_resize()<cr>
   autocmd BufEnter vira_menu,vira_report vnoremap <silent> <buffer> j gj
   autocmd BufEnter vira_menu,vira_report vnoremap <silent> <buffer> k gk
+  autocmd BufLeave vira_menu,vira_report call vira#_filter_unload()
 augroup END
