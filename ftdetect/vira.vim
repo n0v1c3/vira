@@ -18,7 +18,6 @@ augroup Vira
   autocmd BufEnter vira_menu setlocal norelativenumber
   autocmd BufEnter vira_menu setlocal number
   autocmd BufEnter vira_menu setlocal winfixheight
-  autocmd BufLeave vira_menu call vira#_filter_unload()
 
   " Report
   " autocmd BufEnter vira_report setlocal winfixwidth
@@ -32,4 +31,5 @@ augroup Vira
   autocmd BufEnter vira_menu,vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_resize()<cr>
   autocmd BufEnter vira_menu,vira_report vnoremap <silent> <buffer> j gj
   autocmd BufEnter vira_menu,vira_report vnoremap <silent> <buffer> k gk
+  autocmd BufLeave vira_menu,vira_report call vira#_filter_unload()
 augroup END
