@@ -19,6 +19,7 @@ let s:vira_menu_type = ''
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
 let s:vira_filter_hold_key = 1
+let s:vira_highlight = ''
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -386,7 +387,10 @@ endfunction
 function! vira#_filter_reset() " {{{2
   if s:vira_filter_hold_key != 1
     let s:vira_filter_hold_key = 1
-    silent! let @/ = s:vira_filter_hold
+    let s:save_pos = getpos('.')
+    silent! execute "normal /" . histget('search', -1) . ""
+    let @/ = histget('search', -1)
+    call setpos('.', s:save_pos)
   endif
 endfunction
 
@@ -394,7 +398,7 @@ function! vira#_filter_reload() " {{{2
   if s:vira_filter_hold_key != 0
     let s:vira_filter_hold = @/
     let s:vira_filter_hold_key = 0
-    silent! let @/ = '\v' . s:vira_highlight
+    let @/ = s:vira_highlight
   endif
 endfunction
 
@@ -430,8 +434,8 @@ function! vira#_select() "{{{2
   endif
 
   let @/ = '\v' . s:vira_highlight
-  call setpos('.', current_pos)
   call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
+  call setpos('.', current_pos)
 endfunction
 
 function! vira#_unselect() "{{{2
@@ -446,7 +450,6 @@ function! vira#_unselect() "{{{2
     call vira#_filter_reset()
   else
     let @/ = '\v' . s:vira_highlight
-    silent! execute "normal! /\\v" . s:vira_highlight . "\<cr>"
   endif
 
   call setpos('.', current_pos)
@@ -505,4 +508,7 @@ function! vira#_set() "{{{2
       execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
     endif
   endif
+
+  let s:vira_filter_hold = ''
+  call vira#_filter_reset()
 endfunction
