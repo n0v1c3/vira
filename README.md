@@ -21,6 +21,12 @@ Alternatively, manually install the python3 dependencies:
 pip install --user jira
 ```
 
+If you would like to be on board with the active development the `dev` branch can be used:
+
+```
+Plug 'n0v1c3/vira', { 'do': './install.sh', 'branch': 'dev' }
+```
+
 ## Configuration
 
 ### Jira servers (required)
