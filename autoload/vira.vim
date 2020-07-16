@@ -18,7 +18,7 @@ let s:vira_menu_type = ''
 
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
-let s:vira_filter_hold_key = 1
+let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
 
 let s:vira_todo_header = 'TODO'
@@ -209,7 +209,6 @@ function! vira#_menu(type) abort " {{{2
   endif
 
   call vira#_connect()
-  call vira#_filter_reload()
 
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
   if a:type == 'report'
@@ -234,8 +233,6 @@ function! vira#_menu(type) abort " {{{2
     call vira#_refresh()
     return
   else
-    call vira#_filter_reset()
-
     if !vira#_check_project(a:type)
       echo 'Please select a project before applying this filter.'
       return
@@ -275,7 +272,7 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     let s:vira_filter = ''
-    call vira#_filter_reset()
+    call vira#_filter_unload()
     silent! put=list
   else | call vira#_print_report(list) | endif
 
@@ -300,7 +297,6 @@ function! vira#_quit() "{{{2
         execute winnr .' wincmd q'
     endif
   endfor
-  call vira#_filter_reset()
   silent! call vira#_resize()
 endfunction
 
@@ -315,7 +311,6 @@ function! vira#_refresh() " {{{2
       execute 'silent! set syntax=vira_' . vira_window
     endif
   endfor
-  call vira#_filter_reset()
 endfunction
 
 function! vira#_reset_filters() " {{{2
@@ -384,21 +379,21 @@ function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
 
-function! vira#_filter_reset() " {{{2
-  if s:vira_filter_hold_key != 1
-    let s:vira_filter_hold_key = 1
-    let s:save_pos = getpos('.')
-    silent! execute "normal /" . histget('search', -1) . ""
+function! vira#_filter_unload() " {{{2
+  if s:vira_filter_setkey != 1
+    let save_pos = getpos('.')
+    silent! execute "normal! /" . histget('search', -1) . "\<cr>"
     let @/ = histget('search', -1)
-    call setpos('.', s:save_pos)
+    call setpos('.', save_pos)
+    let s:vira_filter_setkey = 1
   endif
 endfunction
 
-function! vira#_filter_reload() " {{{2
-  if s:vira_filter_hold_key != 0 && s:vira_highlight != ''
+function! vira#_filter_load() " {{{2
+  if s:vira_filter_setkey != 0 && s:vira_highlight != ''
     let s:vira_filter_hold = @/
-    let s:vira_filter_hold_key = 0
     let @/ = '\v' . s:vira_highlight
+    let s:vira_filter_setkey = 0
   endif
 endfunction
 
@@ -423,7 +418,7 @@ function! vira#_select() "{{{2
   silent! call feedkeys(":set hlsearch\<cr>")
   let value = vira#_getter()
 
-  call vira#_filter_reload()
+  call vira#_filter_load()
 
   if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
     let s:vira_highlight = s:vira_highlight . "|" . value
@@ -447,7 +442,7 @@ function! vira#_unselect() "{{{2
 
   if s:vira_highlight == '|' || s:vira_highlight == ''
     let s:vira_highlight = ''
-    call vira#_filter_reset()
+    call vira#_filter_unload()
   else
     let @/ = '\v' . s:vira_highlight
   endif
@@ -500,7 +495,6 @@ function! vira#_set() "{{{2
   else
     if s:vira_filter[:0] == '"'
       let value = substitute(s:vira_filter,'|',', ','')
-      call vira#_filter_reset()
     else | let value = '"' . value . '"' | endif
     execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
 
@@ -510,5 +504,5 @@ function! vira#_set() "{{{2
   endif
 
   let s:vira_filter_hold = ''
-  call vira#_filter_reset()
+  call vira#_filter_unload()
 endfunction
