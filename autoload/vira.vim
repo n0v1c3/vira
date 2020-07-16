@@ -398,7 +398,7 @@ function! vira#_filter_reload() " {{{2
   if s:vira_filter_hold_key != 0
     let s:vira_filter_hold = @/
     let s:vira_filter_hold_key = 0
-    let @/ = s:vira_highlight
+    let @/ = '\v' . s:vira_highlight
   endif
 endfunction
 
