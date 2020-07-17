@@ -257,12 +257,10 @@ function! vira#_menu(type) abort " {{{2
   else
     if (winnr <= 0)
       silent! execute 'botright new ' . fnameescape(s:vira_root_dir . '/vira_' . type)
-      autocmd BufEnter vira_report setlocal winfixheight
       silent! execute 'resize ' . g:vira_menu_height
     else | call execute(winnr . ' windo e') | endif
   endif
 
-  silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   silent! redraw
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
 
