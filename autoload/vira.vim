@@ -445,7 +445,7 @@ function! vira#_unselect() "{{{2
   if s:vira_highlight == '|' || s:vira_highlight == ''
     let s:vira_filter = ''
     let s:vira_highlight = ''
-    let s:vira_highlight_print = '|'
+    let s:vira_highlight_print = ''
     call vira#_filter_unload()
   else
     let @/ = '\v' . s:vira_highlight
@@ -464,10 +464,12 @@ function! vira#_unselection(filters, value, separator, quote, newline) "{{{2
   let filters = substitute(filters,a:separator.a:quote.a:value.a:quote.a:newline,'','')
   let filters = substitute(filters,a:quote.a:value.a:quote.a:newline,'','')
   let filters = substitute(filters,a:separator.a:separator,a:separator,'')
-  if filters == a:separator | let filters[0] = '' | endif
-  if filters[0] == a:separator | let filters  = filters[1:] | endif
-  if filters[len(filters)-1] == a:separator
-    let filters = filters[0:len(filters)-2]
+  if a:quote == '"' || a:newline == '\\n'
+    if filters == a:separator | let filters[0] = '' | endif
+    if filters[0] == a:separator | let filters  = filters[1:] | endif
+    if filters[len(filters)-1] == a:separator
+      let filters = filters[0:len(filters)-2]
+    endif
   endif
   return filters
 endfunction
