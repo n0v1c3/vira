@@ -20,7 +20,6 @@ let s:vira_filter = ''
 let s:vira_filter_hold = @/
 let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
-let s:vira_highlight_print = '|'
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -414,23 +413,19 @@ endfunction
 
 function! vira#_select() "{{{2
   let current_pos = getpos('.')
-  silent! call feedkeys(":set hlsearch\<cr>")
   let value = vira#_getter()
 
   call vira#_filter_load()
 
   if s:vira_filter != '' && stridx(s:vira_highlight, value . "\\n") < 0
-    let s:vira_highlight_print = s:vira_highlight_print . value . '|'
     let s:vira_highlight = s:vira_highlight . "|" . value . "\\n"
     let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
   elseif s:vira_filter == ''
-    let s:vira_highlight_print = '|' . value . '|'
     let s:vira_highlight = value . "\\n"
     let s:vira_filter = '"' . value . '"'
   endif
-
+  echo '|' . substitute(s:vira_highlight,'\\n','','g') . '|'
   let @/ = '\v' . s:vira_highlight
-  call feedkeys(":echo '" . s:vira_highlight_print . "'\<cr>")
   call setpos('.', current_pos)
 endfunction
 
@@ -438,25 +433,20 @@ function! vira#_unselect() "{{{2
   let current_pos = getpos('.')
   let value = vira#_getter()
 
-  let s:vira_filter = vira#_unselection(s:vira_filter, value, ',', '"', '')
   let s:vira_highlight = vira#_unselection(s:vira_highlight, value, '|', '', '\\n')
-  let s:vira_highlight_print = vira#_unselection(s:vira_highlight_print, value, '|', '', '')
 
   if s:vira_highlight == '|' || s:vira_highlight == ''
     let s:vira_filter = ''
     let s:vira_highlight = ''
-    let s:vira_highlight_print = ''
+    echo ''
     call vira#_filter_unload()
   else
     let @/ = '\v' . s:vira_highlight
+    let s:vira_filter = vira#_unselection(s:vira_filter, value, ',', '"', '')
+    echo '|' . substitute(s:vira_highlight,'\\n','','g') . '|'
   endif
 
   call setpos('.', current_pos)
-  call feedkeys(":echo '" . s:vira_highlight_print . "'\<cr>")
-endfunction
-
-function! vira#_highlight() "{{{2
-  return s:vira_highlight
 endfunction
 
 function! vira#_unselection(filters, value, separator, quote, newline) "{{{2
@@ -464,12 +454,10 @@ function! vira#_unselection(filters, value, separator, quote, newline) "{{{2
   let filters = substitute(filters,a:separator.a:quote.a:value.a:quote.a:newline,'','')
   let filters = substitute(filters,a:quote.a:value.a:quote.a:newline,'','')
   let filters = substitute(filters,a:separator.a:separator,a:separator,'')
-  if a:quote == '"' || a:newline == '\\n'
-    if filters == a:separator | let filters[0] = '' | endif
-    if filters[0] == a:separator | let filters  = filters[1:] | endif
-    if filters[len(filters)-1] == a:separator
-      let filters = filters[0:len(filters)-2]
-    endif
+  if filters == a:separator | let filters[0] = '' | endif
+  if filters[0] == a:separator | let filters  = filters[1:] | endif
+  if filters[len(filters)-1] == a:separator
+    let filters = filters[0:len(filters)-2]
   endif
   return filters
 endfunction

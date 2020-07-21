@@ -11,10 +11,10 @@ augroup Vira
   " Menu
   autocmd BufEnter vira_menu call vira#_filter_load()
   autocmd Filetype vira_menu nnoremap <silent> <buffer> <cr> 0:call vira#_set()<cr>:q!<cr>:call vira#_refresh()<cr>
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> S :call vira#_all('select')<cr>
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> U :call vira#_all('unselect')<cr>
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> s :call vira#_select()<cr>
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> u :call vira#_unselect()<cr>
+  autocmd Filetype vira_menu nnoremap <silent> <buffer> S :set hlsearch<cr>:call vira#_all('select')<cr>
+  autocmd Filetype vira_menu nnoremap <silent> <buffer> U :set hlsearch<cr>:call vira#_all('unselect')<cr>
+  autocmd Filetype vira_menu nnoremap <silent> <buffer> s :set hlsearch<cr>:call vira#_select()<cr>
+  autocmd Filetype vira_menu nnoremap <silent> <buffer> u :set hlsearch<cr>:call vira#_unselect()<cr>
   autocmd Filetype vira_menu setlocal norelativenumber
   autocmd Filetype vira_menu setlocal number
   autocmd Filetype vira_menu setlocal winfixheight
