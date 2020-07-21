@@ -269,7 +269,7 @@ function! vira#_menu(type) abort " {{{2
 
   " Write report output into buffer
   if type == 'menu'
-    let s:vira_filter = ''
+    let s:vira_highlight = ''
     call vira#_filter_unload()
     silent! put=list
   else | call vira#_print_report(list) | endif
@@ -366,15 +366,16 @@ function! vira#_timestamp() "{{{2
 endfunction
 
 " Filter {{{1
-function! vira#_all(mode) "{{{2
-  " Un/select all items in current menu
-  let current_pos = getpos('.')
-  execute '1' . ',' . line('$') . 'call vira#_' . a:mode . '()'
-  call setpos('.', current_pos)
-endfunction
-
 function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
+endfunction
+
+function! vira#_filter_all(mode) "{{{2
+  " Un/select all items in current menu
+  let current_pos = getpos('.')
+  silent! execute '1' . ',' . line('$') . 'call vira#_' . a:mode . '()'
+  call setpos('.', current_pos)
+  echo s:vira_highlight
 endfunction
 
 function! vira#_filter_unload() " {{{2
@@ -390,7 +391,9 @@ endfunction
 function! vira#_filter_load() " {{{2
   if s:vira_filter_setkey != 0 && s:vira_highlight != ''
     let s:vira_filter_hold = @/
-    let @/ = '\v' . s:vira_highlight
+    " let s:vira_highlight = @/
+    " let @/ = '\v' . s:vira_highlight
+    let @/ = '\v' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','\\n|','g') . '\n'
     let s:vira_filter_setkey = 0
   endif
 endfunction
@@ -413,45 +416,46 @@ endfunction
 
 function! vira#_select() "{{{2
   let current_pos = getpos('.')
+
   let value = vira#_getter()
-
   call vira#_filter_load()
-
-  if s:vira_filter != '' && stridx(s:vira_highlight, value . "\\n") < 0
-    let s:vira_highlight = s:vira_highlight . "|" . value . "\\n"
-    let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
-  elseif s:vira_filter == ''
-    let s:vira_highlight = value . "\\n"
-    let s:vira_filter = '"' . value . '"'
+  if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
+    let s:vira_highlight = s:vira_highlight . value . '|'
+  elseif s:vira_highlight == ''
+    let s:vira_highlight = '|' . value . '|'
   endif
-  echo '|' . substitute(s:vira_highlight,'\\n','','g') . '|'
-  let @/ = '\v' . s:vira_highlight
+  call vira#_select_highlight()
+
   call setpos('.', current_pos)
 endfunction
 
 function! vira#_unselect() "{{{2
   let current_pos = getpos('.')
+
   let value = vira#_getter()
-
-  let s:vira_highlight = vira#_unselection(s:vira_highlight, value, '|', '', '\\n')
-
+  let s:vira_highlight = substitute(s:vira_highlight,'|'.value.'|','|','g')
   if s:vira_highlight == '|' || s:vira_highlight == ''
     let s:vira_filter = ''
     let s:vira_highlight = ''
     echo ''
     call vira#_filter_unload()
   else
-    let @/ = '\v' . s:vira_highlight
-    let s:vira_filter = vira#_unselection(s:vira_filter, value, ',', '"', '')
-    echo '|' . substitute(s:vira_highlight,'\\n','','g') . '|'
+    call vira#_select_highlight()
   endif
 
   call setpos('.', current_pos)
 endfunction
 
+function! vira#_select_highlight() "{{{2
+  let @/ = '\v' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','\\n|','g') . '\n'
+  " if @/ == '\n' | let @/ = '' | endif
+  let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
+  echo s:vira_highlight
+endfunction
+
 function! vira#_unselection(filters, value, separator, quote, newline) "{{{2
   let filters = a:filters
-  let filters = substitute(filters,a:separator.a:quote.a:value.a:quote.a:newline,'','')
+  let filters = substitute(filters,a:separator.a:quote.a:value.a:quote.a:newline.a:separator,a:separator,'')
   let filters = substitute(filters,a:quote.a:value.a:quote.a:newline,'','')
   let filters = substitute(filters,a:separator.a:separator,a:separator,'')
   if filters == a:separator | let filters[0] = '' | endif
