@@ -21,6 +21,12 @@ Alternatively, manually install the python3 dependencies:
 pip install --user jira
 ```
 
+If you would like to be on board with the active development the `dev` branch can be used:
+
+```
+Plug 'n0v1c3/vira', { 'do': './install.sh', 'branch': 'dev' }
+```
+
 ## Configuration
 
 ### Jira servers (required)
@@ -221,6 +227,8 @@ By default, the `open` or `xdg-open` command will be used by `:ViraBrowse` to op
 browser. If either command is missing or you wish to override the default browser, you may set the `g:vira_browser`
 variable or provide the `BROWSER` environment variable.
 
+Example setting **custom** default browser using `g:vira_browser`:
+
 ```
 let g:vira_browser = 'chromium'
 ```
@@ -239,6 +247,9 @@ from the current column.
 _NOTE:_ These keys are only mapped to the Vira windows.
 
 - `s` - Select current line within menu.
+- `S` - Select all lines within menu.
+- `u` - Unselect current line within menu.
+- `U` - Unselect all lines within menu.
 - `<cr>` - Apply selections or current line.
 
 ### Commands

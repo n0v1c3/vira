@@ -5,22 +5,24 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.1.2'
+let s:vira_version = '0.3.0'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
 let s:vira_end_time = 0
 
-let s:vira_root_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..'
+let s:vira_root_dir = resolve(fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..')
 
 let s:vira_menu_type = ''
 
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
+let s:vira_filter_setkey = 0
+let s:vira_highlight = ''
 
 let s:vira_todo_header = 'TODO'
-let s:vira_prompt_file = '/tmp/vira_prompt'
+let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
 let s:vira_set_lookup = {
       \'assign_issue': 'assign_issue',
       \'assignees': 'assignee',
@@ -205,9 +207,10 @@ function! vira#_menu(type) abort " {{{2
     call vira#_menu('servers')
     return
   endif
+
   call vira#_connect()
 
-  " Get the current winnr of the 'vira_menu' or 'vira_report' buffer    " l:asdf ===
+  " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
   if a:type == 'report'
     if (vira#_get_active_issue() == g:vira_null_issue)
       call vira#_menu('issues')
@@ -242,10 +245,10 @@ function! vira#_menu(type) abort " {{{2
   endif
 
   " Open buffer into a window
-  silent! let winnr = bufwinnr('^' . 'vira_' . type . '$')
+  silent! let winnr = bufwinnr(s:vira_root_dir . '/vira_' . type . '$')
   if type == 'report'
     if (winnr <= 0)
-      silent! execute 'botright vnew ' . fnameescape('vira_' . type)
+      silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_' . type)
       if g:vira_report_width > 0
         autocmd BufEnter vira_report setlocal winfixwidth
         silent! execute 'vertical resize ' . g:vira_report_width
@@ -253,13 +256,11 @@ function! vira#_menu(type) abort " {{{2
     else | call execute(winnr . ' windo e') | endif
   else
     if (winnr <= 0)
-      silent! execute 'botright new ' . fnameescape('vira_' . type)
-      autocmd BufEnter vira_report setlocal winfixheight
+      silent! execute 'botright new ' . fnameescape(s:vira_root_dir . '/vira_' . type)
       silent! execute 'resize ' . g:vira_menu_height
     else | call execute(winnr . ' windo e') | endif
   endif
 
-  silent! setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   silent! redraw
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
 
@@ -268,15 +269,15 @@ function! vira#_menu(type) abort " {{{2
 
   " Write report output into buffer
   if type == 'menu'
-    let s:vira_filter = ''
-    let s:vira_filter_hold = @/
+    let s:vira_highlight = ''
+    call vira#_filter_unload()
     silent! put=list
   else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
-  silent! execute '%s/\^M//g'
+  silent! execute '%s/\^M//g' | call histdel("search", -1)
   silent! normal gg2dd
-  silent! execute 'g/\n\n\n/\n\n/g'
+  silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
   silent! normal zCGzoV3kzogg
 
   " Ensure wrap and linebreak are enabled
@@ -289,7 +290,7 @@ endfunction
 function! vira#_quit() "{{{2
   let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
-    let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
+    let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
     if (winnr > 0)
         execute winnr .' wincmd q'
     endif
@@ -300,7 +301,7 @@ endfunction
 function! vira#_refresh() " {{{2
   let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
-    let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
+    let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
     if (winnr > 0)
       if (vira_window == 'report')
         silent! call vira#_menu(vira_window)
@@ -308,7 +309,6 @@ function! vira#_refresh() " {{{2
       execute 'silent! set syntax=vira_' . vira_window
     endif
   endfor
-  echo ''
 endfunction
 
 function! vira#_reset_filters() " {{{2
@@ -318,7 +318,7 @@ endfunction
 function! vira#_resize() " {{{2
   let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
-    let winnr = bufwinnr('^' . 'vira_' . vira_window . '$')
+    let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
       if (vira_window == 'report') | execute "normal! h:vnew\<cr>:q\<cr>l"
       else | execute "normal! h:new\<cr>:q\<cr>l"
       endif
@@ -341,13 +341,14 @@ function! vira#_todo() "{{{2
     " Jira comment
     let file_path = "{code}\n" . @% . "\n{code}"
     if !(vira#_get_active_issue() == g:vira_null_issue)
-      python3 Vira.api.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
+      python3 Vira.api.jira.add_comment(vim.eval('vira#_get_active_issue()'), vim.eval('file_path . "\n*" . s:vira_todo_header . "* " . comment'))
     endif
 
     " Vim comment
-    execute "normal mmO" . comment_header . comment . "\<esc>mn"
+    let current_pos = getpos('.')
+    execute "normal O" . comment_header . comment . "\<esc>"
+    call setpos('.', current_pos)
     call NERDComment(0, "Toggle")
-    normal `m
   endif
 endfunction
 
@@ -369,9 +370,36 @@ function! vira#_filter(name) "{{{2
   silent! execute 'python3 vira_set_' . a:name . '("' . 'g:vira_active_' . a:type . '")'
 endfunction
 
+function! vira#_filter_all(mode) "{{{2
+  " Un/select all items in current menu
+  let current_pos = getpos('.')
+  silent! execute '1' . ',' . line('$') . 'call vira#_' . a:mode . '()'
+  echo s:vira_highlight
+  call setpos('.', current_pos)
+endfunction
+
+function! vira#_filter_unload() " {{{2
+  if s:vira_filter_setkey != 1
+    let save_pos = getpos('.')
+    silent! execute "normal! /" . histget('search', -1) . "\<cr>"
+    let @/ = histget('search', -1)
+    call setpos('.', save_pos)
+    let s:vira_filter_setkey = 1
+  endif
+endfunction
+
+function! vira#_filter_load() " {{{2
+  if s:vira_filter_setkey != 0 && s:vira_highlight != ''
+    let s:vira_filter_hold = @/
+    silent! call vira#_highlight()
+    let s:vira_filter_setkey = 0
+  endif
+endfunction
+
 function! vira#_getter() "{{{2
   " Return the proper form of the selected data
   if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    normal! 0
     return expand('<cWORD>')
   elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
     if getline('.') == 'Unassigned'
@@ -385,62 +413,46 @@ function! vira#_getter() "{{{2
 endfunction
 
 function! vira#_select() "{{{2
-  normal mm0
-  silent! call feedkeys(":set hlsearch\<cr>")
+  let current_pos = getpos('.')
 
   let value = vira#_getter()
-  if s:vira_filter != '' && stridx(s:vira_highlight, value) < 0
-    let s:vira_highlight = s:vira_highlight . "|" . value
-    let s:vira_filter = s:vira_filter . "," . '"' . value . '"'
-  elseif s:vira_filter == ''
-    let s:vira_highlight = value
-    let s:vira_filter = '"' . value . '"'
+  call vira#_filter_load()
+  if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
+    let s:vira_highlight = s:vira_highlight . value . '|'
+  elseif s:vira_highlight == ''
+    let s:vira_highlight = '|' . value . '|'
   endif
+  call vira#_highlight()
 
-  let @/ = '\v' . s:vira_highlight
-  execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-  normal `m
-  call feedkeys(":echo '" . s:vira_highlight . "'\<cr>")
-endfunction
-
-function! vira#_select_all(mode) "{{{2
-  normal! mn0gg
-  let lines = 0
-  while lines < line('$')
-    execute 'call vira#_' . a:mode . '()'
-    normal! j
-    let lines += 1
-  endwhile
-  normal `n0
+  call setpos('.', current_pos)
 endfunction
 
 function! vira#_unselect() "{{{2
-  normal mm0
+  let current_pos = getpos('.')
 
   let value = vira#_getter()
-
-  let s:vira_highlight = substitute(s:vira_highlight,value,'','')
-  let s:vira_highlight = substitute(s:vira_highlight,'||','|','')
-  if s:vira_highlight[0] == '|' | let s:vira_highlight  = s:vira_highlight[1:] | endif
-  if s:vira_highlight[len(s:vira_highlight)-1] == '|'
-    let s:vira_highlight = s:vira_highlight[0:len(s:vira_highlight)-2]
-  endif
-
-  let s:vira_filter = substitute(s:vira_filter,'"' . value . '"' ,'','')
-  let s:vira_filter = substitute(s:vira_filter,',,',',','')
-  if s:vira_filter[0] == ',' | let s:vira_filter  = s:vira_filter[1:] | endif
-  if s:vira_filter[len(s:vira_filter)-1] == ','
-    let s:vira_filter = s:vira_filter[0:len(s:vira_filter)-2]
-  endif
-
-  if s:vira_highlight == '|' || s:vira_highlight == ''
+  let s:vira_highlight = substitute(s:vira_highlight,'|'.value.'|','|','g')
+  let length = len(s:vira_highlight)
+  if s:vira_highlight[1:2] == '||' || s:vira_highlight == '|' || s:vira_highlight[length-1:] != '|'
+    let s:vira_filter_setkey = 0
+    silent! call vira#_filter_unload()
+    let s:vira_filter = ''
     let s:vira_highlight = ''
-    call vira#_filter_reset()
+    echo s:vira_highlight
   else
-    let @/ = '\v' . s:vira_highlight
-    execute "normal! /\\v" . s:vira_highlight . "\<cr>"
-    normal `m
+    call vira#_highlight()
   endif
+
+  call setpos('.', current_pos)
+endfunction
+
+function! vira#_highlight() "{{{2
+  echo s:vira_highlight
+  if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
+    let seperator = ''
+  else | let seperator = '^' | endif
+  let @/ = '\v' . seperator . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','$|' . seperator,'g') . '$\n'
+  let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
 endfunction
 
 function! vira#_set() "{{{2
@@ -483,9 +495,6 @@ function! vira#_set() "{{{2
     endif
   endif
 
-  call vira#_filter_reset()
-endfunction
-
-function! vira#_filter_reset() " {{{2
-  let @/ = s:vira_filter_hold
+  let s:vira_filter_hold = ''
+  call vira#_filter_unload()
 endfunction
