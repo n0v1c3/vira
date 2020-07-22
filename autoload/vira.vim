@@ -495,6 +495,9 @@ function! vira#_set() "{{{2
     endif
   endif
 
+  let s:vira_filter_setkey = 0
+  let s:vira_highlight = ''
+  let s:vira_filter = ''
   let s:vira_filter_hold = ''
   call vira#_filter_unload()
 endfunction
