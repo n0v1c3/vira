@@ -433,11 +433,12 @@ function! vira#_unselect() "{{{2
   let value = vira#_getter()
   let s:vira_highlight = substitute(s:vira_highlight,'|'.value.'|','|','g')
   let length = len(s:vira_highlight)
-  if s:vira_highlight == '|' || s:vira_highlight == ''
+  if s:vira_highlight[1:2] == '||' || s:vira_highlight == '|' || s:vira_highlight[length-1:] != '|'
+    let s:vira_filter_setkey = 0
+    silent! call vira#_filter_unload()
     let s:vira_filter = ''
     let s:vira_highlight = ''
     echo s:vira_highlight
-    silent! call vira#_filter_unload()
   else
     call vira#_highlight()
   endif
@@ -447,7 +448,10 @@ endfunction
 
 function! vira#_highlight() "{{{2
   echo s:vira_highlight
-  let @/ = '\v^' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','$|^','g') . '$\n'
+  if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
+    let seperator = ''
+  else | let seperator = '^' | endif
+  let @/ = '\v' . seperator . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','$|' . seperator,'g') . '$\n'
   let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
 endfunction
 
