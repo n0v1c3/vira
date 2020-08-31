@@ -186,14 +186,14 @@ class ViraAPI():
         Menu to select users
         '''
 
-        self.get_users()
+        self.print_users()
 
     def get_assignees(self):
         '''
         Get my issues with JQL
         '''
 
-        self.get_users()
+        self.print_users()
 
     def get_comments(self, issue):
         '''
@@ -542,14 +542,26 @@ Comments
 
         self.set_report_lines(report, description, issue)
 
-        return report.format(**locals())
+        return self.report_users(report.format(**locals()))
+
+    def report_users(self, report):
+        '''
+        Replace report accountid with names
+        '''
+
+        for user in self.get_users():
+            user = user.split(' ~ ')
+            if user[0] != "Unassigned":
+                report = report.replace('[~accountid:' + user[1] + ']', '[~' + user[0] + ']')
+
+        return report
 
     def get_reporters(self):
         '''
         Get my issues with JQL
         '''
 
-        self.get_users()
+        self.print_users()
 
     def get_servers(self):
         '''
@@ -584,6 +596,12 @@ Comments
 
         self.get_versions()
 
+    def print_users(self):
+
+        for user in self.get_users():
+            print(user)
+        print('Unassigned')
+
     def get_users(self):
         '''
         Get my issues with JQL
@@ -601,9 +619,7 @@ Comments
             if user + ' ~ ' + id not in users:
                 users.append(user + ' ~ ' + str(id))
 
-        for user in sorted(users):
-            print(user)
-        print('Unassigned')
+        return sorted(users)
 
     def get_versions(self):
         '''
