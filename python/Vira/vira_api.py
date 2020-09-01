@@ -365,22 +365,7 @@ class ViraAPI():
                 description = ''
             return description + self.prompt_text_commented
 
-        # Prepare dynamic variables for prompt text
-        query = 'ORDER BY updated DESC'
-        issues = self.jira.search_issues(
-            query, fields='assignee, reporter', json_result='True', maxResults=-1)
-
-        # Determine cloud/server jira
-        id = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
-        users = set()
-        for issue in issues['issues']:
-            user = str(issue['fields']['reporter']
-                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][id]
-            users.add(user)
-            if type(issue['fields']['assignee']) == dict:
-                user = str(issue['fields']['assignee']['displayName']
-                          ) + ' ~ ' + issue['fields']['assignee'][id]
-            users.add(user)
+        users = self.get_users()
 
         self.prompt_text_commented = f'''
 # ---------------------------------
@@ -388,8 +373,14 @@ class ViraAPI():
 # An empty message will abort the operation.
 #
 # Below is a list of acceptable values for each input field.
-# Users: {users}
-'''
+# Users:'''
+        for user in users:
+            user = user.split(' ~ ')
+            name = user[0]
+            id = user[1]
+            self.prompt_text_commented = self.prompt_text_commented + f'''
+# [{name}|~accountid:{id}]''' if len(id) >= 24 else self.prompt_text_commented + f'''
+# [~{id}]'''
         # Add comment
         if self.prompt_type == 'add_comment':
             return self.prompt_text_commented
@@ -552,7 +543,8 @@ Comments
         for user in self.get_users():
             user = user.split(' ~ ')
             if user[0] != "Unassigned":
-                report = report.replace('[~accountid:' + user[1] + ']', '[~' + user[0] + ']')
+                report = report.replace('accountid:', '').replace(
+                    '[~' + user[1] + ']', '[~' + user[0] + ']')
 
         return report
 
@@ -611,13 +603,18 @@ Comments
         issues = self.jira.search_issues(
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
-        users = []
-        for issue in issues["issues"]:
+        # Determine cloud/server jira
+        id = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
 
-            id = str(issue['fields']['reporter']['self']).split("=")[1]
-            user = issue['fields']['reporter']['displayName']
-            if user + ' ~ ' + id not in users:
-                users.append(user + ' ~ ' + str(id))
+        users = set()
+        for issue in issues['issues']:
+            user = str(issue['fields']['reporter']
+                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][id]
+            users.add(user)
+            if type(issue['fields']['assignee']) == dict:
+                user = str(issue['fields']['assignee']['displayName']
+                          ) + ' ~ ' + issue['fields']['assignee'][id]
+            users.add(user)
 
         return sorted(users)
 
