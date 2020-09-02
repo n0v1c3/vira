@@ -53,6 +53,9 @@ class ViraAPI():
             'status': '',
         }
 
+        self.users = set()
+        self.users_type = ''
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
@@ -144,6 +147,7 @@ class ViraAPI():
 
         # Connect to jira server
         try:
+            # Authorize
             self.jira = JIRA(
                 options={
                     'server': server,
@@ -151,6 +155,11 @@ class ViraAPI():
                 },
                 basic_auth=(username, password),
                 timeout=5)
+
+            # User list update
+            self.users = set()
+            self.users = self.get_users()
+
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
             if 'CAPTCHA' in str(e):
@@ -365,8 +374,6 @@ class ViraAPI():
                 description = ''
             return description + self.prompt_text_commented
 
-        users = self.get_users()
-
         self.prompt_text_commented = f'''
 # ---------------------------------
 # Please enter text above this line
@@ -374,12 +381,12 @@ class ViraAPI():
 #
 # Below is a list of acceptable values for each input field.
 # Users:'''
-        for user in users:
+        for user in self.users:
             user = user.split(' ~ ')
             name = user[0]
             id = user[1]
             self.prompt_text_commented = self.prompt_text_commented + f'''
-# [{name}|~accountid:{id}]''' if len(id) >= 24 else self.prompt_text_commented + f'''
+# [{name}|~accountid:{id}]''' if self.users_type == 'accountId' else self.prompt_text_commented + f'''
 # [~{id}]'''
         # Add comment
         if self.prompt_type == 'add_comment':
@@ -540,7 +547,7 @@ Comments
         Replace report accountid with names
         '''
 
-        for user in self.get_users():
+        for user in self.users:
             user = user.split(' ~ ')
             if user[0] != "Unassigned":
                 report = report.replace('accountid:', '').replace(
@@ -590,7 +597,7 @@ Comments
 
     def print_users(self):
 
-        for user in self.get_users():
+        for user in self.users:
             print(user)
         print('Unassigned')
 
@@ -604,19 +611,18 @@ Comments
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
         # Determine cloud/server jira
-        id = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
+        self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
 
-        users = set()
         for issue in issues['issues']:
             user = str(issue['fields']['reporter']
-                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][id]
-            users.add(user)
+                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][self.users_type]
+            self.users.add(user)
             if type(issue['fields']['assignee']) == dict:
                 user = str(issue['fields']['assignee']['displayName']
-                          ) + ' ~ ' + issue['fields']['assignee'][id]
-            users.add(user)
+                          ) + ' ~ ' + issue['fields']['assignee'][self.users_type]
+            self.users.add(user)
 
-        return sorted(users)
+        return sorted(self.users)
 
     def get_versions(self):
         '''
