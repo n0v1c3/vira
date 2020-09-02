@@ -10,7 +10,7 @@ syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsType
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
-syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
+syntax match viraCommentAuthor /^\w.*\s@\s\d\{4\}/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
 syntax match viraCommentClose "}}}"
 syntax match viraCommentDate /@.*/hs=s,he=e contained
 
