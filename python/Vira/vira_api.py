@@ -53,6 +53,9 @@ class ViraAPI():
             'status': '',
         }
 
+        self.users = set()
+        self.users_type = ''
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
@@ -144,6 +147,7 @@ class ViraAPI():
 
         # Connect to jira server
         try:
+            # Authorize
             self.jira = JIRA(
                 options={
                     'server': server,
@@ -151,6 +155,11 @@ class ViraAPI():
                 },
                 basic_auth=(username, password),
                 timeout=5)
+
+            # User list update
+            self.users = set()
+            self.users = self.get_users()
+
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
             if 'CAPTCHA' in str(e):
@@ -186,14 +195,14 @@ class ViraAPI():
         Menu to select users
         '''
 
-        self.get_users()
+        self.print_users()
 
     def get_assignees(self):
         '''
         Get my issues with JQL
         '''
 
-        self.get_users()
+        self.print_users()
 
     def get_comments(self, issue):
         '''
@@ -365,31 +374,20 @@ class ViraAPI():
                 description = ''
             return description + self.prompt_text_commented
 
-        # Prepare dynamic variables for prompt text
-        query = 'ORDER BY updated DESC'
-        issues = self.jira.search_issues(
-            query, fields='assignee, reporter', json_result='True', maxResults=-1)
-
-        # Determine cloud/server jira
-        id = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
-        users = set()
-        for issue in issues['issues']:
-            user = str(issue['fields']['reporter']
-                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][id]
-            users.add(user)
-            if type(issue['fields']['assignee']) == dict:
-                user = str(issue['fields']['assignee']['displayName']
-                          ) + ' ~ ' + issue['fields']['assignee'][id]
-            users.add(user)
-
         self.prompt_text_commented = f'''
 # ---------------------------------
 # Please enter text above this line
 # An empty message will abort the operation.
 #
 # Below is a list of acceptable values for each input field.
-# Users: {users}
-'''
+# Users:'''
+        for user in self.users:
+            user = user.split(' ~ ')
+            name = user[0]
+            id = user[1]
+            self.prompt_text_commented = self.prompt_text_commented + f'''
+# [{name}|~accountid:{id}]''' if self.users_type == 'accountId' else self.prompt_text_commented + f'''
+# [~{id}]'''
         # Add comment
         if self.prompt_type == 'add_comment':
             return self.prompt_text_commented
@@ -542,14 +540,27 @@ Comments
 
         self.set_report_lines(report, description, issue)
 
-        return report.format(**locals())
+        return self.report_users(report.format(**locals()))
+
+    def report_users(self, report):
+        '''
+        Replace report accountid with names
+        '''
+
+        for user in self.users:
+            user = user.split(' ~ ')
+            if user[0] != "Unassigned":
+                report = report.replace('accountid:', '').replace(
+                    '[~' + user[1] + ']', '[~' + user[0] + ']')
+
+        return report
 
     def get_reporters(self):
         '''
         Get my issues with JQL
         '''
 
-        self.get_users()
+        self.print_users()
 
     def get_servers(self):
         '''
@@ -584,6 +595,12 @@ Comments
 
         self.get_versions()
 
+    def print_users(self):
+
+        for user in self.users:
+            print(user)
+        print('Unassigned')
+
     def get_users(self):
         '''
         Get my issues with JQL
@@ -593,17 +610,19 @@ Comments
         issues = self.jira.search_issues(
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
-        users = []
-        for issue in issues["issues"]:
+        # Determine cloud/server jira
+        self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
 
-            id = str(issue['fields']['reporter']['self']).split("=")[1]
-            user = issue['fields']['reporter']['displayName']
-            if user + ' ~ ' + id not in users:
-                users.append(user + ' ~ ' + str(id))
+        for issue in issues['issues']:
+            user = str(issue['fields']['reporter']
+                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][self.users_type]
+            self.users.add(user)
+            if type(issue['fields']['assignee']) == dict:
+                user = str(issue['fields']['assignee']['displayName']
+                          ) + ' ~ ' + issue['fields']['assignee'][self.users_type]
+            self.users.add(user)
 
-        for user in sorted(users):
-            print(user)
-        print('Unassigned')
+        return sorted(self.users)
 
     def get_versions(self):
         '''

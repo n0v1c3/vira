@@ -8,6 +8,12 @@ augroup Vira
   autocmd BufNewFile,BufRead vira_menu setf vira_menu
   autocmd BufNewFile,BufRead vira_report setf vira_report
 
+  " autocmd BufEnter vira_menu let t_back = &t_EI
+  " autocmd BufEnter vira_menu let &t_EI = "\<esc>[4 q"
+  " autocmd BufLeave vira_menu let &t_EI = t_back
+  " autocmd BufEnter,BufLeave vira_menu execute('normal r')
+  " autocmd Filetype vira_menu setlocal cursorline
+
   " Menu
   autocmd BufEnter vira_menu call vira#_filter_load()
   autocmd Filetype vira_menu nnoremap <silent> <buffer> <cr> 0:call vira#_set()<cr>:q!<cr>:call vira#_refresh()<cr>
