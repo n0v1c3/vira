@@ -629,9 +629,27 @@ Comments
         Build a vim popup menu for a list of versions
         '''
 
-        for version in self.jira.project_versions(self.userconfig_filter['project']):
-            print(version.name)
+        query = 'ORDER BY updated DESC'
+        issues = self.jira.search_issues(
+            query, fields='fixVersion', json_result='True', maxResults=-1)
+
+        self.versions = set()
+        for issue in issues['issues']:
+            try:
+                version = str(issue['fields']['fixVersions'][0]['name'] + ' ~ ' + issue['fields']['fixVersions'][0]['description'])
+            except:
+                try:
+                    version = str(issue['fields']['fixVersions'][0]['name'])
+                except:
+                    version = 'null'
+            if version != 'null':
+                self.versions.add(version)
+
+        for version in sorted(self.versions):
+            print(version)
         print('null')
+
+        return self.versions.add(version)
 
     def load_project_config(self):
         '''
