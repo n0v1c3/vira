@@ -54,6 +54,7 @@ class ViraAPI():
         }
 
         self.users = set()
+        self.versions = set()
         self.users_type = ''
 
     def create_issue(self, input_stripped):
@@ -157,8 +158,8 @@ class ViraAPI():
                 timeout=5)
 
             # User list update
-            self.users = set()
             self.users = self.get_users()
+            self.versions = self.get_versions()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -593,7 +594,7 @@ Comments
         Get my issues with JQL
         '''
 
-        self.get_versions()
+        self.print_versions()
 
     def print_users(self):
         '''
@@ -643,16 +644,17 @@ Comments
 
         self.versions = set()
         projects = set()
-        versions = []
+        versions = set()
+
         if self.userconfig_filter['project'] == '':
             projects = self.jira.projects()
+        elif isinstance(self.userconfig_filter['project'], str):
+            projects.add(self.userconfig_filter['project'])
         else:
-            if isinstance(self.userconfig_filter['project'], str):
-                projects.add(self.userconfig_filter['project'])
-            else:
-                for p in self.userconfig_filter['project']:
-                    projects.add(p)
+            for p in self.userconfig_filter['project']:
+                projects.add(p)
 
+        # Get the description...
         for p in projects:
             versions = self.jira.project_versions(p)
             for v in reversed(versions):
@@ -670,10 +672,6 @@ Comments
                             version = 'null'
                     if version != 'null':
                         self.versions.add(str(p) + ' ~ ' + version)
-
-        for version in self.versions:
-            print(version)
-        print('null')
 
         return self.versions
 

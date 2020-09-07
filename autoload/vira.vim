@@ -238,7 +238,9 @@ function! vira#_menu(type) abort " {{{2
       return
     endif
     let type = 'menu'
-    let list = execute('python3 Vira.api.get_' . a:type . '()')
+    if a:type == 'versions' | let printer = 'print_'
+    else | let printer = 'get_' | endif
+    let list = execute('python3 Vira.api.' . printer . a:type . '()')
 
     " Save current menu type
     let s:vira_menu_type = a:type
@@ -497,6 +499,10 @@ function! vira#_set() "{{{2
     if variable == 'status'
       execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
     endif
+  endif
+
+  if variable == 'project'
+      execute 'python3 Vira.api.get_versions()'
   endif
 
   let s:vira_filter_setkey = 0
