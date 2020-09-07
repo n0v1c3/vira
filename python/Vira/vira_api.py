@@ -385,8 +385,8 @@ class ViraAPI():
             user = user.split(' ~ ')
             name = user[0]
             id = user[1]
-            self.prompt_text_commented = self.prompt_text_commented + f'''
-# [{name}|~accountid:{id}]''' if self.users_type == 'accountId' else self.prompt_text_commented + f'''
+            self.prompt_text_commented += f'''
+# [{name}|~accountid:{id}]''' if self.users_type == 'accountId' else f'''
 # [~{id}]'''
         # Add comment
         if self.prompt_type == 'add_comment':
@@ -596,6 +596,9 @@ Comments
         self.get_versions()
 
     def print_users(self):
+        '''
+        Print users
+        '''
 
         for user in self.users:
             print(user)
@@ -624,32 +627,55 @@ Comments
 
         return sorted(self.users)
 
-    def get_versions(self):
+    def print_versions(self):
         '''
-        Build a vim popup menu for a list of versions
+        Print version list with project filters
         '''
 
-        query = 'ORDER BY updated DESC'
-        issues = self.jira.search_issues(
-            query, fields='fixVersion', json_result='True', maxResults=-1)
-
-        self.versions = set()
-        for issue in issues['issues']:
-            try:
-                version = str(issue['fields']['fixVersions'][0]['name'] + ' ~ ' + issue['fields']['fixVersions'][0]['description'])
-            except:
-                try:
-                    version = str(issue['fields']['fixVersions'][0]['name'])
-                except:
-                    version = 'null'
-            if version != 'null':
-                self.versions.add(version)
-
-        for version in sorted(self.versions):
+        for version in self.versions:
             print(version)
         print('null')
 
-        return self.versions.add(version)
+    def get_versions(self):
+        '''
+        Build a vim popup menu for a list of versions with project filters
+        '''
+
+        self.versions = set()
+        projects = set()
+        versions = []
+        if self.userconfig_filter['project'] == '':
+            projects = self.jira.projects()
+        else:
+            if isinstance(self.userconfig_filter['project'], str):
+                projects.add(self.userconfig_filter['project'])
+            else:
+                for p in self.userconfig_filter['project']:
+                    projects.add(p)
+
+        for p in projects:
+            versions = self.jira.project_versions(p)
+            for v in reversed(versions):
+                query = 'fixVersion = ' + str(v) + ' AND project = ' + str(p)
+                issues = self.jira.search_issues(
+                    query, fields='fixVersion', json_result='True', maxResults=1)
+
+                for issue in issues['issues']:
+                    try:
+                        version = str(issue['fields']['fixVersions'][0]['name'] + ' ~ ' + issue['fields']['fixVersions'][0]['description'])
+                    except:
+                        try:
+                            version = str(issue['fields']['fixVersions'][0]['name'])
+                        except:
+                            version = 'null'
+                    if version != 'null':
+                        self.versions.add(str(p) + ' ~ ' + version)
+
+        for version in self.versions:
+            print(version)
+        print('null')
+
+        return self.versions
 
     def load_project_config(self):
         '''
