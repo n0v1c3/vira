@@ -337,7 +337,8 @@ class ViraAPI():
         '''
 
         for project in self.jira.projects():
-            print(project)
+            projectDesc = self.jira.createmeta(projectKeys=project, expand='projects')['projects'][0]
+            print(str(project) + ' ~ ' + projectDesc['name'])
 
     def get_priority(self):
         '''
@@ -658,7 +659,7 @@ Comments
         for p in projects:
             versions = self.jira.project_versions(p)
             for v in reversed(versions):
-                query = 'fixVersion = ' + str(v) + ' AND project = ' + str(p)
+                query = 'fixVersion = "' + str(v) + '" AND project = "' + str(p) + '"'
                 issues = self.jira.search_issues(
                     query, fields='fixVersion', json_result='True', maxResults=1)
 
