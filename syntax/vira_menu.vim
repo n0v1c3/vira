@@ -2,10 +2,21 @@
 if exists('b:current_syntax') | finish|  endif
 
 " Syntax matching {{{1
-syntax match viraHTML "https://.*"hs=s,he=e
+syntax match viraMenuNull /\n*\s*\w\+/
+
+syntax match viraUsersID /^\s*\w\+\n/
+syntax region viraUsers start=/.*\~.*/ end=/\n/ contains=viraUsersID
+syntax region viraUsersID start=/\~.*/hs=s+1 end=/\n/ contained
+
+syntax region viraVersion start=/.*\~.*\~.*/ end=/\n/ contains=viraVersionName,viraVersionProj
+syntax region viraVersionName start=/\~/hs=s+1 end=/\~/he=e-1 contained
+syntax match viraVersionProj /^\s*\w\+/ contained
+
 syntax match viraIssuesIssue ".*-.* │.*│.*│.*│.*" contains=viraIssuesDescription
 syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus contains=viraIssuesStatus, contained
 syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
+
+syntax match viraHTML "https://.*"
 
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
@@ -13,9 +24,6 @@ syntax match viraCitvtion "??.*??"
 syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
 syntax match viraCommentClose "}}}"
 syntax match viraCommentDate /@.*/hs=s,he=e contained
-
-" syntax match viraIssuesStatus "| .* |" contained
-
 
 " Report {{{2
 syntax match viraDetails "┌.*"
@@ -96,14 +104,12 @@ syntax region viraCode start=/{code.*}/ end=/{code}/
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
 
 " Highlighting
-highlight default link viraHTML Title
-highlight default link viraIssuesStatus Statement
-highlight default link viraIssuesDescription Question
-highlight default link viraIssuesIssue Title
+highlight default link viraHTML Question
+highlight default link viraIssuesDescription Statement
+highlight default link viraIssuesIssue Question
 highlight default link viraBullets Identifier
 highlight default link viraCitvtion Title
 highlight default link viraCode Question
-highlight default link viraCommentAuthor Identifier
 highlight default link viraCommentClose Statement
 highlight default link viraCommentDate Statement
 highlight default link viraDetailsA Identifier
@@ -127,6 +133,16 @@ highlight default link viraTitleFold Statement
 highlight default link viraDetailsTypeAssignee Statement
 highlight default link viraDetailsTypeReporter Statement
 highlight default link viraDetailsDates Statement
+highlight default link viraVersion Statement
+highlight default link viraVersionName Question
+" highlight default link viraVersionProj Title
+highlight default link viraUsers Statement
+highlight default link viraUsersID Question
+highlight default link viraUsersName Title
+highlight default link viraMenuNull Question
+
+highlight viraVersionProj ctermfg=darkblue guifg=darkblue
+highlight viraIssuesStatus ctermfg=darkblue
 highlight viraDetailsDates ctermfg=yellow guifg=yellow
 highlight viraBold cterm=bold gui=bold
 highlight viraDetailsHigh ctermfg=red guifg=red

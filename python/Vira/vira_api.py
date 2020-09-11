@@ -643,10 +643,11 @@ Comments
         Build a vim popup menu for a list of versions with project filters
         '''
 
+        # Reset version list
         self.versions = set()
-        projects = set()
-        versions = set()
 
+        # Project filter for version list
+        projects = set()
         if self.userconfig_filter['project'] == '':
             projects = self.jira.projects()
         elif isinstance(self.userconfig_filter['project'], str):
@@ -655,25 +656,30 @@ Comments
             for p in self.userconfig_filter['project']:
                 projects.add(p)
 
-        # Get the description...
+        # Loop through each project and all versions within
+        versions = set()
         for p in projects:
-            versions = self.jira.project_versions(p)
-            for v in reversed(versions):
+            for v in reversed(self.jira.project_versions(p)):
+                # Single issue query for version descriptioin
                 query = 'fixVersion = "' + str(v) + '" AND project = "' + str(p) + '"'
                 issues = self.jira.search_issues(
                     query, fields='fixVersion', json_result='True', maxResults=1)
 
-                for issue in issues['issues']:
-                    try:
-                        version = str(issue['fields']['fixVersions'][0]['name'] + ' ~ ' + issue['fields']['fixVersions'][0]['description'])
-                    except:
-                        try:
-                            version = str(issue['fields']['fixVersions'][0]['name'])
-                        except:
-                            version = 'null'
-                    if version != 'null':
-                        self.versions.add(str(p) + ' ~ ' + version)
+                issue = issues['issues'][0]['fields']['fixVersions'][0]
 
+                try:
+                    version = str(issues['issues'][0]['fields']['fixVersions'][0]['name'] + ' ~ ' + issues['issues'][0]['fields']['fixVersions'][0]['description'])
+                except:
+                    try:
+                        version = str(issues['issues'][0]['fields']['fixVersions'][0]['name']) + ' ~ ' + 'None'
+                    except:
+                        version = 'null'
+                        pass
+
+                if version != 'null':
+                    self.versions.add(str(p) + ' ~ ' + version)
+
+        # Return the version list
         return self.versions
 
     def load_project_config(self):
