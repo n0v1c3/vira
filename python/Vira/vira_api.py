@@ -54,6 +54,7 @@ class ViraAPI():
         }
 
         self.users = set()
+        self.versions = set()
         self.users_type = ''
 
     def create_issue(self, input_stripped):
@@ -157,8 +158,8 @@ class ViraAPI():
                 timeout=5)
 
             # User list update
-            self.users = set()
             self.users = self.get_users()
+            self.versions = self.get_versions()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -336,7 +337,8 @@ class ViraAPI():
         '''
 
         for project in self.jira.projects():
-            print(project)
+            projectDesc = self.jira.createmeta(projectKeys=project, expand='projects')['projects'][0]
+            print(str(project) + ' ~ ' + projectDesc['name'])
 
     def get_priority(self):
         '''
@@ -385,8 +387,8 @@ class ViraAPI():
             user = user.split(' ~ ')
             name = user[0]
             id = user[1]
-            self.prompt_text_commented = self.prompt_text_commented + f'''
-# [{name}|~accountid:{id}]''' if self.users_type == 'accountId' else self.prompt_text_commented + f'''
+            self.prompt_text_commented += f'''
+# [{name}|~accountid:{id}]''' if self.users_type == 'accountId' else f'''
 # [~{id}]'''
         # Add comment
         if self.prompt_type == 'add_comment':
@@ -593,9 +595,12 @@ Comments
         Get my issues with JQL
         '''
 
-        self.get_versions()
+        self.print_versions()
 
     def print_users(self):
+        '''
+        Print users
+        '''
 
         for user in self.users:
             print(user)
@@ -624,14 +629,58 @@ Comments
 
         return sorted(self.users)
 
-    def get_versions(self):
+    def print_versions(self):
         '''
-        Build a vim popup menu for a list of versions
+        Print version list with project filters
         '''
 
-        for version in self.jira.project_versions(self.userconfig_filter['project']):
-            print(version.name)
+        for version in self.versions:
+            print(version)
         print('null')
+
+    def get_versions(self):
+        '''
+        Build a vim popup menu for a list of versions with project filters
+        '''
+
+        # Reset version list
+        self.versions = set()
+
+        # Project filter for version list
+        projects = set()
+        if self.userconfig_filter['project'] == '':
+            projects = self.jira.projects()
+        elif isinstance(self.userconfig_filter['project'], str):
+            projects.add(self.userconfig_filter['project'])
+        else:
+            for p in self.userconfig_filter['project']:
+                projects.add(p)
+
+        # Loop through each project and all versions within
+        versions = set()
+        for p in projects:
+            for v in reversed(self.jira.project_versions(p)):
+                # Single issue query for version descriptioin
+                query = 'fixVersion = "' + str(v) + '" AND project = "' + str(p) + '"'
+                issues = self.jira.search_issues(
+                    query, fields='fixVersion', json_result='True', maxResults=1)
+
+                issue = issues['issues'][0]['fields']['fixVersions'][0]
+
+                try:
+                    version = str(issues['issues'][0]['fields']['fixVersions'][0]['name'] + ' ~ ' + issues['issues'][0]['fields']['fixVersions'][0]['description'])
+                except:
+                    try:
+                        version = str(issues['issues'][0]['fields']['fixVersions'][0]['name']) + ' ~ ' + 'None'
+                    except:
+                        version = 'null'
+                        pass
+
+                if version != 'null':
+                    self.versions.add(str(p) + ' ~ ' + version)
+
+        # Return the version list
+        return self.versions
 
     def load_project_config(self):
         '''

@@ -1,23 +1,51 @@
 " Quit when a syntax file was already loaded.
-if exists('b:current_syntax') | finish|  endif
+if exists('b:current_syntax') | finish | endif
 
-" Syntax matching {{{1
-syntax match viraHTML "https://.*"hs=s,he=e
+" Menus {{{1
+" General {{{2
+syntax match viraMenusNull /\n*\s*\w\+/
+syntax match viraMenusLink /^\s*\w\+\n/
+syntax region viraMenus start=/.*\~.*/ end=/\n/ contains=viraMenusLink
+syntax region viraMenusLink start=/\~.*/hs=s+1 end=/\n/ contained
+highlight default link viraMenus Statement
+highlight default link viraMenusLink Question
+highlight default link viraMenusNull Question
+
+" Versions {{{2
+syntax region viraMenuV start=/.*\~.*\~.*/ end=/\n/ contains=viraMenuVName,viraMenuVProj
+syntax region viraMenuVName start=/\~/hs=s+1 end=/\~/he=e-1 contained
+syntax match viraMenuVProj /^\s*\w\+/ contained
+highlight default link viraMenuV Statement
+highlight default link viraMenuVName Question
+highlight default link viraMenuVProj Title
+
+" Issues {{{2
 syntax match viraIssuesIssue ".*-.* │.*│.*│.*│.*" contains=viraIssuesDescription
 syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus contains=viraIssuesStatus, contained
 syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
+highlight default link viraIssuesIssue Question
+highlight default link viraIssuesDescription Statement
+highlight viraIssuesStatus ctermfg=darkblue
 
+" Servers {{{2
+syntax match viraHTML "https://.*"
+highlight default link viraHTML Question
+
+" Style {{{2
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
-syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
-syntax match viraCommentClose "}}}"
-syntax match viraCommentDate /@.*/hs=s,he=e contained
 
-" syntax match viraIssuesStatus "| .* |" contained
-
+highlight viraBold cterm=bold gui=bold
+highlight default link viraBullets Identifier
+highlight default link viraCitvtion Title
 
 " Report {{{2
+" Details {{{3
+syntax match viraCommentAuthor /.*@/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
+syntax region viraCommentClose start="}}" end="}"
+syntax match viraCommentDate /@.*/hs=s,he=e contained
+
 syntax match viraDetails "┌.*"
 syntax match viraDetails "│"
 
@@ -78,6 +106,7 @@ syntax match viraDetailsTypeReporter ".*  "hs=s+1,he=e-2 contained
 syntax match viraDetails "├.*"
 syntax match viraDetails "└.*"
 
+" Comments {{{3
 syntax match viraItalic "_.*_"
 syntax match viraLink "\[.*|.*\]"
 syntax match viraMonospaced "{{.*}}"
@@ -95,15 +124,8 @@ syntax match viraUsername "\[\~.*\]"
 syntax region viraCode start=/{code.*}/ end=/{code}/
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
 
-" Highlighting
-highlight default link viraHTML Title
-highlight default link viraIssuesStatus Statement
-highlight default link viraIssuesDescription Question
-highlight default link viraIssuesIssue Title
-highlight default link viraBullets Identifier
-highlight default link viraCitvtion Title
+" Highlighting {{{1
 highlight default link viraCode Question
-highlight default link viraCommentAuthor Identifier
 highlight default link viraCommentClose Statement
 highlight default link viraCommentDate Statement
 highlight default link viraDetailsA Identifier
@@ -127,8 +149,8 @@ highlight default link viraTitleFold Statement
 highlight default link viraDetailsTypeAssignee Statement
 highlight default link viraDetailsTypeReporter Statement
 highlight default link viraDetailsDates Statement
+
 highlight viraDetailsDates ctermfg=yellow guifg=yellow
-highlight viraBold cterm=bold gui=bold
 highlight viraDetailsHigh ctermfg=red guifg=red
 highlight viraDetailsHighest ctermfg=darkred guifg=darkred
 highlight viraDetailsLow ctermfg=darkgreen guifg=darkgreen
@@ -140,10 +162,10 @@ highlight viraDetailsStatusInProgress ctermbg=darkyellow ctermfg=black guibg=dar
 highlight viraDetailsStatusTodo ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
 highlight viraDetailsStatusBacklog ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
 highlight viraDetailsStatusSelected ctermbg=darkyellow ctermfg=black guibg=darkyellow guifg=black
-highlight viraDetailsTypeBug ctermfg=red guifg=red
-highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
-highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
-highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
+highlight viraDetailsTypeBug ctermfg=red guifg=red cterm=bold gui=bold
+highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f  cterm=bold gui=bold
+highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen  cterm=bold gui=bold
+highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue cterm=bold gui=bold
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough

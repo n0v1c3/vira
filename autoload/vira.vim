@@ -119,7 +119,7 @@ endfunction
 
 function! vira#_check_project(type) abort "{{{2
   " Check if project was selected for components and versions
-  if a:type != 'components' && a:type != 'versions'
+  if a:type != 'components' " && a:type != 'versions'
     return 1
   endif
 
@@ -238,7 +238,9 @@ function! vira#_menu(type) abort " {{{2
       return
     endif
     let type = 'menu'
-    let list = execute('python3 Vira.api.get_' . a:type . '()')
+    if a:type == 'versions' | let printer = 'print_'
+    else | let printer = 'get_' | endif
+    let list = execute('python3 Vira.api.' . printer . a:type . '()')
 
     " Save current menu type
     let s:vira_menu_type = a:type
@@ -397,19 +399,18 @@ function! vira#_filter_load() " {{{2
 endfunction
 
 function! vira#_getter() "{{{2
-  " Return the proper form of the selected data
-  if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
-    normal! 0
-    return expand('<cWORD>')
-  elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
-    if getline('.') == 'Unassigned'
-      if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
-        return 'Unassigned'
-      elseif s:vira_menu_type == 'assign_issue'
-        return '-1'
-      endif
-    else | return  split(getline('.'),' \~ ')[1] | endif
-  else | return getline('.') | endif
+    " Return the proper form of the selected data
+    if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+        normal! 0
+        return expand('<cWORD>')
+    elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions'
+        let line = getline('.')
+        if line == 'Unassigned' || line == 'null'
+            if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions'
+                return line
+            elseif s:vira_menu_type == 'assign_issue' | return '-1' | endif
+        else | return  split(getline('.'),' \~ ')[1] | endif
+    else | return getline('.') | endif
 endfunction
 
 function! vira#_select() "{{{2
@@ -448,10 +449,15 @@ endfunction
 
 function! vira#_highlight() "{{{2
   echo s:vira_highlight
-  if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
+  if s:vira_menu_type == 'versions'
+      let end_line = '' | let end_seperator = ''
+  else | let end_line = '\n' | let end_seperator = '$' | endif
+
+  if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions'
     let seperator = ''
   else | let seperator = '^' | endif
-  let @/ = '\v' . seperator . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','$|' . seperator,'g') . '$\n'
+
+  let @/ = '\v' . seperator . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|', end_seperator . '|' . seperator,'g') . end_seperator . end_line
   let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
 endfunction
 
@@ -493,6 +499,10 @@ function! vira#_set() "{{{2
     if variable == 'status'
       execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
     endif
+  endif
+
+  if variable == 'project'
+      execute 'python3 Vira.api.get_versions()'
   endif
 
   let s:vira_filter_setkey = 0
