@@ -403,10 +403,10 @@ function! vira#_getter() "{{{2
     if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
         normal! 0
         return expand('<cWORD>')
-    elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions'
+    elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
         let line = getline('.')
         if line == 'Unassigned' || line == 'null'
-            if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions'
+            if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
                 return line
             elseif s:vira_menu_type == 'assign_issue' | return '-1' | endif
         else | return  split(getline('.'),' \~ ')[1] | endif
