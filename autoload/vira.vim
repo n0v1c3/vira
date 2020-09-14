@@ -464,8 +464,8 @@ function! vira#_highlight_reload() "{{{2
   if s:vira_menu_type != 'servers' && s:vira_menu_type != 'issues'
       call vira#_filter_load()
       let s:vira_highlight = execute('python3 print(Vira.api.userconfig_filter["'.s:vira_set_lookup[s:vira_menu_type].'"])')
-      let s:vira_highlight = substitute(s:vira_highlight[1:],"(",'|','g')
-      let s:vira_highlight = substitute(s:vira_highlight,")",'|','g')
+      let s:vira_highlight = substitute('|' . s:vira_highlight[1:] . '|',"(",'','g')
+      let s:vira_highlight = substitute(s:vira_highlight,")",'','g')
       let s:vira_highlight = substitute(s:vira_highlight,', ','|','g')
       let s:vira_highlight = substitute(s:vira_highlight,"'",'','g')
       if len(s:vira_highlight) <= 2
