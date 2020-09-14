@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.3.0'
+let s:vira_version = '0.3.2'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -271,8 +271,7 @@ function! vira#_menu(type) abort " {{{2
 
   " Write report output into buffer
   if type == 'menu'
-    let s:vira_highlight = ''
-    call vira#_filter_unload()
+    call vira#_highlight_reload()
     silent! put=list
   else | call vira#_print_report(list) | endif
 
@@ -448,7 +447,6 @@ function! vira#_unselect() "{{{2
 endfunction
 
 function! vira#_highlight() "{{{2
-  echo s:vira_highlight
   if s:vira_menu_type == 'versions'
       let end_line = '' | let end_seperator = ''
   else | let end_line = '\n' | let end_seperator = '$' | endif
@@ -457,8 +455,23 @@ function! vira#_highlight() "{{{2
     let seperator = ''
   else | let seperator = '^' | endif
 
+  echo s:vira_highlight
   let @/ = '\v' . seperator . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|', end_seperator . '|' . seperator,'g') . end_seperator . end_line
   let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
+endfunction
+
+function! vira#_highlight_reload() "{{{2
+  if s:vira_menu_type != 'servers' && s:vira_menu_type != 'issues'
+      call vira#_filter_load()
+      let s:vira_highlight = execute('python3 print(Vira.api.userconfig_filter["'.s:vira_set_lookup[s:vira_menu_type].'"])')
+      let s:vira_highlight = substitute(s:vira_highlight[1:],"(",'|','g')
+      let s:vira_highlight = substitute(s:vira_highlight,")",'|','g')
+      let s:vira_highlight = substitute(s:vira_highlight,', ','|','g')
+      let s:vira_highlight = substitute(s:vira_highlight,"'",'','g')
+      if len(s:vira_highlight) <= 2
+          let s:vira_highlight = ''
+      else | call vira#_highlight() | endif
+  endif
 endfunction
 
 function! vira#_set() "{{{2

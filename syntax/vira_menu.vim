@@ -17,15 +17,25 @@ syntax region viraMenuVName start=/\~/hs=s+1 end=/\~/he=e-1 contained
 syntax match viraMenuVProj /^\s*\w\+/ contained
 highlight default link viraMenuV Statement
 highlight default link viraMenuVName Question
-highlight default link viraMenuVProj Title
+highlight default link viraMenuVProj NonText
 
 " Issues {{{2
 syntax match viraIssuesIssue ".*-.* │.*│.*│.*│.*" contains=viraIssuesDescription
 syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus contains=viraIssuesStatus, contained
 syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
+syntax match viraDetailsStatusInProgress "In Progress │"he=e-2
+syntax match viraDetailsStatusBacklog "Backlog │"he=e-2
+syntax match viraDetailsStatusComplete "Complete │"he=e-2
+syntax match viraDetailsStatusDone "Done │"he=e-2
+syntax match viraDetailsStatusSelected "Selected for Development │"he=e-2
+syntax match viraDetailsStatusTodo "To Do │"he=e-2
+syntax match viraDetailsTypeBug "Bug │"he=e-2
+syntax match viraDetailsTypeEpic "Epic │"he=e-2
+syntax match viraDetailsTypeStory "Story │"he=e-2
+syntax match viraDetailsTypeTask "Task │"he=e-2
 highlight default link viraIssuesIssue Question
 highlight default link viraIssuesDescription Statement
-highlight viraIssuesStatus ctermfg=darkblue
+highlight default link viraIssuesStatus NonText
 
 " Servers {{{2
 syntax match viraHTML "https://.*"
@@ -54,17 +64,6 @@ syntax match viraDetailsB "│.*│"hs=s,he=e-1 nextgroup=viraDetailsC
 syntax match viraDetailsC "│.*"hs=s,he=e-1
 syntax match viraDetailsE "│.*│.*"hs=e,he=e
 syntax match viraDetails "│"
-
-syntax match viraDetailsStatusInProgress "In Progress │"he=e-2
-syntax match viraDetailsStatusBacklog "Backlog │"he=e-2
-syntax match viraDetailsStatusComplete "Complete │"he=e-2
-syntax match viraDetailsStatusDone "Done │"he=e-2
-syntax match viraDetailsStatusSelected "Selected for Development │"he=e-2
-syntax match viraDetailsStatusTodo "To Do │"he=e-2
-syntax match viraDetailsTypeBug "Bug │"he=e-2
-syntax match viraDetailsTypeEpic "Epic │"he=e-2
-syntax match viraDetailsTypeStory "Story │"he=e-2
-syntax match viraDetailsTypeTask "Task │"he=e-2
 
 syntax match viraDetails "│.*Created.* │" contains=viraDetailsDates
 syntax match viraDetails "│.*Updated.* │" contains=viraDetailsDates
