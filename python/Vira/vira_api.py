@@ -131,6 +131,10 @@ class ViraAPI():
         Connect to Jira server with supplied auth details
         '''
 
+        self.users = set()
+        self.versions = set()
+        self.users_type = ''
+
         # Specify whether the server's TLS certificate needs to be verified
         if self.vira_servers[server].get('skip_cert_verify'):
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -382,14 +386,19 @@ class ViraAPI():
 # An empty message will abort the operation.
 #
 # Below is a list of acceptable values for each input field.
+#
 # Users:'''
         for user in self.users:
             user = user.split(' ~ ')
             name = user[0]
             id = user[1]
-            self.prompt_text_commented += f'''
-# [{name}|~accountid:{id}]''' if self.users_type == 'accountId' else f'''
+            if self.users_type == 'accountId':
+                self.prompt_text_commented += f'''
+# [{name}|~accountid:{id}]'''
+            else:
+                self.prompt_text_commented += f'''
 # [~{id}]'''
+
         # Add comment
         if self.prompt_type == 'add_comment':
             return self.prompt_text_commented
@@ -412,13 +421,15 @@ class ViraAPI():
         projects = [x.key for x in self.jira.projects()]
 
         # Extra info for prompt_type == 'issue'
-        self.prompt_text_commented += f'''# Projects: {projects}
+        self.prompt_text_commented += f'''
+#
+# Projects: {projects}
 # IssueTypes: {issuetypes}
 # Statuses: {statuses}
 # Priorities: {priorities}
 # Components in {self.userconfig_filter["project"]} Project: {components}
-# Versions in {self.userconfig_filter["project"]} Project: {versions}
-'''
+# Versions in {self.userconfig_filter["project"]} Project: {versions}'''
+
         return f'''[*Summary*]
 [Description]
 
