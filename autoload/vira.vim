@@ -418,12 +418,13 @@ function! vira#_select() "{{{2
   let value = vira#_getter()
   call vira#_filter_load()
   if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
-    let s:vira_highlight = s:vira_highlight . value . '|'
+      if s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
+          let s:vira_highlight = '|' . value . '|'
+      else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
   elseif s:vira_highlight == ''
     let s:vira_highlight = '|' . value . '|'
   endif
   call vira#_highlight()
-
   call setpos('.', current_pos)
 endfunction
 
@@ -447,7 +448,7 @@ function! vira#_unselect() "{{{2
 endfunction
 
 function! vira#_highlight() "{{{2
-  if s:vira_menu_type == 'versions'
+  if s:vira_menu_type == 'issues' || s:vira_menu_type == 'versions'
       let end_line = '' | let end_seperator = ''
   else | let end_line = '\n' | let end_seperator = '$' | endif
 
@@ -455,23 +456,32 @@ function! vira#_highlight() "{{{2
     let seperator = ''
   else | let seperator = '^' | endif
 
+  " silent! call feedkeys(":set hls\<cr>")
   echo s:vira_highlight
   let @/ = '\v' . seperator . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|', end_seperator . '|' . seperator,'g') . end_seperator . end_line
   let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
 endfunction
 
 function! vira#_highlight_reload() "{{{2
-  if s:vira_menu_type != 'servers' && s:vira_menu_type != 'issues'
-      call vira#_filter_load()
-      let s:vira_highlight = execute('python3 print(Vira.api.userconfig_filter["'.s:vira_set_lookup[s:vira_menu_type].'"])')
-      let s:vira_highlight = substitute('|' . s:vira_highlight[1:] . '|',"(",'','g')
-      let s:vira_highlight = substitute(s:vira_highlight,")",'','g')
-      let s:vira_highlight = substitute(s:vira_highlight,', ','|','g')
-      let s:vira_highlight = substitute(s:vira_highlight,"'",'','g')
-      if len(s:vira_highlight) <= 2
-          let s:vira_highlight = ''
-      else | call vira#_highlight() | endif
-  endif
+    call vira#_filter_load()
+    if s:vira_menu_type == 'issues'
+        let s:vira_highlight = '|' . g:vira_active_issue
+    elseif s:vira_menu_type == 'servers'
+        if exists('g:vira_serv') && g:vira_serv != ''
+            let s:vira_highlight = '|' . g:vira_serv
+        else | let s:vira_highlight = '' | endif
+    else
+        let s:vira_highlight = execute('python3 print(Vira.api.userconfig_filter["'.s:vira_set_lookup[s:vira_menu_type].'"])')
+    endif
+    let s:vira_highlight = substitute('|' . s:vira_highlight[1:] . '|',"(",'','g')
+    let s:vira_highlight = substitute(s:vira_highlight,"]",'','g')
+    let s:vira_highlight = substitute(s:vira_highlight,"[",'','g')
+    let s:vira_highlight = substitute(s:vira_highlight,")",'','g')
+    let s:vira_highlight = substitute(s:vira_highlight,', ','|','g')
+    let s:vira_highlight = substitute(s:vira_highlight,"'",'','g')
+    if len(s:vira_highlight) <= 2
+        let s:vira_highlight = ''
+    else | call vira#_highlight() | endif
 endfunction
 
 function! vira#_set() "{{{2

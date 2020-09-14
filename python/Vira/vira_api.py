@@ -131,6 +131,10 @@ class ViraAPI():
         Connect to Jira server with supplied auth details
         '''
 
+        self.users = set()
+        self.versions = set()
+        self.users_type = ''
+
         # Specify whether the server's TLS certificate needs to be verified
         if self.vira_servers[server].get('skip_cert_verify'):
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
