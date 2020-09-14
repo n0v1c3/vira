@@ -278,7 +278,7 @@ function! vira#_menu(type) abort " {{{2
 
   " Clean-up extra output and remove blank lines
   silent! execute '%s/\^M//g' | call histdel("search", -1)
-  silent! normal gg2dd
+  silent! normal! gg2dd
   silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
   silent! normal zCGzoV3kzogg
 
