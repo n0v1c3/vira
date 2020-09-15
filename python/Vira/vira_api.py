@@ -490,7 +490,9 @@ class ViraAPI():
                     comment['updated'][0:10] + ' ' + comment['updated'][11:16] +
                     ' {{{2\n' + comment['body'] + '\n}}}\n'
                 ])
-        comments = ''.join(['Old Comments {{{1\n']) + comments if idx > 3 else comments
+        old_count = idx - 3
+        old_comment = 'Comment' if old_count == 1 else 'Comments'
+        comments = ''.join([str(old_count) + ' Older ' + old_comment + ' {{{1\n']) + comments if old_count >= 1 else comments
         comments = comments.replace('}}}', '}}}}}}', idx - 3)
         comments = comments.replace('}}}}}}', '}}}', idx - 4)
 

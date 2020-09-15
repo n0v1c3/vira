@@ -221,16 +221,11 @@ function! vira#_menu(type) abort " {{{2
   elseif a:type == 'text'
     let value = input('text ~ ')
     execute 'python3 Vira.api.userconfig_filter["text"] = "' . value . '"'
-
-    if value == ''
-      silent! call feedkeys(":set hls!\<cr>")
-    else
-      silent! call feedkeys(":set hls\<cr>")
-      let value = substitute(value, ' ', '|', 'g')
-      let @/ = '\v' . value
-    endif
-
-    call vira#_refresh()
+    silent! call feedkeys(":set hls\<cr>")
+    let value = substitute(value, ' ', '|', 'g')
+    silent! execute "normal! /" . value . '\<cr>'
+    let @/ = '\v' . value
+    call vira#_refresh() " Refresh open menus
     return
   else
     if !vira#_check_project(a:type)
@@ -276,10 +271,12 @@ function! vira#_menu(type) abort " {{{2
   else | call vira#_print_report(list) | endif
 
   " Clean-up extra output and remove blank lines
-  silent! execute '%s/\^M//g' | call histdel("search", -1)
-  silent! normal! gg2dd
-  silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
-  silent! normal zCGzoV3kzogg
+  if a:type != 'text'
+      silent! execute '%s/\^M//g' | call histdel("search", -1)
+      silent! normal gg2dd
+      silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
+      silent! normal zCGzoV3kzogg
+  endif
 
   " Ensure wrap and linebreak are enabled
   if type == 'menu' | silent execute 'set nowrap'
