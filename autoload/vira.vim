@@ -57,7 +57,7 @@ function! vira#_browse() "{{{2
       return
   endif
 
-  " Create url path from server and issue key
+  " Create URL path from server and issue key
   let l:url = g:vira_serv . '/browse/' . vira#_get_active_issue()
 
   " Set browser - either user defined or $BROWSER
@@ -159,7 +159,6 @@ endfunction
 
 function! vira#_get_statusline() "{{{2
   return g:vira_active_issue
-  " python3 vim.exec("let s:vira_statusline = " . vira_statusline())
 endfunction
 
 function! vira#_get_version() "{{{2
@@ -182,7 +181,7 @@ function! vira#_print_report(list) " {{{2
 endfunction
 
 function! vira#_load_project_config() " {{{2
-  " Save current directory and switch to file direcotry
+  " Save current directory and switch to file directory
   let s:current_dir = getcwd()
   cd %:p:h
 
@@ -353,7 +352,7 @@ endfunction
 function! vira#_todos() "{{{2
   " Binary files that can be ignored
   set wildignore+=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
-  " Seacrch the CWD to find all of your current TODOs
+  " Search the CWD to find all of your current TODOs
   vimgrep /TODO.*\[\d\{6}]/ **/* **/.* | cw 5
   " Un-ignore the binary files
   set wildignore-=*.jpg,*.docx,*.xlsm,*.mp4,*.vmdk
@@ -453,7 +452,6 @@ function! vira#_highlight() "{{{2
     let seperator = ''
   else | let seperator = '^' | endif
 
-  " silent! call feedkeys(":set hls\<cr>")
   echo s:vira_highlight
   let @/ = '\v' . seperator . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|', end_seperator . '|' . seperator,'g') . end_seperator . end_line
   let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
