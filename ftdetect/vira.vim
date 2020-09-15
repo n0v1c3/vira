@@ -1,5 +1,5 @@
 " File: ftdetect/vira.vim {{{1
-" Description: Vira filetypes detection
+" Description: Vira file-type detections
 " Authors:
 "   n0v1c3 (Travis Gall) <https://github.com/n0v1c3>
 

@@ -274,10 +274,10 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraEditDescription` - Update the description of the current issue.
 - `ViraEditSummary` - Update the summary of the current issue
 - `ViraSetAssignee` - Select user to assign the current issue.
-- `ViraSetComponent` - Select compnent to appent the current issue.
+- `ViraSetComponent` - Select component to append the current issue.
 - `ViraSetPriority` - Select priority of the current issue.
 - `ViraSetStatus` - Select the status of the current issue.
-- `ViraSetVersion` - Select the version to appent the current issue.
+- `ViraSetVersion` - Select the version to append the current issue.
 - `ViraSetType` - Select the issuetype of the current issue.
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.

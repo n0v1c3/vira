@@ -230,7 +230,7 @@ class ViraAPI():
 
     def get_components(self):
         '''
-        Build a vim popup menu for a list of components
+        Build a vim pop-up menu for a list of components
         '''
 
         for component in self.jira.project_components(self.userconfig_filter['project']):
@@ -238,7 +238,7 @@ class ViraAPI():
 
     def get_component(self):
         '''
-        Build a vim popup menu for a list of components
+        Build a vim pop-up menu for a list of components
         '''
 
         self.get_components()
@@ -253,7 +253,7 @@ class ViraAPI():
 
     def get_issue(self, issue):
         '''
-        Get single issue by isuue id
+        Get single issue by issue id
         '''
 
         return self.jira.issue(issue)
@@ -337,7 +337,7 @@ class ViraAPI():
 
     def get_projects(self):
         '''
-        Build a vim popup menu for a list of projects
+        Build a vim pop-up menu for a list of projects
         '''
 
         for project in self.jira.projects():
@@ -346,7 +346,7 @@ class ViraAPI():
 
     def get_priority(self):
         '''
-        Build a vim popup menu for a list of projects
+        Build a vim pop-up menu for a list of projects
         '''
 
         self.get_priorities()
@@ -486,11 +486,12 @@ class ViraAPI():
             comments += ''.join(
                 [
                     comment['author']['displayName'] + ' @ ' +
-                    #  comment['body'] + '\n}}}\n'
                     comment['updated'][0:10] + ' ' + comment['updated'][11:16] +
                     ' {{{2\n' + comment['body'] + '\n}}}\n'
                 ])
-        comments = ''.join(['Old Comments {{{1\n']) + comments if idx > 3 else comments
+        old_count = idx - 3
+        old_comment = 'Comment' if old_count == 1 else 'Comments'
+        comments = ''.join([str(old_count) + ' Older ' + old_comment + ' {{{1\n']) + comments if old_count >= 1 else comments
         comments = comments.replace('}}}', '}}}}}}', idx - 3)
         comments = comments.replace('}}}}}}', '}}}', idx - 4)
 
@@ -651,7 +652,7 @@ Comments
 
     def get_versions(self):
         '''
-        Build a vim popup menu for a list of versions with project filters
+        Build a vim pop-up menu for a list of versions with project filters
         '''
 
         # Reset version list
@@ -671,7 +672,7 @@ Comments
         versions = set()
         for p in projects:
             for v in reversed(self.jira.project_versions(p)):
-                # Single issue query for version descriptioin
+                # Single issue query for version description
                 query = 'fixVersion = "' + str(v) + '" AND project = "' + str(p) + '"'
                 issues = self.jira.search_issues(
                     query, fields='fixVersion', json_result='True', maxResults=1)
@@ -711,7 +712,7 @@ Comments
         repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split(
             '/')[-1]
 
-        # If curren't repo doesn't exist, use __default__ project config if it exists
+        # If current repo doesn't exist, use __default__ project config if it exists
         if not self.vira_projects.get(repo):
             if self.vira_projects.get('__default__'):
                 repo = '__default__'
