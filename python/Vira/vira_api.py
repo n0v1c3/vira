@@ -678,12 +678,22 @@ Comments
                     query, fields='fixVersion', json_result='True', maxResults=1)
 
                 issue = issues['issues'][0]['fields']['fixVersions'][0]
+                idx = issue['id']
+
+                total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
+                pending = self.jira.version_count_unresolved_issues(idx)
+                fixed = total - pending
+                percent = str(round(fixed / total * 100, 2))
 
                 try:
-                    version = str(issues['issues'][0]['fields']['fixVersions'][0]['name'] + ' ~ ' + issues['issues'][0]['fields']['fixVersions'][0]['description'])
+                    version = str(issue['name'] + ' ~ ' + issue['description'] +
+                                  ' | ' + str(fixed) + '/' + str(total) +
+                                  ' ' + str(percent) + '%')
                 except:
                     try:
-                        version = str(issues['issues'][0]['fields']['fixVersions'][0]['name']) + ' ~ ' + 'None'
+                        version = str(issue['name'] + ' ~ ' + 'None' +
+                                      ' | ' + str(fixed) + '/' + str(total) +
+                                      ' ' + str(percent) + '%')
                     except:
                         version = 'null'
                         pass
