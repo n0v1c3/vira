@@ -265,6 +265,7 @@ function! vira#_menu(type) abort " {{{2
 
   " Write report output into buffer
   if type == 'menu'
+    let s:vira_filter = ''
     call vira#_highlight_reload()
     silent! put=list
   else | call vira#_print_report(list) | endif
@@ -386,11 +387,11 @@ function! vira#_filter_unload() " {{{2
 endfunction
 
 function! vira#_filter_load() " {{{2
-  if s:vira_filter_setkey != 0 && s:vira_highlight != ''
-    let s:vira_filter_hold = @/
-    silent! call vira#_highlight()
-    let s:vira_filter_setkey = 0
-  endif
+    if s:vira_filter_setkey != 0 && s:vira_highlight != ''
+        let s:vira_filter_hold = @/
+        silent! call vira#_highlight()
+        let s:vira_filter_setkey = 0
+    endif
 endfunction
 
 function! vira#_getter() "{{{2
@@ -453,7 +454,12 @@ function! vira#_highlight() "{{{2
   else | let seperator = '^' | endif
 
   echo s:vira_highlight
+
+  let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
+  let s:vira_highlight = substitute(s:vira_highlight,"\\\.","\\\\\\.",'g')
   let @/ = '\v' . seperator . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|', end_seperator . '|' . seperator,'g') . end_seperator . end_line
+
+  let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
   let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
 endfunction
 
@@ -474,6 +480,7 @@ function! vira#_highlight_reload() "{{{2
     let s:vira_highlight = substitute(s:vira_highlight,")",'','g')
     let s:vira_highlight = substitute(s:vira_highlight,', ','|','g')
     let s:vira_highlight = substitute(s:vira_highlight,"'",'','g')
+    let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
     if len(s:vira_highlight) <= 2
         let s:vira_highlight = ''
     else | call vira#_highlight() | endif
@@ -514,14 +521,10 @@ function! vira#_set() "{{{2
     else | let value = '"' . value . '"' | endif
     execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
 
-    if variable == 'status'
-      execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""'
-    endif
+    if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif
   endif
 
-  if variable == 'project'
-      execute 'python3 Vira.api.get_versions()'
-  endif
+  if variable == 'project' | execute 'python3 Vira.api.get_versions()' | endif
 
   let s:vira_filter_setkey = 0
   let s:vira_highlight = ''
