@@ -454,7 +454,7 @@ class ViraAPI():
             #  fields='*',
             fields=','.join(
                 [
-                    'summary', 'comment', 'component', 'description', 'issuetype',
+                    'project', 'summary', 'comment', 'component', 'description', 'issuetype',
                     'priority', 'status', 'created', 'updated', 'assignee', 'reporter',
                     'fixVersion', 'customfield_10106'
                 ]),
@@ -479,6 +479,9 @@ class ViraAPI():
         component = ', '.join([c['name'] for c in issue['components']])
         version = ', '.join([v['name'] for v in issue['fixVersions']])
         description = str(issue.get('description'))
+
+        if version != '': # Prevent no version error for percent
+            version += ' | ' + self.version_percent(str(issue['project']['key']), version) + '%'
 
         comments = ''
         idx = 0
@@ -650,6 +653,37 @@ Comments
             print(version)
         print('null')
 
+    def version_percent(self, project, fixVersion):
+        query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(project) + '"'
+        issues = self.jira.search_issues(
+            query, fields='fixVersion', json_result='True', maxResults=1)
+
+        issue = issues['issues'][0]['fields']['fixVersions'][0]
+        idx = issue['id']
+
+        total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
+        pending = self.jira.version_count_unresolved_issues(idx)
+        fixed = total - pending
+        percent = str(round(fixed / total * 100, 2))
+
+        try:
+            version = str(issue['name'] + ' ~ ' + issue['description'] +
+                          ' | ' + str(fixed) + '/' + str(total) +
+                          ' ' + str(percent) + '%')
+        except:
+            try:
+                version = str(issue['name'] + ' ~ ' + 'None' +
+                              ' | ' + str(fixed) + '/' + str(total) +
+                              ' ' + str(percent) + '%')
+            except:
+                version = 'null'
+                pass
+
+        if version != 'null':
+            self.versions.add(str(project) + ' ~ ' + version)
+
+        return percent
+
     def get_versions(self):
         '''
         Build a vim pop-up menu for a list of versions with project filters
@@ -672,37 +706,8 @@ Comments
         versions = set()
         for p in projects:
             for v in reversed(self.jira.project_versions(p)):
-                # Single issue query for version description
-                query = 'fixVersion = "' + str(v) + '" AND project = "' + str(p) + '"'
-                issues = self.jira.search_issues(
-                    query, fields='fixVersion', json_result='True', maxResults=1)
-
-                issue = issues['issues'][0]['fields']['fixVersions'][0]
-                idx = issue['id']
-
-                total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
-                pending = self.jira.version_count_unresolved_issues(idx)
-                fixed = total - pending
-                percent = str(round(fixed / total * 100, 2))
-
-                try:
-                    version = str(issue['name'] + ' ~ ' + issue['description'] +
-                                  ' | ' + str(fixed) + '/' + str(total) +
-                                  ' ' + str(percent) + '%')
-                except:
-                    try:
-                        version = str(issue['name'] + ' ~ ' + 'None' +
-                                      ' | ' + str(fixed) + '/' + str(total) +
-                                      ' ' + str(percent) + '%')
-                    except:
-                        version = 'null'
-                        pass
-
-                if version != 'null':
-                    self.versions.add(str(p) + ' ~ ' + version)
-
-        # Return the version list
-        return self.versions
+                self.version_percent(p, v) # Add and update the version list
+        return self.versions # Return the version list
 
     def load_project_config(self):
         '''
