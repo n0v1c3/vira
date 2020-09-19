@@ -420,15 +420,21 @@ A simple example is below but recommended that it can be expanded on
 for your personal needs.
 
 ```
-function! s:VGprompt()
+function! s:Vira_GitActiveIssue()
+    let g:vira_active_issue = execute("Git branch --show-current > echo")
+    call vira#_menu('report') | echo ''
+endfunction
+
+function! s:Vira_GitPrompt()
   return '"' . ViraStatusLine() . ': ' . input(ViraStatusLine() . ': ') . '"'
 endfunction
 
-execute 'Git checkout -b' . ViraStatusLine()
-execute 'Git checkout ' . ViraStatusLine()
-execute 'Git push -u origin ' . ViraStatusLine()
-execute 'Git commit -m ' . s:VGprompt()
-execute 'Gmerge --no-ff ' . ViraStatusLine() . ' -m ' . s:VGprompt()
+nnoremap <silent> <leader>vgC :execute 'Git checkout -b' . ViraStatusLine()<cr>
+nnoremap <silent> <leader>vgc :execute 'Git checkout ' . ViraStatusLine()<cr>
+nnoremap <silent> <leader>vgc :execute 'Git commit -m ' . s:Vira_GitPrompt()<cr>
+nnoremap <silent> <leader>vgi :call Vira_GitActiveIssue()<cr>
+nnoremap <silent> <leader>vgm :execute 'Gmerge --no-ff ' . ViraStatusLine() . ' -m ' . s:Vira_GitPrompt()<cr>
+nnoremap <silent> <leader>vgp :execute 'Git push -u origin ' . ViraStatusLine()<cr>
 ```
 
 #### airline
