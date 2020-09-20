@@ -734,7 +734,8 @@ Comments
             return
 
         # If current repo doesn't exist, use __default__ project config if it exists
-        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split('/')[-1]
+        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip()
+        if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
         if not self.vira_projects.get(repo): repo = run_command('pwd')['stdout'].strip()
         if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
         if not self.vira_projects.get(repo): repo = '__default__'
