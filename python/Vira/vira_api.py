@@ -733,15 +733,12 @@ Comments
         if not getattr(self, 'vira_projects', None):
             return
 
-        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split(
-            '/')[-1]
-
         # If current repo doesn't exist, use __default__ project config if it exists
-        if not self.vira_projects.get(repo):
-            if self.vira_projects.get('__default__'):
-                repo = '__default__'
-            else:
-                return
+        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split('/')[-1]
+        if not self.vira_projects.get(repo): repo = run_command('pwd')['stdout'].strip()
+        if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
+        if not self.vira_projects.get(repo): repo = '__default__'
+        if not self.vira_projects.get('__default__'): return
 
         # Set server
         server = self.vira_projects.get(repo, {}).get('server')
