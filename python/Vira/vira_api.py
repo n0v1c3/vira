@@ -649,8 +649,15 @@ Comments
         Print version list with project filters
         '''
 
+        wordslength = sorted(self.versions, key=len)[-1]
+        s = ' '
+        dashlength = s.join([char * len(wordslength) for char in s])
+        versions = set()
         for version in self.versions:
-            print(version)
+            print(version.split('|')[0] + ''.join(
+                [char * (len(dashlength) - len(version)) for char in ' ']) +
+                '   ' + version.split('|')[1] +
+                ' ' + version.split('|')[2])
         print('null')
 
     def version_percent(self, project, fixVersion):
@@ -664,17 +671,18 @@ Comments
         total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
         pending = self.jira.version_count_unresolved_issues(idx)
         fixed = total - pending
-        percent = str(round(fixed / total * 100, 2))
+        percent = str(round(fixed / total * 100, 1))
+        space = ''.join([char * (5 - len(percent)) for char in ' '])
 
         try:
             version = str(issue['name'] + ' ~ ' + issue['description'] +
-                          ' | ' + str(fixed) + '/' + str(total) +
-                          ' ' + str(percent) + '%')
+                          '|' + str(fixed) + '/' + str(total) +
+                          space + '|' + str(percent) + '%')
         except:
             try:
                 version = str(issue['name'] + ' ~ ' + 'None' +
-                              ' | ' + str(fixed) + '/' + str(total) +
-                              ' ' + str(percent) + '%')
+                              '|' + str(fixed) + '/' + str(total) +
+                              space + '|' + str(percent) + '%')
             except:
                 version = 'null'
                 pass
@@ -704,6 +712,7 @@ Comments
 
         # Loop through each project and all versions within
         versions = set()
+        dashlength = 0
         for p in projects:
             for v in reversed(self.jira.project_versions(p)):
                 self.version_percent(p, v) # Add and update the version list
