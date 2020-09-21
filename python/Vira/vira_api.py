@@ -57,6 +57,8 @@ class ViraAPI():
         self.versions = set()
         self.users_type = ''
 
+        self.versions_hide(True)
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
@@ -686,7 +688,8 @@ Comments
             except:
                 version = 'null'
                 pass
-
+        if fixed == total and self.versions_hide:
+            version = 'null'
         if version != 'null':
             self.versions.add(str(project) + ' ~ ' + version)
 
@@ -851,3 +854,15 @@ Comments
             return self.jira.issue(issue).update(description=input_stripped)
         elif self.prompt_type == 'issue':
             return self.create_issue(input_stripped)
+
+    def versions_hide(self, state):
+        '''
+        Display and hide complete versions
+        '''
+
+        if state is True or 1 or 'ture' or 'True':
+            self.version_hide = True
+        elif state is False or 0 or 'false' or 'False':
+            self.version_hide = False
+        else:
+            self.version_hide = not self.version_hide
