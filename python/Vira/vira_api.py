@@ -654,7 +654,6 @@ Comments
         wordslength = sorted(self.versions, key=len)[-1]
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
-        versions = set()
         for version in self.versions:
             print(version.split('|')[0] + ''.join(
                 [char * (len(dashlength) - len(version)) for char in ' ']) +
@@ -714,8 +713,6 @@ Comments
                 projects.add(p)
 
         # Loop through each project and all versions within
-        versions = set()
-        dashlength = 0
         for p in projects:
             for v in reversed(self.jira.project_versions(p)):
                 self.version_percent(p, v) # Add and update the version list
