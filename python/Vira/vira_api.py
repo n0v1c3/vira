@@ -57,6 +57,8 @@ class ViraAPI():
         self.versions = set()
         self.users_type = ''
 
+        self.versions_hide(True)
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
@@ -686,7 +688,8 @@ Comments
             except:
                 version = 'null'
                 pass
-
+        if fixed == total and self.versions_hide:
+            version = 'null'
         if version != 'null':
             self.versions.add(str(project) + ' ~ ' + version)
 
@@ -733,15 +736,13 @@ Comments
         if not getattr(self, 'vira_projects', None):
             return
 
-        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split(
-            '/')[-1]
-
         # If current repo doesn't exist, use __default__ project config if it exists
-        if not self.vira_projects.get(repo):
-            if self.vira_projects.get('__default__'):
-                repo = '__default__'
-            else:
-                return
+        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip()
+        if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
+        if not self.vira_projects.get(repo): repo = run_command('pwd')['stdout'].strip()
+        if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
+        if not self.vira_projects.get(repo): repo = '__default__'
+        if not self.vira_projects.get('__default__'): return
 
         # Set server
         server = self.vira_projects.get(repo, {}).get('server')
@@ -853,3 +854,15 @@ Comments
             return self.jira.issue(issue).update(description=input_stripped)
         elif self.prompt_type == 'issue':
             return self.create_issue(input_stripped)
+
+    def versions_hide(self, state):
+        '''
+        Display and hide complete versions
+        '''
+
+        if state is True or 1 or 'ture' or 'True':
+            self.version_hide = True
+        elif state is False or 0 or 'false' or 'False':
+            self.version_hide = False
+        else:
+            self.version_hide = not self.version_hide
