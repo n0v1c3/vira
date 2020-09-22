@@ -185,7 +185,10 @@ function! vira#_load_project_config() " {{{2
   let s:current_dir = getcwd()
   cd %:p:h
 
+  let old_server = get(g:, 'vira_serv', '')
+
   " Load project configuration for the current git repo
+  call vira#_reset_filters()
   python3 Vira.api.load_project_config()
 
   " Return to current directory
@@ -193,6 +196,12 @@ function! vira#_load_project_config() " {{{2
 
   " Disable loading of project config
   let g:vira_load_project_enabled = 0
+
+  if old_server != g:vira_serv
+    let s:vira_connected = 0
+    call vira#_connect()
+  endif
+
 endfunction
 
 function! vira#_menu(type) abort " {{{2
@@ -206,8 +215,6 @@ function! vira#_menu(type) abort " {{{2
     call vira#_menu('servers')
     return
   endif
-
-  call vira#_connect()
 
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
   if a:type == 'report'

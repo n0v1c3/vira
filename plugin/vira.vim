@@ -42,6 +42,7 @@ command! -nargs=0 -bang ViraReport call vira#_menu('report')
 command! -nargs=0 -bang ViraServers call vira#_menu('servers')
 command! -nargs=0 -bang ViraTodo call vira#_todo()
 command! -nargs=0 -bang ViraTodos call vira#_todos()
+command! -nargs=0 -bang ViraLoadProject call vira#_load_project_config() 
 
 " Sets
 command! -nargs=0 -bang ViraSetAssignee call vira#_menu('assign_issue');
