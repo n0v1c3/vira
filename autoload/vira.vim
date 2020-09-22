@@ -180,12 +180,17 @@ function! vira#_print_report(list) " {{{2
   silent! put x
 endfunction
 
-function! vira#_load_project_config() " {{{2
+function! vira#_load_project_config(...) " {{{2
   " Save current directory and switch to file directory
   let s:current_dir = getcwd()
   cd %:p:h
 
   let old_server = get(g:, 'vira_serv', '')
+  if a:0 > 0
+    let g:vira_repo  = a:1
+  else
+    let g:vira_repo   = ''
+  end
 
   " Load project configuration for the current git repo
   call vira#_reset_filters()
@@ -197,7 +202,7 @@ function! vira#_load_project_config() " {{{2
   " Disable loading of project config
   let g:vira_load_project_enabled = 0
 
-  if old_server != g:vira_serv
+  if old_server != get(g:, 'vira_serv', '')
     let s:vira_connected = 0
     call vira#_connect()
   endif

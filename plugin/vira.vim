@@ -36,13 +36,13 @@ command! -nargs=0 -bang ViraComment call vira#_prompt_start('add_comment')
 command! -nargs=0 -bang ViraEpics call vira#_menu("epics")
 command! -nargs=0 -bang ViraIssue call vira#_prompt_start('issue')
 command! -nargs=0 -bang ViraIssues call vira#_menu("issues")
+command! -nargs=* -bang ViraLoadProject call vira#_load_project_config(<q-args>) 
 command! -nargs=0 -bang ViraQuit call vira#_quit()
 command! -nargs=0 -bang ViraRefresh call vira#_refresh()
 command! -nargs=0 -bang ViraReport call vira#_menu('report')
 command! -nargs=0 -bang ViraServers call vira#_menu('servers')
 command! -nargs=0 -bang ViraTodo call vira#_todo()
 command! -nargs=0 -bang ViraTodos call vira#_todos()
-command! -nargs=0 -bang ViraLoadProject call vira#_load_project_config() 
 
 " Sets
 command! -nargs=0 -bang ViraSetAssignee call vira#_menu('assign_issue');

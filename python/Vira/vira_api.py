@@ -721,6 +721,8 @@ Comments
     def load_project_config(self):
         '''
         Load project configuration for the current git repo
+        The current repo can either be determined by current files path
+        or by the user setting g:vira_repo (part of :ViraLoadProject)
 
         For example, an entry in projects.yaml may be:
 
@@ -733,13 +735,15 @@ Comments
         if not getattr(self, 'vira_projects', None):
             return
 
-        # If current repo doesn't exist, use __default__ project config if it exists
-        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip()
-        if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
-        if not self.vira_projects.get(repo): repo = run_command('pwd')['stdout'].strip()
-        if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
-        if not self.vira_projects.get(repo): repo = '__default__'
-        if not self.vira_projects.get('__default__'): return
+        # If current repo/folder doesn't exist, use __default__ project config if it exists
+        repo = vim.eval('g:vira_repo')
+        if repo == '':
+            repo = run_command('git rev-parse --show-toplevel')['stdout'].strip()
+            if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
+            if not self.vira_projects.get(repo): repo = run_command('pwd')['stdout'].strip()
+            if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
+            if not self.vira_projects.get(repo): repo = '__default__'
+            if not self.vira_projects.get('__default__'): return
 
         # Set server
         server = self.vira_projects.get(repo, {}).get('server')
