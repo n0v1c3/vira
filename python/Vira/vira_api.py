@@ -343,7 +343,8 @@ class ViraAPI():
         '''
 
         for project in self.jira.projects():
-            projectDesc = self.jira.createmeta(projectKeys=project, expand='projects')['projects'][0]
+            projectDesc = self.jira.createmeta(
+                projectKeys=project, expand='projects')['projects'][0]
             print(str(project) + ' ~ ' + projectDesc['name'])
 
     def get_priority(self):
@@ -456,9 +457,9 @@ class ViraAPI():
             #  fields='*',
             fields=','.join(
                 [
-                    'project', 'summary', 'comment', 'component', 'description', 'issuetype',
-                    'priority', 'status', 'created', 'updated', 'assignee', 'reporter',
-                    'fixVersion', 'customfield_10106'
+                    'project', 'summary', 'comment', 'component', 'description',
+                    'issuetype', 'priority', 'status', 'created', 'updated', 'assignee',
+                    'reporter', 'fixVersion', 'customfield_10106'
                 ]),
             json_result='True')
         issue = issues['issues'][0]['fields']
@@ -482,21 +483,24 @@ class ViraAPI():
         version = ', '.join([v['name'] for v in issue['fixVersions']])
         description = str(issue.get('description'))
 
-        if version != '': # Prevent no version error for percent
-            version += ' | ' + self.version_percent(str(issue['project']['key']), version) + '%'
+        if version != '':  # Prevent no version error for percent
+            version += ' | ' + self.version_percent(
+                str(issue['project']['key']), version) + '%'
 
         comments = ''
         idx = 0
         for idx, comment in enumerate((issue['comment']['comments'])):
             comments += ''.join(
                 [
-                    comment['author']['displayName'] + ' @ ' +
-                    comment['updated'][0:10] + ' ' + comment['updated'][11:16] +
-                    ' {{{2\n' + comment['body'] + '\n}}}\n'
+                    comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
+                    ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] +
+                    '\n}}}\n'
                 ])
         old_count = idx - 3
         old_comment = 'Comment' if old_count == 1 else 'Comments'
-        comments = ''.join([str(old_count) + ' Older ' + old_comment + ' {{{1\n']) + comments if old_count >= 1 else comments
+        comments = ''.join(
+            [str(old_count) + ' Older ' + old_comment +
+             ' {{{1\n']) + comments if old_count >= 1 else comments
         comments = comments.replace('}}}', '}}}}}}', idx - 3)
         comments = comments.replace('}}}}}}', '}}}', idx - 4)
 
@@ -633,11 +637,12 @@ Comments
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
         # Determine cloud/server jira
-        self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
+        self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get(
+            'accountId') else 'name'
 
         for issue in issues['issues']:
-            user = str(issue['fields']['reporter']
-                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][self.users_type]
+            user = str(issue['fields']['reporter']['displayName']
+                      ) + ' ~ ' + issue['fields']['reporter'][self.users_type]
             self.users.add(user)
             if type(issue['fields']['assignee']) == dict:
                 user = str(issue['fields']['assignee']['displayName']
@@ -655,14 +660,15 @@ Comments
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
         for version in self.versions:
-            print(version.split('|')[0] + ''.join(
-                [char * (len(dashlength) - len(version)) for char in ' ']) +
-                '   ' + version.split('|')[1] +
-                ' ' + version.split('|')[2])
+            print(
+                version.split('|')[0] +
+                ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
+                '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
         print('null')
 
     def version_percent(self, project, fixVersion):
-        query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(project) + '"'
+        query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(
+            project) + '"'
         issues = self.jira.search_issues(
             query, fields='fixVersion', json_result='True', maxResults=1)
 
@@ -676,14 +682,14 @@ Comments
         space = ''.join([char * (5 - len(percent)) for char in ' '])
 
         try:
-            version = str(issue['name'] + ' ~ ' + issue['description'] +
-                          '|' + str(fixed) + '/' + str(total) +
-                          space + '|' + str(percent) + '%')
+            version = str(
+                issue['name'] + ' ~ ' + issue['description'] + '|' + str(fixed) + '/' +
+                str(total) + space + '|' + str(percent) + '%')
         except:
             try:
-                version = str(issue['name'] + ' ~ ' + 'None' +
-                              '|' + str(fixed) + '/' + str(total) +
-                              space + '|' + str(percent) + '%')
+                version = str(
+                    issue['name'] + ' ~ ' + 'None' + '|' + str(fixed) + '/' + str(total) +
+                    space + '|' + str(percent) + '%')
             except:
                 version = 'null'
                 pass
@@ -715,8 +721,8 @@ Comments
         # Loop through each project and all versions within
         for p in projects:
             for v in reversed(self.jira.project_versions(p)):
-                self.version_percent(p, v) # Add and update the version list
-        return self.versions # Return the version list
+                self.version_percent(p, v)  # Add and update the version list
+        return self.versions  # Return the version list
 
     def load_project_config(self):
         '''
@@ -739,11 +745,16 @@ Comments
         repo = vim.eval('g:vira_repo')
         if repo == '':
             repo = run_command('git rev-parse --show-toplevel')['stdout'].strip()
-            if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
-            if not self.vira_projects.get(repo): repo = run_command('pwd')['stdout'].strip()
-            if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
-            if not self.vira_projects.get(repo): repo = '__default__'
-            if not self.vira_projects.get('__default__'): return
+            if not self.vira_projects.get(repo):
+                repo = repo.split('/')[-1]
+            if not self.vira_projects.get(repo):
+                repo = run_command('pwd')['stdout'].strip()
+            if not self.vira_projects.get(repo):
+                repo = repo.split('/')[-1]
+            if not self.vira_projects.get(repo):
+                repo = '__default__'
+            if not self.vira_projects.get('__default__'):
+                return
 
         # Set server
         server = self.vira_projects.get(repo, {}).get('server')
@@ -805,8 +816,7 @@ Comments
             'Summary': 'ViraEditSummary',
         }
 
-        self.report_lines = {
-        }
+        self.report_lines = {}
 
         for idx, line in enumerate(report.split('\n')):
             for field, command in writable_fields.items():
