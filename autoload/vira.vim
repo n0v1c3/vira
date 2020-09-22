@@ -185,16 +185,16 @@ function! vira#_load_project_config(...) " {{{2
   let s:current_dir = getcwd()
   cd %:p:h
 
-  let old_server = get(g:, 'vira_serv', '')
   if a:0 > 0
-    let g:vira_repo  = a:1
+    let vira_repo  = a:1
   else
-    let g:vira_repo   = ''
+    let vira_repo   = ''
   end
+  let old_server = get(g:, 'vira_serv', '')
 
   " Load project configuration for the current git repo
   call vira#_reset_filters()
-  python3 Vira.api.load_project_config()
+  exe 'python3 Vira.api.load_project_config("'.vira_repo.'")'
 
   " Return to current directory
   cd `=s:current_dir`
@@ -202,6 +202,7 @@ function! vira#_load_project_config(...) " {{{2
   " Disable loading of project config
   let g:vira_load_project_enabled = 0
 
+  " Handle changing servers
   if old_server != get(g:, 'vira_serv', '')
     let s:vira_connected = 0
     call vira#_connect()

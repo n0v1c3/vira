@@ -724,7 +724,7 @@ Comments
                 self.version_percent(p, v)  # Add and update the version list
         return self.versions  # Return the version list
 
-    def load_project_config(self):
+    def load_project_config(self, repo):
         '''
         Load project configuration for the current git repo
         The current repo can either be determined by current files path
@@ -742,7 +742,6 @@ Comments
             return
 
         # If current repo/folder doesn't exist, use __default__ project config if it exists
-        repo = vim.eval('g:vira_repo')
         if repo == '':
             repo = run_command('git rev-parse --show-toplevel')['stdout'].strip()
             if not self.vira_projects.get(repo):
