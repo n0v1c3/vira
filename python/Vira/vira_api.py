@@ -8,6 +8,7 @@ from Vira.helper import load_config, run_command, parse_prompt_text
 from jira import JIRA
 from jira.exceptions import JIRAError
 import datetime
+import json
 import urllib3
 import vim
 
@@ -359,8 +360,15 @@ class ViraAPI():
         Get prompt text used for inputting text into jira
         '''
 
-        # Edit summary
         self.prompt_type = prompt_type
+
+        # Edit filters
+        if prompt_type == 'edit_filter':
+            self.prompt_text_commented = '\n# Edit all filters in JSON format'
+            return json.dumps(
+                self.userconfig_filter, indent=True) + self.prompt_text_commented
+
+        # Edit summary
         active_issue = vim.eval("g:vira_active_issue")
         if prompt_type == 'summary':
             self.prompt_text_commented = '\n# Edit issue summary'
@@ -843,6 +851,7 @@ Comments
         Write to jira
         Can be issue name, description, comment, etc...
         '''
+        # TODO-MB [200922] - Rename function to something to do with prompt text
 
         # User input
         issue = vim.eval('g:vira_active_issue')
@@ -850,20 +859,23 @@ Comments
             self.prompt_text_commented.strip(), '').strip()
 
         # Check if anything was actually entered by user
+        # TODO-MB [200922] - Also return if the original text wasn't changed
         if input_stripped == '':
             print("No vira actions performed")
             return
 
-        if self.prompt_type == 'add_comment':
-            return self.jira.add_comment(issue, input_stripped)
-        if self.prompt_type == 'edit_comment':
-            return self.active_comment.update(body=input_stripped)
+        if self.prompt_type == 'edit_filter':
+            self.userconfig_filter = json.loads(input_stripped)
+        elif self.prompt_type == 'add_comment':
+            self.jira.add_comment(issue, input_stripped)
+        elif self.prompt_type == 'edit_comment':
+            self.active_comment.update(body=input_stripped)
         elif self.prompt_type == 'summary':
-            return self.jira.issue(issue).update(summary=input_stripped)
+            self.jira.issue(issue).update(summary=input_stripped)
         elif self.prompt_type == 'description':
-            return self.jira.issue(issue).update(description=input_stripped)
+            self.jira.issue(issue).update(description=input_stripped)
         elif self.prompt_type == 'issue':
-            return self.create_issue(input_stripped)
+            self.create_issue(input_stripped)
 
     def versions_hide(self, state):
         '''

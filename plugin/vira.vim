@@ -36,7 +36,7 @@ command! -nargs=0 -bang ViraComment call vira#_prompt_start('add_comment')
 command! -nargs=0 -bang ViraEpics call vira#_menu("epics")
 command! -nargs=0 -bang ViraIssue call vira#_prompt_start('issue')
 command! -nargs=0 -bang ViraIssues call vira#_menu("issues")
-command! -nargs=* -bang ViraLoadProject call vira#_load_project_config(<q-args>) 
+command! -nargs=* -bang ViraLoadProject call vira#_load_project_config(<q-args>)
 command! -nargs=0 -bang ViraQuit call vira#_quit()
 command! -nargs=0 -bang ViraRefresh call vira#_refresh()
 command! -nargs=0 -bang ViraReport call vira#_menu('report')
@@ -59,7 +59,7 @@ command! -nargs=1 -bang ViraEditComment call vira#_prompt_start('edit_comment', 
 
 " Filters
 command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
-
+command! -nargs=0 -bang ViraFilterEdit call vira#_prompt_start('edit_filter')
 command! -nargs=0 -bang ViraFilterAssignees call vira#_menu('assignees')
 command! -nargs=0 -bang ViraFilterComponents call vira#_menu('components')
 command! -nargs=0 -bang ViraFilterPriorities call vira#_menu('priorities')

@@ -88,7 +88,7 @@ endfunction
 
 function! vira#_prompt_start(type, ...) abort "{{{2
   " Make sure vira has all the required inputs selected
-  if a:type != 'issue'
+  if a:type != 'issue' && a:type != 'edit_filter'
     if (vira#_get_active_issue() == g:vira_null_issue)
       echo 'Please select an issue before performing this action'
       return
