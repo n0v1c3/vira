@@ -246,10 +246,12 @@ from the current column.
 
 _NOTE:_ These keys are only mapped to the Vira windows.
 
+- `D` - Unselect and Apply "Delete" all lines within menu.
 - `s` - Select current line within menu.
 - `S` - Select all lines within menu.
 - `u` - Unselect current line within menu.
 - `U` - Unselect all lines within menu.
+- `q` - Quit the curernt menu no Apply.
 - `<cr>` - Apply selections or current line.
 
 ### Commands

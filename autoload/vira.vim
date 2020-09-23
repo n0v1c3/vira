@@ -273,9 +273,9 @@ function! vira#_menu(type) abort " {{{2
   " Clean-up extra output and remove blank lines
   if a:type != 'text'
       silent! execute '%s/\^M//g' | call histdel("search", -1)
-      silent! normal gg2dd
+      silent! normal! gg2dd
       silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
-      silent! normal zCGzoV3kzogg
+      silent! normal! zCGzoV3kzogg
   endif
 
   " Ensure wrap and linebreak are enabled
@@ -526,9 +526,18 @@ function! vira#_set() "{{{2
 
   if variable == 'project' | execute 'python3 Vira.api.get_versions()' | endif
 
-  let s:vira_filter_setkey = 0
-  let s:vira_highlight = ''
-  let s:vira_filter = ''
-  let s:vira_filter_hold = ''
-  call vira#_filter_unload()
+  call vira#_filter_closed()
+endfunction
+
+function! vira#_unset() "{{{2
+    execute 'python3 Vira.api.userconfig_filter["' . s:vira_set_lookup[s:vira_menu_type] . '"] = ""'
+    call vira#_filter_closed()
+endfunction
+
+function! vira#_filter_closed() "{{{2
+    let s:vira_filter_setkey = 0
+    let s:vira_highlight = ''
+    let s:vira_filter = ''
+    let s:vira_filter_hold = ''
+    call vira#_filter_unload()
 endfunction
