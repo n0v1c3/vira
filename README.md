@@ -256,9 +256,13 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 - `ViraBrowse` - View Jira issue in web-browser.
 - `ViraComment` - Insert a comment for active issue.
+- `ViraEditComment` - Update the comment relative to position in report.
+- `ViraEditDescription` - Update the description of the current issue.
+- `ViraEditSummary` - Update the summary of the current issue
 - `ViraEpics` - Get and Set Project(s) epic issues.
 - `ViraFilterAssignees` - Add assignees to filter.
 - `ViraFilterComponents` - Add components to filter.
+- `ViraFilterEdit` - Display/Edit all active filter in a vim buffer.
 - `ViraFilterPriorities` - Add priorities to filter.
 - `ViraFilterProjects` - Add projects to filter.
 - `ViraFilterReset` - Reset filter to default.
@@ -268,17 +272,15 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraFilterVersions` - Add versions to filter.
 - `ViraIssue` - Create a new **issue**. The required fields are indicated by \*.
 - `ViraIssues` - Get and Set the active **issue**.
+- `ViraLoadProject` - Load project from `vira_projects.json/yaml`. The default is based on `cwd`. Optionally pass repo name in argument. Ex. `:ViraLoadProject My Repo`
 - `ViraReport` - Get report for active issue.
 - `ViraServers` - Get and Set active Jira server.
-- `ViraEditComment` - Update the comment relative to position in report.
-- `ViraEditDescription` - Update the description of the current issue.
-- `ViraEditSummary` - Update the summary of the current issue
 - `ViraSetAssignee` - Select user to assign the current issue.
 - `ViraSetComponent` - Select component to append the current issue.
 - `ViraSetPriority` - Select priority of the current issue.
 - `ViraSetStatus` - Select the status of the current issue.
-- `ViraSetVersion` - Select the version to append the current issue.
 - `ViraSetType` - Select the issuetype of the current issue.
+- `ViraSetVersion` - Select the version to append the current issue.
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 
@@ -367,6 +369,9 @@ nnoremap <silent> <leader>vfp :ViraFilterProjects<cr>
 nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
 nnoremap <silent> <leader>vfs :ViraFilterStatuses<cr>
 nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
+
+" Projects/Boards
+nnoremap <silent> <leader>vbm :ViraLoadProject __default__<cr>
 
 " Status
 statusline+=%{ViraStatusline()}
