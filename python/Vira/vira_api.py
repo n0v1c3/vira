@@ -655,7 +655,7 @@ Comments
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
         versions = set()
-        for version in self.versions:
+        for version in self.get_versions():
             print(version.split('|')[0] + ''.join(
                 [char * (len(dashlength) - len(version)) for char in ' ']) +
                 '   ' + version.split('|')[1] +

@@ -424,7 +424,7 @@ for your personal needs.
 ```
 function! s:Vira_GitActiveIssue()
     let g:vira_active_issue = execute("Git branch --show-current > echo")
-    call vira#_menu('report') | echo ''
+    ViraReport
 endfunction
 
 function! s:Vira_GitPrompt()
