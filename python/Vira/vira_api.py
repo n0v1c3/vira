@@ -366,7 +366,7 @@ class ViraAPI():
         if prompt_type == 'edit_filter':
             self.prompt_text_commented = '\n# Edit all filters in JSON format'
             self.prompt_text = json.dumps(
-                                self.userconfig_filter, indent=True) + self.prompt_text_commented
+                self.userconfig_filter, indent=True) + self.prompt_text_commented
             return self.prompt_text
 
         # Edit summary
@@ -448,7 +448,6 @@ class ViraAPI():
 
         self.prompt_text = f'''[*Summary*]
 [Description]
-        return self.prompt_text
 
 [*Project*] {self.userconfig_filter["project"]}
 [*IssueType*] {self.userconfig_newissue["issuetype"]}
@@ -458,6 +457,7 @@ class ViraAPI():
 [Version] {self.userconfig_newissue["fixVersion"]}
 [Assignee] {self.userconfig_newissue["assignee"]}
 {self.prompt_text_commented}'''
+        return self.prompt_text
 
     def get_report(self):
         '''
@@ -862,8 +862,7 @@ Comments
         # User input
         issue = vim.eval('g:vira_active_issue')
         userinput = vim.eval('g:vira_input_text')
-        input_stripped = userinput.replace(
-            self.prompt_text_commented.strip(), '').strip()
+        input_stripped = userinput.replace(self.prompt_text_commented.strip(), '').strip()
 
         # Check if anything was actually entered by user
         if input_stripped == '' or userinput.strip() == self.prompt_text.strip():
