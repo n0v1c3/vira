@@ -113,7 +113,7 @@ endfunction
 function! vira#_prompt_end() "{{{2
   " Write contents of the prompt buffer to jira server
   let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
-  python3 Vira.api.write_jira()
+  python3 Vira.api.set_prompt_text()
   call vira#_refresh()
 endfunction
 

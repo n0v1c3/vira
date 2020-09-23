@@ -370,6 +370,9 @@ nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
 nnoremap <silent> <leader>vfs :ViraFilterStatuses<cr>
 nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
 
+" Projects/Boards
+nnoremap <silent> <leader>vbm :ViraLoadProject __default__<cr>
+
 " Status
 statusline+=%{ViraStatusline()}
 ```

@@ -365,8 +365,9 @@ class ViraAPI():
         # Edit filters
         if prompt_type == 'edit_filter':
             self.prompt_text_commented = '\n# Edit all filters in JSON format'
-            return json.dumps(
-                self.userconfig_filter, indent=True) + self.prompt_text_commented
+            self.prompt_text = json.dumps(
+                                self.userconfig_filter, indent=True) + self.prompt_text_commented
+            return self.prompt_text
 
         # Edit summary
         active_issue = vim.eval("g:vira_active_issue")
@@ -376,7 +377,8 @@ class ViraAPI():
                 'issue = "' + active_issue + '"',
                 fields=','.join(['summary']),
                 json_result='True')['issues'][0]['fields']['summary']
-            return summary + self.prompt_text_commented
+            self.prompt_text = summary + self.prompt_text_commented
+            return self.prompt_text
 
         # Edit description
         if prompt_type == 'description':
@@ -389,7 +391,8 @@ class ViraAPI():
                 description = description.replace('\r\n', '\n')
             else:
                 description = ''
-            return description + self.prompt_text_commented
+            self.prompt_text = description + self.prompt_text_commented
+            return self.prompt_text
 
         self.prompt_text_commented = f'''
 # ---------------------------------
@@ -412,12 +415,14 @@ class ViraAPI():
 
         # Add comment
         if self.prompt_type == 'add_comment':
-            return self.prompt_text_commented
+            self.prompt_text = self.prompt_text_commented
+            return self.prompt_text
 
         # Edit comment
         if self.prompt_type == 'edit_comment':
             self.active_comment = self.jira.comment(active_issue, comment_id)
-            return self.active_comment.body + self.prompt_text_commented
+            self.prompt_text = self.active_comment.body + self.prompt_text_commented
+            return self.prompt_text
 
         statuses = [x.name for x in self.jira.statuses()]
         issuetypes = [x.name for x in self.jira.issue_types()]
@@ -441,8 +446,9 @@ class ViraAPI():
 # Components in {self.userconfig_filter["project"]} Project: {components}
 # Versions in {self.userconfig_filter["project"]} Project: {versions}'''
 
-        return f'''[*Summary*]
+        self.prompt_text = f'''[*Summary*]
 [Description]
+        return self.prompt_text
 
 [*Project*] {self.userconfig_filter["project"]}
 [*IssueType*] {self.userconfig_newissue["issuetype"]}
@@ -571,7 +577,8 @@ Comments
 
         self.set_report_lines(report, description, issue)
 
-        return self.report_users(report.format(**locals()))
+        self.prompt_text = self.report_users(report.format(**locals()))
+        return self.prompt_text
 
     def report_users(self, report):
         '''
@@ -846,21 +853,20 @@ Comments
                 self.report_lines[x] = 'ViraEditComment ' + comment['id']
             comment_line = comment_line + comment_len
 
-    def write_jira(self):
+    def set_prompt_text(self):
         '''
-        Write to jira
-        Can be issue name, description, comment, etc...
+        Take the user prompt text and perform an action
+        Usually, this involves writing to the jira server
         '''
-        # TODO-MB [200922] - Rename function to something to do with prompt text
 
         # User input
         issue = vim.eval('g:vira_active_issue')
-        input_stripped = vim.eval('g:vira_input_text').replace(
+        userinput = vim.eval('g:vira_input_text')
+        input_stripped = userinput.replace(
             self.prompt_text_commented.strip(), '').strip()
 
         # Check if anything was actually entered by user
-        # TODO-MB [200922] - Also return if the original text wasn't changed
-        if input_stripped == '':
+        if input_stripped == '' or userinput.strip() == self.prompt_text.strip():
             print("No vira actions performed")
             return
 
