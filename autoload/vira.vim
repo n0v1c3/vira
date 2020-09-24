@@ -279,6 +279,8 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     let s:vira_filter = ''
+    let s:vira_highlight = ''
+    call vira#_filter_unload()
     call vira#_highlight_reload()
     silent! put=list
   else | call vira#_print_report(list) | endif
@@ -286,9 +288,9 @@ function! vira#_menu(type) abort " {{{2
   " Clean-up extra output and remove blank lines
   if a:type != 'text'
       silent! execute '%s/\^M//g' | call histdel("search", -1)
-      silent! normal gg2dd
+      silent! normal! gg2dd
       silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
-      silent! normal zCGzoV3kzogg
+      silent! normal zCGVzOgg
   endif
 
   " Ensure wrap and linebreak are enabled
@@ -477,71 +479,81 @@ function! vira#_highlight() "{{{2
 endfunction
 
 function! vira#_highlight_reload() "{{{2
-    call vira#_filter_load()
-    if s:vira_menu_type == 'issues'
-        let s:vira_highlight = '|' . g:vira_active_issue
-    elseif s:vira_menu_type == 'servers'
-        if exists('g:vira_serv') && g:vira_serv != ''
-            let s:vira_highlight = '|' . g:vira_serv
-        else | let s:vira_highlight = '' | endif
-    else
-        let s:vira_highlight = execute('python3 print(Vira.api.userconfig_filter["'.s:vira_set_lookup[s:vira_menu_type].'"])')
+    if s:vira_menu_type != 'assign_issue' && s:vira_menu_type != 'component' && s:vira_menu_type != 'priority' && s:vira_menu_type != 'set_status' && s:vira_menu_type != 'version' && s:vira_menu_type != 'issuetype'
+        call vira#_filter_load()
+        if s:vira_menu_type == 'issues'
+            let s:vira_highlight = '|' . g:vira_active_issue
+        elseif s:vira_menu_type == 'servers'
+            if exists('g:vira_serv') && g:vira_serv != ''
+                let s:vira_highlight = '|' . g:vira_serv
+            else | let s:vira_highlight = '' | endif
+        else
+            let s:vira_highlight = execute('python3 print(Vira.api.userconfig_filter["'.s:vira_set_lookup[s:vira_menu_type].'"])')
+        endif
+        let s:vira_highlight = substitute('|' . s:vira_highlight[1:] . '|',"(",'','g')
+        let s:vira_highlight = substitute(s:vira_highlight,"]",'','g')
+        let s:vira_highlight = substitute(s:vira_highlight,"[",'','g')
+        let s:vira_highlight = substitute(s:vira_highlight,")",'','g')
+        let s:vira_highlight = substitute(s:vira_highlight,', ','|','g')
+        let s:vira_highlight = substitute(s:vira_highlight,"'",'','g')
+        let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
+        if len(s:vira_highlight) <= 2
+            let s:vira_highlight = ''
+        else | call vira#_highlight() | endif
     endif
-    let s:vira_highlight = substitute('|' . s:vira_highlight[1:] . '|',"(",'','g')
-    let s:vira_highlight = substitute(s:vira_highlight,"]",'','g')
-    let s:vira_highlight = substitute(s:vira_highlight,"[",'','g')
-    let s:vira_highlight = substitute(s:vira_highlight,")",'','g')
-    let s:vira_highlight = substitute(s:vira_highlight,', ','|','g')
-    let s:vira_highlight = substitute(s:vira_highlight,"'",'','g')
-    let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
-    if len(s:vira_highlight) <= 2
-        let s:vira_highlight = ''
-    else | call vira#_highlight() | endif
 endfunction
 
 function! vira#_set() "{{{2
-  " This function is used to set vim and python variables
-  execute 'normal 0'
+    " This function is used to set vim and python variables
+    execute 'normal 0'
 
-  let value = vira#_getter()
-  let variable = s:vira_set_lookup[s:vira_menu_type]
+    let value = vira#_getter()
+    let variable = s:vira_set_lookup[s:vira_menu_type]
 
-  " GLOBAL
-  if variable[:1] == 'g:'
-    execute 'let ' . variable . ' = "' . value . '"'
-    if variable == 'g:vira_serv'
-      " Reset connection and clear filters before selecting new server
-      call vira#_reset_filters()
-      python3 Vira.api.userconfig_filter["project"] = ""
-      let s:vira_connected = 0
-      call vira#_connect()
+    " GLOBAL
+    if variable[:1] == 'g:'
+        execute 'let ' . variable . ' = "' . value . '"'
+        if variable == 'g:vira_serv'
+            " Reset connection and clear filters before selecting new server
+            call vira#_reset_filters()
+            python3 Vira.api.userconfig_filter["project"] = ""
+            let s:vira_connected = 0
+            call vira#_connect()
+        endif
+
+    " SET
+    elseif variable == 'issuetypes' || variable == 'priorities'
+        execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(' . s:vira_menu_type . '={"name":"' . value . '"})'
+    elseif variable == 'fixVersions' || variable == 'components'
+        if value != "null" | let value = '"' . value . '"'
+        else | let value = "None" | endif
+        execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[{"name":' . value . '}]})'
+    elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
+        execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+
+    " FILTER
+    else
+        if s:vira_filter[:0] == '"'
+            let value = substitute(s:vira_filter,'|',', ','')
+        else | let value = '"' . value . '"' | endif
+        execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
+        if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif
     endif
 
-  " SET
-  elseif variable == 'issuetypes' || variable == 'priorities'
-    execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(' . s:vira_menu_type . '={"name":"' . value . '"})'
-  elseif variable == 'fixVersions' || variable == 'components'
-    if value != "null" | let value = '"' . value . '"'
-    else | let value = "None" | endif
-    execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[{"name":' . value . '}]})'
-  elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
-    execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+    if variable == 'project' | execute 'python3 Vira.api.get_versions()' | endif
 
-  " FILTER
-  else
-    if s:vira_filter[:0] == '"'
-      let value = substitute(s:vira_filter,'|',', ','')
-    else | let value = '"' . value . '"' | endif
-    execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
+    call vira#_filter_closed()
+endfunction
 
-    if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif
-  endif
+function! vira#_unset() "{{{2
+    execute 'python3 Vira.api.userconfig_filter["' . s:vira_set_lookup[s:vira_menu_type] . '"] = ""'
+    call vira#_filter_closed()
+endfunction
 
-  if variable == 'project' | execute 'python3 Vira.api.get_versions()' | endif
-
-  let s:vira_filter_setkey = 0
-  let s:vira_highlight = ''
-  let s:vira_filter = ''
-  let s:vira_filter_hold = ''
-  call vira#_filter_unload()
+function! vira#_filter_closed() "{{{2
+    let s:vira_filter_setkey = 0
+    let s:vira_highlight = ''
+    let s:vira_filter = ''
+    let s:vira_filter_hold = ''
+    call vira#_filter_unload()
 endfunction
