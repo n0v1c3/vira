@@ -88,7 +88,7 @@ endfunction
 
 function! vira#_prompt_start(type, ...) abort "{{{2
   " Make sure vira has all the required inputs selected
-  if a:type != 'issue'
+  if a:type != 'issue' && a:type != 'edit_filter'
     if (vira#_get_active_issue() == g:vira_null_issue)
       echo 'Please select an issue before performing this action'
       return
@@ -113,7 +113,7 @@ endfunction
 function! vira#_prompt_end() "{{{2
   " Write contents of the prompt buffer to jira server
   let g:vira_input_text = trim(join(readfile(s:vira_prompt_file), "\n"))
-  python3 Vira.api.write_jira()
+  python3 Vira.api.set_prompt_text()
   call vira#_refresh()
 endfunction
 
@@ -180,19 +180,34 @@ function! vira#_print_report(list) " {{{2
   silent! put x
 endfunction
 
-function! vira#_load_project_config() " {{{2
+function! vira#_load_project_config(...) " {{{2
   " Save current directory and switch to file directory
   let s:current_dir = getcwd()
   cd %:p:h
 
+  if a:0 > 0
+    let vira_repo  = a:1
+  else
+    let vira_repo   = ''
+  end
+  let old_server = get(g:, 'vira_serv', '')
+
   " Load project configuration for the current git repo
-  python3 Vira.api.load_project_config()
+  call vira#_reset_filters()
+  exe 'python3 Vira.api.load_project_config("'.vira_repo.'")'
 
   " Return to current directory
   cd `=s:current_dir`
 
   " Disable loading of project config
   let g:vira_load_project_enabled = 0
+
+  " Handle changing servers
+  if old_server != get(g:, 'vira_serv', '')
+    let s:vira_connected = 0
+    call vira#_connect()
+  endif
+
 endfunction
 
 function! vira#_menu(type) abort " {{{2
@@ -206,8 +221,6 @@ function! vira#_menu(type) abort " {{{2
     call vira#_menu('servers')
     return
   endif
-
-  call vira#_connect()
 
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
   if a:type == 'report'

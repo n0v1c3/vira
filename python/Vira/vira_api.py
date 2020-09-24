@@ -8,6 +8,7 @@ from Vira.helper import load_config, run_command, parse_prompt_text
 from jira import JIRA
 from jira.exceptions import JIRAError
 import datetime
+import json
 import urllib3
 import vim
 
@@ -343,7 +344,8 @@ class ViraAPI():
         '''
 
         for project in self.jira.projects():
-            projectDesc = self.jira.createmeta(projectKeys=project, expand='projects')['projects'][0]
+            projectDesc = self.jira.createmeta(
+                projectKeys=project, expand='projects')['projects'][0]
             print(str(project) + ' ~ ' + projectDesc['name'])
 
     def get_priority(self):
@@ -358,8 +360,16 @@ class ViraAPI():
         Get prompt text used for inputting text into jira
         '''
 
-        # Edit summary
         self.prompt_type = prompt_type
+
+        # Edit filters
+        if prompt_type == 'edit_filter':
+            self.prompt_text_commented = '\n# Edit all filters in JSON format'
+            self.prompt_text = json.dumps(
+                self.userconfig_filter, indent=True) + self.prompt_text_commented
+            return self.prompt_text
+
+        # Edit summary
         active_issue = vim.eval("g:vira_active_issue")
         if prompt_type == 'summary':
             self.prompt_text_commented = '\n# Edit issue summary'
@@ -367,7 +377,8 @@ class ViraAPI():
                 'issue = "' + active_issue + '"',
                 fields=','.join(['summary']),
                 json_result='True')['issues'][0]['fields']['summary']
-            return summary + self.prompt_text_commented
+            self.prompt_text = summary + self.prompt_text_commented
+            return self.prompt_text
 
         # Edit description
         if prompt_type == 'description':
@@ -380,7 +391,8 @@ class ViraAPI():
                 description = description.replace('\r\n', '\n')
             else:
                 description = ''
-            return description + self.prompt_text_commented
+            self.prompt_text = description + self.prompt_text_commented
+            return self.prompt_text
 
         self.prompt_text_commented = f'''
 # ---------------------------------
@@ -403,12 +415,14 @@ class ViraAPI():
 
         # Add comment
         if self.prompt_type == 'add_comment':
-            return self.prompt_text_commented
+            self.prompt_text = self.prompt_text_commented
+            return self.prompt_text
 
         # Edit comment
         if self.prompt_type == 'edit_comment':
             self.active_comment = self.jira.comment(active_issue, comment_id)
-            return self.active_comment.body + self.prompt_text_commented
+            self.prompt_text = self.active_comment.body + self.prompt_text_commented
+            return self.prompt_text
 
         statuses = [x.name for x in self.jira.statuses()]
         issuetypes = [x.name for x in self.jira.issue_types()]
@@ -432,7 +446,7 @@ class ViraAPI():
 # Components in {self.userconfig_filter["project"]} Project: {components}
 # Versions in {self.userconfig_filter["project"]} Project: {versions}'''
 
-        return f'''[*Summary*]
+        self.prompt_text = f'''[*Summary*]
 [Description]
 
 [*Project*] {self.userconfig_filter["project"]}
@@ -443,6 +457,7 @@ class ViraAPI():
 [Version] {self.userconfig_newissue["fixVersion"]}
 [Assignee] {self.userconfig_newissue["assignee"]}
 {self.prompt_text_commented}'''
+        return self.prompt_text
 
     def get_report(self):
         '''
@@ -456,9 +471,9 @@ class ViraAPI():
             #  fields='*',
             fields=','.join(
                 [
-                    'project', 'summary', 'comment', 'component', 'description', 'issuetype',
-                    'priority', 'status', 'created', 'updated', 'assignee', 'reporter',
-                    'fixVersion', 'customfield_10106'
+                    'project', 'summary', 'comment', 'component', 'description',
+                    'issuetype', 'priority', 'status', 'created', 'updated', 'assignee',
+                    'reporter', 'fixVersion', 'customfield_10106'
                 ]),
             json_result='True')
         issue = issues['issues'][0]['fields']
@@ -482,21 +497,24 @@ class ViraAPI():
         version = ', '.join([v['name'] for v in issue['fixVersions']])
         description = str(issue.get('description'))
 
-        if version != '': # Prevent no version error for percent
-            version += ' | ' + self.version_percent(str(issue['project']['key']), version) + '%'
+        if version != '':  # Prevent no version error for percent
+            version += ' | ' + self.version_percent(
+                str(issue['project']['key']), version) + '%'
 
         comments = ''
         idx = 0
         for idx, comment in enumerate((issue['comment']['comments'])):
             comments += ''.join(
                 [
-                    comment['author']['displayName'] + ' @ ' +
-                    comment['updated'][0:10] + ' ' + comment['updated'][11:16] +
-                    ' {{{2\n' + comment['body'] + '\n}}}\n'
+                    comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
+                    ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] +
+                    '\n}}}\n'
                 ])
         old_count = idx - 3
         old_comment = 'Comment' if old_count == 1 else 'Comments'
-        comments = ''.join([str(old_count) + ' Older ' + old_comment + ' {{{1\n']) + comments if old_count >= 1 else comments
+        comments = ''.join(
+            [str(old_count) + ' Older ' + old_comment +
+             ' {{{1\n']) + comments if old_count >= 1 else comments
         comments = comments.replace('}}}', '}}}}}}', idx - 3)
         comments = comments.replace('}}}}}}', '}}}', idx - 4)
 
@@ -559,7 +577,8 @@ Comments
 
         self.set_report_lines(report, description, issue)
 
-        return self.report_users(report.format(**locals()))
+        self.prompt_text = self.report_users(report.format(**locals()))
+        return self.prompt_text
 
     def report_users(self, report):
         '''
@@ -633,11 +652,12 @@ Comments
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
         # Determine cloud/server jira
-        self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
+        self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get(
+            'accountId') else 'name'
 
         for issue in issues['issues']:
-            user = str(issue['fields']['reporter']
-                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][self.users_type]
+            user = str(issue['fields']['reporter']['displayName']
+                      ) + ' ~ ' + issue['fields']['reporter'][self.users_type]
             self.users.add(user)
             if type(issue['fields']['assignee']) == dict:
                 user = str(issue['fields']['assignee']['displayName']
@@ -654,16 +674,16 @@ Comments
         wordslength = sorted(self.versions, key=len)[-1]
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
-        versions = set()
-        for version in self.get_versions():
-            print(version.split('|')[0] + ''.join(
-                [char * (len(dashlength) - len(version)) for char in ' ']) +
-                '   ' + version.split('|')[1] +
-                ' ' + version.split('|')[2])
+        for version in self.versions:
+            print(
+                version.split('|')[0] +
+                ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
+                '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
         print('null')
 
     def version_percent(self, project, fixVersion):
-        query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(project) + '"'
+        query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(
+            project) + '"'
         issues = self.jira.search_issues(
             query, fields='fixVersion', json_result='True', maxResults=1)
 
@@ -677,14 +697,14 @@ Comments
         space = ''.join([char * (5 - len(percent)) for char in ' '])
 
         try:
-            version = str(issue['name'] + ' ~ ' + issue['description'] +
-                          '|' + str(fixed) + '/' + str(total) +
-                          space + '|' + str(percent) + '%')
+            version = str(
+                issue['name'] + ' ~ ' + issue['description'] + '|' + str(fixed) + '/' +
+                str(total) + space + '|' + str(percent) + '%')
         except:
             try:
-                version = str(issue['name'] + ' ~ ' + 'None' +
-                              '|' + str(fixed) + '/' + str(total) +
-                              space + '|' + str(percent) + '%')
+                version = str(
+                    issue['name'] + ' ~ ' + 'None' + '|' + str(fixed) + '/' + str(total) +
+                    space + '|' + str(percent) + '%')
             except:
                 version = 'null'
                 pass
@@ -714,16 +734,16 @@ Comments
                 projects.add(p)
 
         # Loop through each project and all versions within
-        versions = set()
-        dashlength = 0
         for p in projects:
             for v in reversed(self.jira.project_versions(p)):
-                self.version_percent(p, v) # Add and update the version list
-        return self.versions # Return the version list
+                self.version_percent(p, v)  # Add and update the version list
+        return self.versions  # Return the version list
 
-    def load_project_config(self):
+    def load_project_config(self, repo):
         '''
         Load project configuration for the current git repo
+        The current repo can either be determined by current files path
+        or by the user setting g:vira_repo (part of :ViraLoadProject)
 
         For example, an entry in projects.yaml may be:
 
@@ -736,13 +756,19 @@ Comments
         if not getattr(self, 'vira_projects', None):
             return
 
-        # If current repo doesn't exist, use __default__ project config if it exists
-        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip()
-        if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
-        if not self.vira_projects.get(repo): repo = run_command('pwd')['stdout'].strip()
-        if not self.vira_projects.get(repo): repo = repo.split('/')[-1]
-        if not self.vira_projects.get(repo): repo = '__default__'
-        if not self.vira_projects.get('__default__'): return
+        # If current repo/folder doesn't exist, use __default__ project config if it exists
+        if repo == '':
+            repo = run_command('git rev-parse --show-toplevel')['stdout'].strip()
+            if not self.vira_projects.get(repo):
+                repo = repo.split('/')[-1]
+            if not self.vira_projects.get(repo):
+                repo = run_command('pwd')['stdout'].strip()
+            if not self.vira_projects.get(repo):
+                repo = repo.split('/')[-1]
+            if not self.vira_projects.get(repo):
+                repo = '__default__'
+            if not self.vira_projects.get('__default__'):
+                return
 
         # Set server
         server = self.vira_projects.get(repo, {}).get('server')
@@ -804,8 +830,7 @@ Comments
             'Summary': 'ViraEditSummary',
         }
 
-        self.report_lines = {
-        }
+        self.report_lines = {}
 
         for idx, line in enumerate(report.split('\n')):
             for field, command in writable_fields.items():
@@ -828,32 +853,34 @@ Comments
                 self.report_lines[x] = 'ViraEditComment ' + comment['id']
             comment_line = comment_line + comment_len
 
-    def write_jira(self):
+    def set_prompt_text(self):
         '''
-        Write to jira
-        Can be issue name, description, comment, etc...
+        Take the user prompt text and perform an action
+        Usually, this involves writing to the jira server
         '''
 
         # User input
         issue = vim.eval('g:vira_active_issue')
-        input_stripped = vim.eval('g:vira_input_text').replace(
-            self.prompt_text_commented.strip(), '').strip()
+        userinput = vim.eval('g:vira_input_text')
+        input_stripped = userinput.replace(self.prompt_text_commented.strip(), '').strip()
 
         # Check if anything was actually entered by user
-        if input_stripped == '':
+        if input_stripped == '' or userinput.strip() == self.prompt_text.strip():
             print("No vira actions performed")
             return
 
-        if self.prompt_type == 'add_comment':
-            return self.jira.add_comment(issue, input_stripped)
-        if self.prompt_type == 'edit_comment':
-            return self.active_comment.update(body=input_stripped)
+        if self.prompt_type == 'edit_filter':
+            self.userconfig_filter = json.loads(input_stripped)
+        elif self.prompt_type == 'add_comment':
+            self.jira.add_comment(issue, input_stripped)
+        elif self.prompt_type == 'edit_comment':
+            self.active_comment.update(body=input_stripped)
         elif self.prompt_type == 'summary':
-            return self.jira.issue(issue).update(summary=input_stripped)
+            self.jira.issue(issue).update(summary=input_stripped)
         elif self.prompt_type == 'description':
-            return self.jira.issue(issue).update(description=input_stripped)
+            self.jira.issue(issue).update(description=input_stripped)
         elif self.prompt_type == 'issue':
-            return self.create_issue(input_stripped)
+            self.create_issue(input_stripped)
 
     def versions_hide(self, state):
         '''
