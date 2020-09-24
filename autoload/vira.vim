@@ -266,6 +266,8 @@ function! vira#_menu(type) abort " {{{2
   " Write report output into buffer
   if type == 'menu'
     let s:vira_filter = ''
+    let s:vira_highlight = ''
+    call vira#_filter_unload()
     call vira#_highlight_reload()
     silent! put=list
   else | call vira#_print_report(list) | endif
