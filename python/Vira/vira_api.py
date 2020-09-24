@@ -671,6 +671,7 @@ Comments
         Print version list with project filters
         '''
 
+        self.get_versions()
         wordslength = sorted(self.versions, key=len)[-1]
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
