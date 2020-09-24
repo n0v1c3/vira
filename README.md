@@ -252,7 +252,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `u` - Unselect current line within menu.
 - `U` - Unselect all lines within menu.
 - `q` - Quit the curernt menu no Apply.
-- `<cr>` - Apply selections or current line.
+- `<cr>` - Apply selections along with current line.
 
 ### Commands
 
@@ -291,6 +291,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 ### Config Variables
 
+- `g:vira_active_issue` - Set and get the active issue.
 - `g:vira_menu_height` - Set the height of the menu (default 7).
 - `g:vira_report_width` - Set the width of the report (default 0).
 - `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
@@ -319,11 +320,16 @@ Summary
 Edit any jira field
 
 Description
-A user should be able to edit any field that is shown on a vira issue report.
+A user should be able to edit any field that
+is shown on a vira issuereport.
 
-I would suggest to use a default key of <CR> for editing a report field and allow the user to customize this mapping.
+I would suggest to use a default key of <CR>
+for editing a report field and allow the user
+to customize this mapping.
 
-The edit command would bring up the vira_prompt buffer, in the same manner as creating new issues/comments.
+The edit command would bring up the vira_prompt
+buffer, in the same manner as creating new
+issues/comments.
 
 Comments
 ...
@@ -369,6 +375,12 @@ nnoremap <silent> <leader>vfp :ViraFilterProjects<cr>
 nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
 nnoremap <silent> <leader>vfs :ViraFilterStatuses<cr>
 nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
+
+function! Enter_ViraActiveIssue()
+    let g:vira_active_issue = input("Enter issue.key: ")
+    ViraReport
+endfunction
+nnoremap <silent> <leader>vei :call Enter_ViraActiveIssue()<cr>
 
 " Status
 statusline+=%{ViraStatusline()}
