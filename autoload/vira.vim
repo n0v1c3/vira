@@ -557,3 +557,7 @@ function! vira#_filter_closed() "{{{2
     let s:vira_filter_hold = ''
     call vira#_filter_unload()
 endfunction
+function! vira#_toggle_hide() "{{{2
+    let g:vira_version_hide = 1 - g:vira_version_hide
+    call vira#_menu(s:vira_menu_type)
+endfunction

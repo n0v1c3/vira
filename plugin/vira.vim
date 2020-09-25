@@ -28,6 +28,7 @@ let g:vira_load_project_enabled = 1
 let g:vira_report_width = get(g:, 'vira_report_width', 0)
 let g:vira_menu_height = get(g:, 'vira_menu_height', 7)
 let g:vira_issue_limit = get(g:, 'vira_issue_limit', 50)
+let g:vira_version_hide = get(g:, 'vira_version_hide', 1)
 
 " Commands {{{1
 " Basics

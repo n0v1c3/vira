@@ -247,6 +247,7 @@ from the current column.
 _NOTE:_ These keys are only mapped to the Vira windows.
 
 - `D` - Unselect and Apply "Delete" all lines within menu.
+- `H` - Toggle special hidden menu items.
 - `s` - Select current line within menu.
 - `S` - Select all lines within menu.
 - `u` - Unselect current line within menu.
@@ -294,10 +295,12 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 ### Config Variables
 
 - `g:vira_active_issue` - Set and get the active issue.
-- `g:vira_menu_height` - Set the height of the menu (default 7).
-- `g:vira_report_width` - Set the width of the report (default 0).
+- `g:vira_highlight` - Text used when there is no issue.
 - `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
+- `g:vira_menu_height` - Set the height of the menu (default 7).
 - `g:vira_null_issue` - Text used when there is no issue.
+- `g:vira_report_width` - Set the width of the report (default 0).
+- `g:vira_version_hide` - Toggle the display of complete versions.
 
 ### Report
 
