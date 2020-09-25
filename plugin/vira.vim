@@ -71,6 +71,9 @@ command! -nargs=0 -bang ViraFilterText call vira#_menu('text')
 command! -nargs=0 -bang ViraFilterTypes call vira#_menu('issuetypes')
 command! -nargs=0 -bang ViraFilterVersions call vira#_menu('versions')
 
+" New
+command! -nargs=0 -bang ViraNewVersion call vira#_new('version')
+
 " Functions {{{1
 function! ViraGetActiveIssue() "{{{2
   return vira#_get_active_issue()

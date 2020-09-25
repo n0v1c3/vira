@@ -633,6 +633,13 @@ Comments
 
         self.print_versions()
 
+    def new_version(self, name, project, description):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.jira.create_version(name=name, project=project, description=description)
+
     def print_users(self):
         '''
         Print users
@@ -688,27 +695,38 @@ Comments
         issues = self.jira.search_issues(
             query, fields='fixVersion', json_result='True', maxResults=1)
 
-        issue = issues['issues'][0]['fields']['fixVersions'][0]
-        idx = issue['id']
-
-        total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
-        pending = self.jira.version_count_unresolved_issues(idx)
-        fixed = total - pending
-        percent = str(round(fixed / total * 100, 1))
-        space = ''.join([char * (5 - len(percent)) for char in ' '])
-
-        name = issue['name']
         try:
-            description = issue['description']
+            issue = issues['issues'][0]['fields']['fixVersions'][0]
+            idx = issue['id']
+
+            total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
+            pending = self.jira.version_count_unresolved_issues(idx)
+            fixed = total - pending
+            percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
+            space = ''.join([char * (5 - len(percent)) for char in ' '])
+
+            name = fixVersion
+            try:
+                description = issue['description']
+            except:
+                description = 'None'
+                pass
         except:
-            description = 'None'
+            total = 0
+            pending = 0
+            fixed = total - pending
+            percent = "0"
+            space = ''.join([char * (5 - len(percent)) for char in ' '])
+            name = fixVersion
+            description = ''
             pass
+
         version = str(
-            name + ' ~ ' + description + '|' + str(fixed) + '/' +
+            str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' +
             str(total) + space + '|' + str(percent) + '%')
 
         self.versions_hide = vim.eval('g:vira_version_hide')
-        if fixed != total or not int(self.versions_hide) == 1:
+        if fixed != total or total == 0 or not int(self.versions_hide) == 1:
             self.versions.add(str(project) + ' ~ ' + version)
 
         return percent
