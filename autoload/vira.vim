@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.3.2'
+let s:vira_version = '0.3.3'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -560,4 +560,8 @@ endfunction
 function! vira#_toggle_hide() "{{{2
     let g:vira_version_hide = 1 - g:vira_version_hide
     call vira#_menu(s:vira_menu_type)
+endfunction
+" New {{{1
+function! vira#_new(menu, name, project, description) "{{{2
+    execute 'python3 Vira.api.new_' . a:menu . '("' . a:name . '","' . a:project . '","' . a:description . '")'
 endfunction
