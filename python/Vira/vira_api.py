@@ -154,15 +154,15 @@ class ViraAPI():
             else:
                 password = self.vira_servers[server]['password']
         except:
-                cert_verify = True
-                server = vim.eval('input("server: ")')
-                vim.command('let g:vira_serv = "' + server + '"')
-                username = vim.eval('input("username: ")')
-                password = vim.eval('inputsecret("password: ")')
+            cert_verify = True
+            server = vim.eval('input("server: ")')
+            vim.command('let g:vira_serv = "' + server + '"')
+            username = vim.eval('input("username: ")')
+            password = vim.eval('inputsecret("password: ")')
 
         # Connect to jira server
         try:
-            if 'https://' not in server and 'HTTPS://' not in server:
+            if 'https://' not in server.lower():
                 server = 'https://' + server
                 vim.command('let g:vira_serv = "' + server + '"')
 
@@ -192,7 +192,9 @@ class ViraAPI():
                 #  raise e
         except:
             vim.command('let g:vira_serv = ""')
-            vim.command('echo "Could not log into jira! See the README for vira_server.json information"')
+            vim.command(
+                'echo "Could not log into jira! See the README for vira_server.json information"'
+            )
 
     def filter_str(self, filterType):
         '''
@@ -742,8 +744,8 @@ Comments
             pass
 
         version = str(
-            str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' +
-            str(total) + space + '|' + str(percent) + '%')
+            str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
+            space + '|' + str(percent) + '%')
 
         self.versions_hide = vim.eval('g:vira_version_hide')
         if fixed != total or total == 0 or not int(self.versions_hide) == 1:
