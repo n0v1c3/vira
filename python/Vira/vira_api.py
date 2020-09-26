@@ -138,23 +138,34 @@ class ViraAPI():
         self.versions = set()
         self.users_type = ''
 
-        # Specify whether the server's TLS certificate needs to be verified
-        if self.vira_servers[server].get('skip_cert_verify'):
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            cert_verify = False
-        else:
-            cert_verify = True
+        try:
+            # Specify whether the server's TLS certificate needs to be verified
+            if self.vira_servers[server].get('skip_cert_verify'):
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                cert_verify = False
+            else:
+                cert_verify = True
 
-        # Get auth for current server
-        username = self.vira_servers[server].get('username')
-        password_cmd = self.vira_servers[server].get('password_cmd')
-        if password_cmd:
-            password = run_command(password_cmd)['stdout'].strip()
-        else:
-            password = self.vira_servers[server]['password']
+            # Get auth for current server
+            username = self.vira_servers[server].get('username')
+            password_cmd = self.vira_servers[server].get('password_cmd')
+            if password_cmd:
+                password = run_command(password_cmd)['stdout'].strip().split('\n')[0]
+            else:
+                password = self.vira_servers[server]['password']
+        except:
+                cert_verify = True
+                server = vim.eval('input("server: ")')
+                vim.command('let g:vira_serv = "' + server + '"')
+                username = vim.eval('input("username: ")')
+                password = vim.eval('inputsecret("password: ")')
 
         # Connect to jira server
         try:
+            if 'https://' not in server and 'HTTPS://' not in server:
+                server = 'https://' + server
+                vim.command('let g:vira_serv = "' + server + '"')
+
             # Authorize
             self.jira = JIRA(
                 options={
@@ -162,7 +173,8 @@ class ViraAPI():
                     'verify': cert_verify,
                 },
                 basic_auth=(username, password),
-                timeout=5)
+                timeout=2,
+                max_retries=2)
 
             # User list update
             self.users = self.get_users()
@@ -175,7 +187,12 @@ class ViraAPI():
                     'echo "Could not log into jira! Check authentication details and log in from web browser to enter mandatory CAPTCHA."'
                 )
             else:
-                raise e
+                #  vim.command('echo "' + str(e) + '"')
+                vim.command('let g:vira_serv = ""')
+                #  raise e
+        except:
+            vim.command('let g:vira_serv = ""')
+            vim.command('echo "Could not log into jira! See the README for vira_server.json information"')
 
     def filter_str(self, filterType):
         '''
@@ -605,8 +622,11 @@ Comments
         Get list of servers
         '''
 
-        for server in self.vira_servers.keys():
-            print(server)
+        try:
+            for server in self.vira_servers.keys():
+                print(server)
+        except:
+            self.connect('')
 
     def get_statuses(self):
         '''
