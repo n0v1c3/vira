@@ -233,10 +233,12 @@ function! vira#_menu(type) abort " {{{2
   elseif a:type == 'text'
     let value = input('text ~ ')
     execute 'python3 Vira.api.userconfig_filter["text"] = "' . value . '"'
-    silent! call feedkeys(":set hls\<cr>")
-    let value = substitute(value, ' ', '|', 'g')
-    silent! execute "normal! /" . value . '\<cr>'
-    let @/ = '\v' . value
+    if value != ''
+        silent! call feedkeys(":set hls\<cr>")
+        let value = substitute(value, ' ', '|', 'g')
+        silent! execute "normal! /" . value . '\<cr>'
+        let @/ = '\v' . value
+    endif
     call vira#_refresh() " Refresh open menus
     return
   else
