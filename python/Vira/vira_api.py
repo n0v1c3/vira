@@ -162,6 +162,10 @@ class ViraAPI():
 
         # Connect to jira server
         try:
+            if 'https://' not in server and 'HTTPS://' not in server:
+                server = 'https://' + server
+                vim.command('let g:vira_serv = "' + server + '"')
+
             # Authorize
             self.jira = JIRA(
                 options={
@@ -169,7 +173,8 @@ class ViraAPI():
                     'verify': cert_verify,
                 },
                 basic_auth=(username, password),
-                timeout=5)
+                timeout=2,
+                max_retries=2)
 
             # User list update
             self.users = self.get_users()
@@ -182,7 +187,12 @@ class ViraAPI():
                     'echo "Could not log into jira! Check authentication details and log in from web browser to enter mandatory CAPTCHA."'
                 )
             else:
-                raise e
+                #  vim.command('echo "' + str(e) + '"')
+                vim.command('let g:vira_serv = ""')
+                #  raise e
+        except:
+            vim.command('let g:vira_serv = ""')
+            vim.command('echo "Could not log into jira! See the README for vira_server.json information"')
 
     def filter_str(self, filterType):
         '''
