@@ -138,20 +138,27 @@ class ViraAPI():
         self.versions = set()
         self.users_type = ''
 
-        # Specify whether the server's TLS certificate needs to be verified
-        if self.vira_servers[server].get('skip_cert_verify'):
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            cert_verify = False
-        else:
-            cert_verify = True
+        try:
+            # Specify whether the server's TLS certificate needs to be verified
+            if self.vira_servers[server].get('skip_cert_verify'):
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                cert_verify = False
+            else:
+                cert_verify = True
 
-        # Get auth for current server
-        username = self.vira_servers[server].get('username')
-        password_cmd = self.vira_servers[server].get('password_cmd')
-        if password_cmd:
-            password = run_command(password_cmd)['stdout'].strip()
-        else:
-            password = self.vira_servers[server]['password']
+            # Get auth for current server
+            username = self.vira_servers[server].get('username')
+            password_cmd = self.vira_servers[server].get('password_cmd')
+            if password_cmd:
+                password = run_command(password_cmd)['stdout'].strip()
+            else:
+                password = self.vira_servers[server]['password']
+        except:
+                cert_verify = True
+                server = vim.eval('input("server: ")')
+                vim.command('let g:vira_serv = "' + server + '"')
+                username = vim.eval('input("username: ")')
+                password = vim.eval('input("password: ")')
 
         # Connect to jira server
         try:
@@ -605,8 +612,11 @@ Comments
         Get list of servers
         '''
 
-        for server in self.vira_servers.keys():
-            print(server)
+        try:
+            for server in self.vira_servers.keys():
+                print(server)
+        except:
+            self.connect('')
 
     def get_statuses(self):
         '''
