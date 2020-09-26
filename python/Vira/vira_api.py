@@ -150,7 +150,7 @@ class ViraAPI():
             username = self.vira_servers[server].get('username')
             password_cmd = self.vira_servers[server].get('password_cmd')
             if password_cmd:
-                password = run_command(password_cmd)['stdout'].strip()
+                password = run_command(password_cmd)['stdout'].strip().split('\n')[0]
             else:
                 password = self.vira_servers[server]['password']
         except:
