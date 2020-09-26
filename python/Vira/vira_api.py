@@ -158,7 +158,7 @@ class ViraAPI():
                 server = vim.eval('input("server: ")')
                 vim.command('let g:vira_serv = "' + server + '"')
                 username = vim.eval('input("username: ")')
-                password = vim.eval('input("password: ")')
+                password = vim.eval('inputsecret("password: ")')
 
         # Connect to jira server
         try:
