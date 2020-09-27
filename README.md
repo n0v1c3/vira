@@ -246,19 +246,26 @@ from the current column.
 
 _NOTE:_ These keys are only mapped to the Vira windows.
 
+- `D` - Unselect and Apply "Delete" all lines within menu.
+- `H` - Toggle special hidden menu items.
 - `s` - Select current line within menu.
 - `S` - Select all lines within menu.
 - `u` - Unselect current line within menu.
 - `U` - Unselect all lines within menu.
-- `<cr>` - Apply selections or current line.
+- `q` - Quit the curernt menu no Apply.
+- `<cr>` - Apply selections along with current line.
 
 ### Commands
 
 - `ViraBrowse` - View Jira issue in web-browser.
 - `ViraComment` - Insert a comment for active issue.
+- `ViraEditComment` - Update the comment relative to position in report.
+- `ViraEditDescription` - Update the description of the current issue.
+- `ViraEditSummary` - Update the summary of the current issue
 - `ViraEpics` - Get and Set Project(s) epic issues.
 - `ViraFilterAssignees` - Add assignees to filter.
 - `ViraFilterComponents` - Add components to filter.
+- `ViraFilterEdit` - Display/Edit all active filter in a vim buffer.
 - `ViraFilterPriorities` - Add priorities to filter.
 - `ViraFilterProjects` - Add projects to filter.
 - `ViraFilterReset` - Reset filter to default.
@@ -268,17 +275,15 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraFilterVersions` - Add versions to filter.
 - `ViraIssue` - Create a new **issue**. The required fields are indicated by \*.
 - `ViraIssues` - Get and Set the active **issue**.
+- `ViraLoadProject` - Load project from `vira_projects.json/yaml`. The default is based on `cwd`. Optionally pass repo name in argument. Ex. `:ViraLoadProject My Repo`
 - `ViraReport` - Get report for active issue.
 - `ViraServers` - Get and Set active Jira server.
-- `ViraEditComment` - Update the comment relative to position in report.
-- `ViraEditDescription` - Update the description of the current issue.
-- `ViraEditSummary` - Update the summary of the current issue
 - `ViraSetAssignee` - Select user to assign the current issue.
-- `ViraSetComponent` - Select compnent to appent the current issue.
+- `ViraSetComponent` - Select component to append the current issue.
 - `ViraSetPriority` - Select priority of the current issue.
 - `ViraSetStatus` - Select the status of the current issue.
-- `ViraSetVersion` - Select the version to appent the current issue.
 - `ViraSetType` - Select the issuetype of the current issue.
+- `ViraSetVersion` - Select the version to append the current issue.
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 
@@ -289,10 +294,13 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 ### Config Variables
 
-- `g:vira_menu_height` - Set the height of the menu (default 7).
-- `g:vira_report_width` - Set the width of the report (default 0).
+- `g:vira_active_issue` - Set and get the active issue.
+- `g:vira_highlight` - Text used when there is no issue.
 - `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
+- `g:vira_menu_height` - Set the height of the menu (default 7).
 - `g:vira_null_issue` - Text used when there is no issue.
+- `g:vira_report_width` - Set the width of the report (default 0).
+- `g:vira_version_hide` - Toggle the display of complete versions.
 
 ### Report
 
@@ -317,11 +325,16 @@ Summary
 Edit any jira field
 
 Description
-A user should be able to edit any field that is shown on a vira issue report.
+A user should be able to edit any field that
+is shown on a vira issuereport.
 
-I would suggest to use a default key of <CR> for editing a report field and allow the user to customize this mapping.
+I would suggest to use a default key of <CR>
+for editing a report field and allow the user
+to customize this mapping.
 
-The edit command would bring up the vira_prompt buffer, in the same manner as creating new issues/comments.
+The edit command would bring up the vira_prompt
+buffer, in the same manner as creating new
+issues/comments.
 
 Comments
 ...
@@ -367,6 +380,16 @@ nnoremap <silent> <leader>vfp :ViraFilterProjects<cr>
 nnoremap <silent> <leader>vfr :ViraFilterReporter<cr>
 nnoremap <silent> <leader>vfs :ViraFilterStatuses<cr>
 nnoremap <silent> <leader>vft :ViraFilterTypes<cr>
+
+" Projects/Boards
+nnoremap <silent> <leader>vbm :ViraLoadProject __default__<cr>
+
+" Functions
+function! Enter_ViraActiveIssue()
+    let g:vira_active_issue = input("Enter issue.key: ")
+    ViraReport
+endfunction
+nnoremap <silent> <leader>vei :call Enter_ViraActiveIssue()<cr>
 
 " Status
 statusline+=%{ViraStatusline()}
@@ -420,15 +443,21 @@ A simple example is below but recommended that it can be expanded on
 for your personal needs.
 
 ```
-function! s:VGprompt()
+function! s:Vira_GitActiveIssue()
+    let g:vira_active_issue = execute("Git branch --show-current > echo")
+    ViraReport
+endfunction
+
+function! s:Vira_GitPrompt()
   return '"' . ViraStatusLine() . ': ' . input(ViraStatusLine() . ': ') . '"'
 endfunction
 
-execute 'Git checkout -b' . ViraStatusLine()
-execute 'Git checkout ' . ViraStatusLine()
-execute 'Git push -u origin ' . ViraStatusLine()
-execute 'Git commit -m ' . s:VGprompt()
-execute 'Gmerge --no-ff ' . ViraStatusLine() . ' -m ' . s:VGprompt()
+nnoremap <silent> <leader>vgC :execute 'Git checkout -b' . ViraStatusLine()<cr>
+nnoremap <silent> <leader>vgc :execute 'Git checkout ' . ViraStatusLine()<cr>
+nnoremap <silent> <leader>vgc :execute 'Git commit -m ' . s:Vira_GitPrompt()<cr>
+nnoremap <silent> <leader>vgi :call Vira_GitActiveIssue()<cr>
+nnoremap <silent> <leader>vgm :execute 'Gmerge --no-ff ' . ViraStatusLine() . ' -m ' . s:Vira_GitPrompt()<cr>
+nnoremap <silent> <leader>vgp :execute 'Git push -u origin ' . ViraStatusLine()<cr>
 ```
 
 #### airline

@@ -1,5 +1,5 @@
 " File: ftdetect/vira.vim {{{1
-" Description: Vira filetypes detection
+" Description: Vira file-type detections
 " Authors:
 "   n0v1c3 (Travis Gall) <https://github.com/n0v1c3>
 
@@ -19,6 +19,9 @@ augroup Vira
   autocmd Filetype vira_menu nnoremap <silent> <buffer> <cr> 0:call vira#_set()<cr>:q!<cr>:call vira#_refresh()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> S :set hlsearch<cr>:call vira#_filter_all('select')<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> U :set hlsearch<cr>:call vira#_filter_all('unselect')<cr>
+  autocmd Filetype vira_menu nnoremap <silent> <buffer> d :set hlsearch<cr>
+  autocmd Filetype vira_menu nnoremap <silent> <buffer> D :call vira#_unset()<cr>:q!<cr>:call vira#_refresh()<cr>
+  autocmd Filetype vira_menu nnoremap <silent> <buffer> H :call vira#_toggle_hide()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> s :set hlsearch<cr>:call vira#_select()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> u :set hlsearch<cr>:call vira#_unselect()<cr>
   autocmd Filetype vira_menu setlocal norelativenumber

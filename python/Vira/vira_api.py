@@ -8,6 +8,7 @@ from Vira.helper import load_config, run_command, parse_prompt_text
 from jira import JIRA
 from jira.exceptions import JIRAError
 import datetime
+import json
 import urllib3
 import vim
 
@@ -54,7 +55,10 @@ class ViraAPI():
         }
 
         self.users = set()
+        self.versions = set()
         self.users_type = ''
+
+        self.versions_hide(True)
 
     def create_issue(self, input_stripped):
         '''
@@ -130,23 +134,38 @@ class ViraAPI():
         Connect to Jira server with supplied auth details
         '''
 
-        # Specify whether the server's TLS certificate needs to be verified
-        if self.vira_servers[server].get('skip_cert_verify'):
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            cert_verify = False
-        else:
-            cert_verify = True
+        self.users = set()
+        self.versions = set()
+        self.users_type = ''
 
-        # Get auth for current server
-        username = self.vira_servers[server].get('username')
-        password_cmd = self.vira_servers[server].get('password_cmd')
-        if password_cmd:
-            password = run_command(password_cmd)['stdout'].strip()
-        else:
-            password = self.vira_servers[server]['password']
+        try:
+            # Specify whether the server's TLS certificate needs to be verified
+            if self.vira_servers[server].get('skip_cert_verify'):
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                cert_verify = False
+            else:
+                cert_verify = True
+
+            # Get auth for current server
+            username = self.vira_servers[server].get('username')
+            password_cmd = self.vira_servers[server].get('password_cmd')
+            if password_cmd:
+                password = run_command(password_cmd)['stdout'].strip().split('\n')[0]
+            else:
+                password = self.vira_servers[server]['password']
+        except:
+                cert_verify = True
+                server = vim.eval('input("server: ")')
+                vim.command('let g:vira_serv = "' + server + '"')
+                username = vim.eval('input("username: ")')
+                password = vim.eval('inputsecret("password: ")')
 
         # Connect to jira server
         try:
+            if 'https://' not in server and 'HTTPS://' not in server:
+                server = 'https://' + server
+                vim.command('let g:vira_serv = "' + server + '"')
+
             # Authorize
             self.jira = JIRA(
                 options={
@@ -154,11 +173,12 @@ class ViraAPI():
                     'verify': cert_verify,
                 },
                 basic_auth=(username, password),
-                timeout=5)
+                timeout=2,
+                max_retries=2)
 
             # User list update
-            self.users = set()
             self.users = self.get_users()
+            self.versions = self.get_versions()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -167,7 +187,12 @@ class ViraAPI():
                     'echo "Could not log into jira! Check authentication details and log in from web browser to enter mandatory CAPTCHA."'
                 )
             else:
-                raise e
+                #  vim.command('echo "' + str(e) + '"')
+                vim.command('let g:vira_serv = ""')
+                #  raise e
+        except:
+            vim.command('let g:vira_serv = ""')
+            vim.command('echo "Could not log into jira! See the README for vira_server.json information"')
 
     def filter_str(self, filterType):
         '''
@@ -225,7 +250,7 @@ class ViraAPI():
 
     def get_components(self):
         '''
-        Build a vim popup menu for a list of components
+        Build a vim pop-up menu for a list of components
         '''
 
         for component in self.jira.project_components(self.userconfig_filter['project']):
@@ -233,7 +258,7 @@ class ViraAPI():
 
     def get_component(self):
         '''
-        Build a vim popup menu for a list of components
+        Build a vim pop-up menu for a list of components
         '''
 
         self.get_components()
@@ -248,7 +273,7 @@ class ViraAPI():
 
     def get_issue(self, issue):
         '''
-        Get single issue by isuue id
+        Get single issue by issue id
         '''
 
         return self.jira.issue(issue)
@@ -332,15 +357,17 @@ class ViraAPI():
 
     def get_projects(self):
         '''
-        Build a vim popup menu for a list of projects
+        Build a vim pop-up menu for a list of projects
         '''
 
         for project in self.jira.projects():
-            print(project)
+            projectDesc = self.jira.createmeta(
+                projectKeys=project, expand='projects')['projects'][0]
+            print(str(project) + ' ~ ' + projectDesc['name'])
 
     def get_priority(self):
         '''
-        Build a vim popup menu for a list of projects
+        Build a vim pop-up menu for a list of projects
         '''
 
         self.get_priorities()
@@ -350,8 +377,16 @@ class ViraAPI():
         Get prompt text used for inputting text into jira
         '''
 
-        # Edit summary
         self.prompt_type = prompt_type
+
+        # Edit filters
+        if prompt_type == 'edit_filter':
+            self.prompt_text_commented = '\n# Edit all filters in JSON format'
+            self.prompt_text = json.dumps(
+                self.userconfig_filter, indent=True) + self.prompt_text_commented
+            return self.prompt_text
+
+        # Edit summary
         active_issue = vim.eval("g:vira_active_issue")
         if prompt_type == 'summary':
             self.prompt_text_commented = '\n# Edit issue summary'
@@ -359,7 +394,8 @@ class ViraAPI():
                 'issue = "' + active_issue + '"',
                 fields=','.join(['summary']),
                 json_result='True')['issues'][0]['fields']['summary']
-            return summary + self.prompt_text_commented
+            self.prompt_text = summary + self.prompt_text_commented
+            return self.prompt_text
 
         # Edit description
         if prompt_type == 'description':
@@ -372,7 +408,8 @@ class ViraAPI():
                 description = description.replace('\r\n', '\n')
             else:
                 description = ''
-            return description + self.prompt_text_commented
+            self.prompt_text = description + self.prompt_text_commented
+            return self.prompt_text
 
         self.prompt_text_commented = f'''
 # ---------------------------------
@@ -380,22 +417,29 @@ class ViraAPI():
 # An empty message will abort the operation.
 #
 # Below is a list of acceptable values for each input field.
+#
 # Users:'''
         for user in self.users:
             user = user.split(' ~ ')
             name = user[0]
             id = user[1]
-            self.prompt_text_commented = self.prompt_text_commented + f'''
-# [{name}|~accountid:{id}]''' if self.users_type == 'accountId' else self.prompt_text_commented + f'''
+            if self.users_type == 'accountId':
+                self.prompt_text_commented += f'''
+# [{name}|~accountid:{id}]'''
+            else:
+                self.prompt_text_commented += f'''
 # [~{id}]'''
+
         # Add comment
         if self.prompt_type == 'add_comment':
-            return self.prompt_text_commented
+            self.prompt_text = self.prompt_text_commented
+            return self.prompt_text
 
         # Edit comment
         if self.prompt_type == 'edit_comment':
             self.active_comment = self.jira.comment(active_issue, comment_id)
-            return self.active_comment.body + self.prompt_text_commented
+            self.prompt_text = self.active_comment.body + self.prompt_text_commented
+            return self.prompt_text
 
         statuses = [x.name for x in self.jira.statuses()]
         issuetypes = [x.name for x in self.jira.issue_types()]
@@ -410,14 +454,16 @@ class ViraAPI():
         projects = [x.key for x in self.jira.projects()]
 
         # Extra info for prompt_type == 'issue'
-        self.prompt_text_commented += f'''# Projects: {projects}
+        self.prompt_text_commented += f'''
+#
+# Projects: {projects}
 # IssueTypes: {issuetypes}
 # Statuses: {statuses}
 # Priorities: {priorities}
 # Components in {self.userconfig_filter["project"]} Project: {components}
-# Versions in {self.userconfig_filter["project"]} Project: {versions}
-'''
-        return f'''[*Summary*]
+# Versions in {self.userconfig_filter["project"]} Project: {versions}'''
+
+        self.prompt_text = f'''[*Summary*]
 [Description]
 
 [*Project*] {self.userconfig_filter["project"]}
@@ -428,6 +474,7 @@ class ViraAPI():
 [Version] {self.userconfig_newissue["fixVersion"]}
 [Assignee] {self.userconfig_newissue["assignee"]}
 {self.prompt_text_commented}'''
+        return self.prompt_text
 
     def get_report(self):
         '''
@@ -441,9 +488,9 @@ class ViraAPI():
             #  fields='*',
             fields=','.join(
                 [
-                    'summary', 'comment', 'component', 'description', 'issuetype',
-                    'priority', 'status', 'created', 'updated', 'assignee', 'reporter',
-                    'fixVersion', 'customfield_10106'
+                    'project', 'summary', 'comment', 'component', 'description',
+                    'issuetype', 'priority', 'status', 'created', 'updated', 'assignee',
+                    'reporter', 'fixVersion', 'customfield_10106'
                 ]),
             json_result='True')
         issue = issues['issues'][0]['fields']
@@ -467,17 +514,24 @@ class ViraAPI():
         version = ', '.join([v['name'] for v in issue['fixVersions']])
         description = str(issue.get('description'))
 
+        if version != '':  # Prevent no version error for percent
+            version += ' | ' + self.version_percent(
+                str(issue['project']['key']), version) + '%'
+
         comments = ''
         idx = 0
         for idx, comment in enumerate((issue['comment']['comments'])):
             comments += ''.join(
                 [
-                    comment['author']['displayName'] + ' @ ' +
-                    #  comment['body'] + '\n}}}\n'
-                    comment['updated'][0:10] + ' ' + comment['updated'][11:16] +
-                    ' {{{2\n' + comment['body'] + '\n}}}\n'
+                    comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
+                    ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] +
+                    '\n}}}\n'
                 ])
-        comments = ''.join(['Old Comments {{{1\n']) + comments if idx > 3 else comments
+        old_count = idx - 3
+        old_comment = 'Comment' if old_count == 1 else 'Comments'
+        comments = ''.join(
+            [str(old_count) + ' Older ' + old_comment +
+             ' {{{1\n']) + comments if old_count >= 1 else comments
         comments = comments.replace('}}}', '}}}}}}', idx - 3)
         comments = comments.replace('}}}}}}', '}}}', idx - 4)
 
@@ -540,7 +594,8 @@ Comments
 
         self.set_report_lines(report, description, issue)
 
-        return self.report_users(report.format(**locals()))
+        self.prompt_text = self.report_users(report.format(**locals()))
+        return self.prompt_text
 
     def report_users(self, report):
         '''
@@ -567,8 +622,11 @@ Comments
         Get list of servers
         '''
 
-        for server in self.vira_servers.keys():
-            print(server)
+        try:
+            for server in self.vira_servers.keys():
+                print(server)
+        except:
+            self.connect('')
 
     def get_statuses(self):
         '''
@@ -593,9 +651,19 @@ Comments
         Get my issues with JQL
         '''
 
-        self.get_versions()
+        self.print_versions()
+
+    def new_version(self, name, project, description):
+        '''
+        Get my issues with JQL
+        '''
+
+        self.jira.create_version(name=name, project=project, description=description)
 
     def print_users(self):
+        '''
+        Print users
+        '''
 
         for user in self.users:
             print(user)
@@ -611,11 +679,12 @@ Comments
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
         # Determine cloud/server jira
-        self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get('accountId') else 'name'
+        self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get(
+            'accountId') else 'name'
 
         for issue in issues['issues']:
-            user = str(issue['fields']['reporter']
-                       ['displayName']) + ' ~ ' + issue['fields']['reporter'][self.users_type]
+            user = str(issue['fields']['reporter']['displayName']
+                      ) + ' ~ ' + issue['fields']['reporter'][self.users_type]
             self.users.add(user)
             if type(issue['fields']['assignee']) == dict:
                 user = str(issue['fields']['assignee']['displayName']
@@ -624,18 +693,93 @@ Comments
 
         return sorted(self.users)
 
-    def get_versions(self):
+    def print_versions(self):
         '''
-        Build a vim popup menu for a list of versions
+        Print version list with project filters
         '''
 
-        for version in self.jira.project_versions(self.userconfig_filter['project']):
-            print(version.name)
+        self.get_versions()
+        wordslength = sorted(self.versions, key=len)[-1]
+        s = ' '
+        dashlength = s.join([char * len(wordslength) for char in s])
+        for version in self.versions:
+            print(
+                version.split('|')[0] +
+                ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
+                '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
         print('null')
 
-    def load_project_config(self):
+    def version_percent(self, project, fixVersion):
+        query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(
+            project) + '"'
+        issues = self.jira.search_issues(
+            query, fields='fixVersion', json_result='True', maxResults=1)
+
+        try:
+            issue = issues['issues'][0]['fields']['fixVersions'][0]
+            idx = issue['id']
+
+            total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
+            pending = self.jira.version_count_unresolved_issues(idx)
+            fixed = total - pending
+            percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
+            space = ''.join([char * (5 - len(percent)) for char in ' '])
+
+            name = fixVersion
+            try:
+                description = issue['description']
+            except:
+                description = 'None'
+                pass
+        except:
+            total = 0
+            pending = 0
+            fixed = total - pending
+            percent = "0"
+            space = ''.join([char * (5 - len(percent)) for char in ' '])
+            name = fixVersion
+            description = ''
+            pass
+
+        version = str(
+            str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' +
+            str(total) + space + '|' + str(percent) + '%')
+
+        self.versions_hide = vim.eval('g:vira_version_hide')
+        if fixed != total or total == 0 or not int(self.versions_hide) == 1:
+            self.versions.add(str(project) + ' ~ ' + version)
+
+        return percent
+
+    def get_versions(self):
+        '''
+        Build a vim pop-up menu for a list of versions with project filters
+        '''
+
+        # Reset version list
+        self.versions = set()
+
+        # Project filter for version list
+        projects = set()
+        if self.userconfig_filter['project'] == '':
+            projects = self.jira.projects()
+        elif isinstance(self.userconfig_filter['project'], str):
+            projects.add(self.userconfig_filter['project'])
+        else:
+            for p in self.userconfig_filter['project']:
+                projects.add(p)
+
+        # Loop through each project and all versions within
+        for p in projects:
+            for v in reversed(self.jira.project_versions(p)):
+                self.version_percent(p, v)  # Add and update the version list
+        return self.versions  # Return the version list
+
+    def load_project_config(self, repo):
         '''
         Load project configuration for the current git repo
+        The current repo can either be determined by current files path
+        or by the user setting g:vira_repo (part of :ViraLoadProject)
 
         For example, an entry in projects.yaml may be:
 
@@ -648,14 +792,18 @@ Comments
         if not getattr(self, 'vira_projects', None):
             return
 
-        repo = run_command('git rev-parse --show-toplevel')['stdout'].strip().split(
-            '/')[-1]
-
-        # If curren't repo doesn't exist, use __default__ project config if it exists
-        if not self.vira_projects.get(repo):
-            if self.vira_projects.get('__default__'):
+        # If current repo/folder doesn't exist, use __default__ project config if it exists
+        if repo == '':
+            repo = run_command('git rev-parse --show-toplevel')['stdout'].strip()
+            if not self.vira_projects.get(repo):
+                repo = repo.split('/')[-1]
+            if not self.vira_projects.get(repo):
+                repo = run_command('pwd')['stdout'].strip()
+            if not self.vira_projects.get(repo):
+                repo = repo.split('/')[-1]
+            if not self.vira_projects.get(repo):
                 repo = '__default__'
-            else:
+            if not self.vira_projects.get('__default__'):
                 return
 
         # Set server
@@ -718,8 +866,7 @@ Comments
             'Summary': 'ViraEditSummary',
         }
 
-        self.report_lines = {
-        }
+        self.report_lines = {}
 
         for idx, line in enumerate(report.split('\n')):
             for field, command in writable_fields.items():
@@ -742,29 +889,43 @@ Comments
                 self.report_lines[x] = 'ViraEditComment ' + comment['id']
             comment_line = comment_line + comment_len
 
-    def write_jira(self):
+    def set_prompt_text(self):
         '''
-        Write to jira
-        Can be issue name, description, comment, etc...
+        Take the user prompt text and perform an action
+        Usually, this involves writing to the jira server
         '''
 
         # User input
         issue = vim.eval('g:vira_active_issue')
-        input_stripped = vim.eval('g:vira_input_text').replace(
-            self.prompt_text_commented.strip(), '').strip()
+        userinput = vim.eval('g:vira_input_text')
+        input_stripped = userinput.replace(self.prompt_text_commented.strip(), '').strip()
 
         # Check if anything was actually entered by user
-        if input_stripped == '':
+        if input_stripped == '' or userinput.strip() == self.prompt_text.strip():
             print("No vira actions performed")
             return
 
-        if self.prompt_type == 'add_comment':
-            return self.jira.add_comment(issue, input_stripped)
-        if self.prompt_type == 'edit_comment':
-            return self.active_comment.update(body=input_stripped)
+        if self.prompt_type == 'edit_filter':
+            self.userconfig_filter = json.loads(input_stripped)
+        elif self.prompt_type == 'add_comment':
+            self.jira.add_comment(issue, input_stripped)
+        elif self.prompt_type == 'edit_comment':
+            self.active_comment.update(body=input_stripped)
         elif self.prompt_type == 'summary':
-            return self.jira.issue(issue).update(summary=input_stripped)
+            self.jira.issue(issue).update(summary=input_stripped)
         elif self.prompt_type == 'description':
-            return self.jira.issue(issue).update(description=input_stripped)
+            self.jira.issue(issue).update(description=input_stripped)
         elif self.prompt_type == 'issue':
-            return self.create_issue(input_stripped)
+            self.create_issue(input_stripped)
+
+    def versions_hide(self, state):
+        '''
+        Display and hide complete versions
+        '''
+
+        if state is True or 1 or 'ture' or 'True':
+            self.version_hide = True
+        elif state is False or 0 or 'false' or 'False':
+            self.version_hide = False
+        else:
+            self.version_hide = not self.version_hide
