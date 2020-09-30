@@ -627,6 +627,7 @@ Comments
         try:
             for server in self.vira_servers.keys():
                 print(server)
+            print('Null')
         except:
             self.connect('')
 

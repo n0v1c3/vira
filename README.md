@@ -72,6 +72,8 @@ https://jira.career.com:
 In order for vira to use the previous yaml example, set the following variable in your .vimrc:
 `let g:vira_config_file_servers = $HOME.'/vira_servers.yaml'`
 
+If **no** configuration is found you will be asked for a manual URL, username, and password entry.
+
 #### Atlassian Cloud Notes
 
 [Atlassian Cloud Jira Key](https://id.atlassian.com/manage-profile/security/api-tokens)

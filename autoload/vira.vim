@@ -136,6 +136,12 @@ function! vira#_connect() abort "{{{2
     return
   endif
 
+  " TODO: VIRA-222 [200930] - remove extra inputs
+  if (g:vira_serv == 'Null')
+      let g:vira_serv = input("server: ")
+      let g:vira_serv = input("server: ")
+  endif
+
   " Neovim requires this when trying to run vira from a brand new empty buffer
   python3 import vim
 
