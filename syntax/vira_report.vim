@@ -14,9 +14,6 @@ syntax match viraCommentAuthor /^\w.*\s@\s\d\{4\}/hs=s,he=e contains=viraComment
 syntax match viraCommentClose "}}}"
 syntax match viraCommentDate /@.*/hs=s,he=e contained
 
-" syntax match viraIssuesStatus "| .* |" contained
-
-
 " Report {{{2
 syntax match viraDetails "┌.*"
 syntax match viraDetails "│"
@@ -27,53 +24,41 @@ syntax match viraDetailsC "│.*"hs=s,he=e-1
 syntax match viraDetailsE "│.*│.*"hs=e,he=e
 syntax match viraDetails "│"
 
-syntax match viraDetailsStatusInProgress "In Progress │"he=e-2
-syntax match viraDetailsStatusBacklog "Backlog │"he=e-2
-syntax match viraDetailsStatusComplete "Complete │"he=e-2
-syntax match viraDetailsStatusDone "Done │"he=e-2
-syntax match viraDetailsStatusSelected "Selected for Development │"he=e-2
-syntax match viraDetailsStatusTodo "To Do │"he=e-2
-syntax match viraDetailsTypeBug "Bug │"he=e-2
-syntax match viraDetailsTypeEpic "Epic │"he=e-2
-syntax match viraDetailsTypeStory "Story │"he=e-2
-syntax match viraDetailsTypeTask "Task │"he=e-2
-
 syntax match viraDetails "│.*Created.* │" contains=viraDetailsDates
 syntax match viraDetails "│.*Updated.* │" contains=viraDetailsDates
-syntax match viraDetailsDates "│ .*.-.*.-.* │"hs=s+17,he=e-2 contained
+syntax match viraDetailsDates "│ .*.-.*.-.* "hs=s+17 contained
 
-syntax match viraDetails "│.*Type │"
-syntax match viraDetailsTypeBug "Bug  "he=e-2
-syntax match viraDetailsTypeEpic "Epic  "he=e-2
-syntax match viraDetailsTypeStory "Story  "he=e-2
-syntax match viraDetailsTypeTask "Task  "he=e-2
+syntax match viraDetails "│.*Type │" contains=viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeEpic,viraDetailsTypeTask
+syntax match viraDetailsTypeBug "│ Bug"hs=s+2 contained
+syntax match viraDetailsTypeEpic "│ Epic"hs=s+2 contained
+syntax match viraDetailsTypeStory "│ Story"hs=s+2 contained
+syntax match viraDetailsTypeTask "│ Task"hs=s+2 contained
 
-syntax match viraDetails "│.*Status │"
-syntax match viraDetailsStatusComplete "Complete   "he=e-3
-syntax match viraDetailsStatusDone "Done   "he=e-3
-syntax match viraDetailsStatusInProgress "In Progress   "he=e-3
-syntax match viraDetailsStatusTodo "To Do   "he=e-3
-syntax match viraDetailsStatusBacklog "Backlog   "he=e-3
-" TODO: VIRA-177 [200612] - "Selected for Development" can be the longest string re: style
-syntax match viraDetailsStatusSelected "Selected for Development "he=e-1
+syntax match viraDetails "│.*Status │" contains=viraDetailsStatusBacklog,viraDetailsStatusComplete,viraDetailsStatusDone,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected
+syntax match viraDetailsStatusBacklog "│ Backlog"hs=s+2 contained
+syntax match viraDetailsStatusComplete "│ Complete"hs=s+2 contained
+syntax match viraDetailsStatusDone "│ Done"hs=s+2 contained
+syntax match viraDetailsStatusInProgress "│ In Progress"hs=s+2 contained
+syntax match viraDetailsStatusSelected "│ Selected for Development"hs=s+2 contained
+syntax match viraDetailsStatusTodo "│ To Do"hs=s+2 contained
 
 syntax match viraDetails "│.*Story Points │"
 
-syntax match viraDetails "│.*Priority │"
-syntax match viraDetailsHigh "High  "he=s+4
-syntax match viraDetailsHighest "Highest  "he=s+7
-syntax match viraDetailsLow "Low  "he=s+3
-syntax match viraDetailsLowest "Lowest  "he=s+6
-syntax match viraDetailsMedium "Medium  "he=s+6
+syntax match viraDetails "│.*Priority │" contains=viraDetailsHigh,viraDetailsHighest,viraDetailsLowest,viraDetailsLow,viraDetailsMedium
+syntax match viraDetailsHigh "│ High"hs=s+2 contained
+syntax match viraDetailsHighest "│ Highest"hs=s+2 contained
+syntax match viraDetailsLow "│ Low"hs=s+2 contained
+syntax match viraDetailsLowest "│ Lowest"hs=s+2 contained
+syntax match viraDetailsMedium "│ Medium"hs=s+2 contained
 
 syntax match viraDetails "│.*Component │"
 syntax match viraDetails "│.*Version │"
 
 syntax match viraDetails "│.*Assignee │" nextgroup=viraDetailsTypeAssignee
-syntax match viraDetailsTypeAssignee ".*  "hs=s+1,he=e-2 contained
+syntax match viraDetailsTypeAssignee ".* .* "hs=s+1 contained
 
 syntax match viraDetails "│.*Reporter │" nextgroup=viraDetailsTypeReporter
-syntax match viraDetailsTypeReporter ".*  "hs=s+1,he=e-2 contained
+syntax match viraDetailsTypeReporter ".* .* "hs=s+1 contained
 
 syntax match viraDetails "├.*"
 syntax match viraDetails "└.*"
