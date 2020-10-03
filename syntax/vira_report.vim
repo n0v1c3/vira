@@ -28,7 +28,7 @@ syntax match viraDetails "│.*Created.* │" contains=viraDetailsDates
 syntax match viraDetails "│.*Updated.* │" contains=viraDetailsDates
 syntax match viraDetailsDates "│ .*.-.*.-.* "hs=s+17 contained
 
-syntax match viraDetails "│.*Type │" contains=viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeEpic,viraDetailsTypeTask
+syntax match viraDetails "│.*Type │" contains=viraDetailsTypeStory,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeEpic,viraDetailsTypeTask
 syntax match viraDetailsTypeBug "│ Bug"hs=s+2 contained
 syntax match viraDetailsTypeEpic "│ Epic"hs=s+2 contained
 syntax match viraDetailsTypeStory "│ Story"hs=s+2 contained
@@ -42,7 +42,7 @@ syntax match viraDetailsStatusInProgress "│ In Progress"hs=s+2 contained
 syntax match viraDetailsStatusSelected "│ Selected for Development"hs=s+2 contained
 syntax match viraDetailsStatusTodo "│ To Do"hs=s+2 contained
 
-syntax match viraDetails "│.*Story Points │"
+syntax match viraDetails "│.*Story Points │.*" contains=viraDetailsStoryPoints
 
 syntax match viraDetails "│.*Priority │" contains=viraDetailsHigh,viraDetailsHighest,viraDetailsLowest,viraDetailsLow,viraDetailsMedium
 syntax match viraDetailsHigh "│ High"hs=s+2 contained
@@ -51,8 +51,8 @@ syntax match viraDetailsLow "│ Low"hs=s+2 contained
 syntax match viraDetailsLowest "│ Lowest"hs=s+2 contained
 syntax match viraDetailsMedium "│ Medium"hs=s+2 contained
 
-syntax match viraDetails "│.*Component │"
-syntax match viraDetails "│.*Version │"
+syntax match viraDetails "│.*Component │.*"
+syntax match viraDetails "│.*Version │.*"
 
 syntax match viraDetails "│.*Assignee │" nextgroup=viraDetailsTypeAssignee
 syntax match viraDetailsTypeAssignee ".* .* "hs=s+1 contained
@@ -129,6 +129,7 @@ highlight viraDetailsTypeBug ctermfg=red guifg=red
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
 highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
+highlight viraDetailsStoryPoints ctermfg=darkblue guifg=darkblue
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
