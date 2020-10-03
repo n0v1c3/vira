@@ -43,6 +43,7 @@ syntax match viraDetailsStatusSelected "│ Selected for Development"hs=s+2 cont
 syntax match viraDetailsStatusTodo "│ To Do"hs=s+2 contained
 
 syntax match viraDetails "│.*Story Points │.*" contains=viraDetailsStoryPoints
+syntax match viraDetailsStoryPoints " │.*│"hs=s+3,he=e-1 contained
 
 syntax match viraDetails "│.*Priority │" contains=viraDetailsHigh,viraDetailsHighest,viraDetailsLowest,viraDetailsLow,viraDetailsMedium
 syntax match viraDetailsHigh "│ High"hs=s+2 contained
@@ -51,8 +52,13 @@ syntax match viraDetailsLow "│ Low"hs=s+2 contained
 syntax match viraDetailsLowest "│ Lowest"hs=s+2 contained
 syntax match viraDetailsMedium "│ Medium"hs=s+2 contained
 
-syntax match viraDetails "│.*Component │.*"
-syntax match viraDetails "│.*Version │.*"
+syntax match viraDetails "│.*Component │.*" contains=viraDetailsComponent
+syntax match viraDetailsComponent " │.*│"hs=s+3,he=e-1 contained
+
+syntax match viraDetails "│.*Version │" contains=viraDetailsVersionN,viraDetailsVersionP,viraDetailsVersion
+syntax match viraDetailsVersionN " │.* .* |"hs=s+3,he=e-1 contained contains=viraDetailsVersionP
+syntax match viraDetailsVersionP " | .*%"hs=s+2 contained contains=viraDetailsVersion
+syntax match viraDetailsVersion "|" contained
 
 syntax match viraDetails "│.*Assignee │" nextgroup=viraDetailsTypeAssignee
 syntax match viraDetailsTypeAssignee ".* .* "hs=s+1 contained
@@ -112,6 +118,8 @@ highlight default link viraTitleFold Statement
 highlight default link viraDetailsTypeAssignee Statement
 highlight default link viraDetailsTypeReporter Statement
 highlight default link viraDetailsDates Statement
+" highlight default link viraDetailsVersionP Question
+" highlight default link viraDetailsVersionN Title
 highlight viraDetailsDates ctermfg=yellow guifg=yellow
 highlight viraBold cterm=bold gui=bold
 highlight viraDetailsHigh ctermfg=red guifg=red
@@ -129,11 +137,15 @@ highlight viraDetailsTypeBug ctermfg=red guifg=red
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
 highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
-highlight viraDetailsStoryPoints ctermfg=darkblue guifg=darkblue
+highlight viraDetailsStoryPoints ctermfg=darkyellow guifg=lightblue
+highlight viraDetailsComponent ctermfg=lightblue guifg=lightblue
+highlight viraDetailsVersion ctermfg=darkblue guifg=darkblue
+highlight viraDetailsVersionP ctermfg=darkyellow guifg=darkblue
+highlight viraDetailsVersionN ctermfg=lightblue guifg=darkblue
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
-highlight viraUsername cterm=underline gui=underline
+highlight viraUsername ctermfg=lightblue guifg=blue cterm=underline gui=underline
 
 let b:current_syntax = 'vira_report'
