@@ -121,10 +121,10 @@ highlight viraDetailsLowest ctermfg=green guifg=green
 highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
 highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
-highlight viraDetailsStatusInProgress ctermbg=darkyellow ctermfg=black guibg=darkyellow guifg=black
-highlight viraDetailsStatusTodo ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
+highlight viraDetailsStatusInProgress ctermbg=darkblue ctermfg=white guibg=darkblue guifg=white
+highlight viraDetailsStatusTodo ctermbg=grey ctermfg=black guibg=grey guifg=black
 highlight viraDetailsStatusBacklog ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
-highlight viraDetailsStatusSelected ctermbg=darkyellow ctermfg=black guibg=darkyellow guifg=black
+highlight viraDetailsStatusSelected ctermbg=grey ctermfg=black guibg=grey guifg=black
 highlight viraDetailsTypeBug ctermfg=red guifg=red
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
