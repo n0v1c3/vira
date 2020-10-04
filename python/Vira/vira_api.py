@@ -585,13 +585,19 @@ class ViraAPI():
 │     Assignee │ {assignee}{assignee_spaces} │
 │     Reporter │ {reporter}{reporter_spaces} │
 └──────────────┴─{dashlength}─┘
-Summary
+┌──────────────┐
+│    Summary   │
+└──────────────┘
 {summary}
 
-Description
+┌──────────────┐
+│  Description │
+└──────────────┘
 {description}
 
-Comments
+┌──────────────┐
+│   Comments   │
+└──────────────┘
 {comments}'''
 
         self.set_report_lines(report, description, issue)

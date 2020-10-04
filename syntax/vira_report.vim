@@ -77,7 +77,7 @@ syntax match viraStory "\v.*" contained
 syntax match viraStrikethrough "-.*-"
 syntax match viraSubscript "\~.*\~"
 syntax match viraTheLine "----"
-syntax match viraTitles "  .*-.*  \|Summary\|Description\|Comments\n"hs=s,he=e
+syntax match viraTitles "  .*-.*  \|│.*Summary.*│\|│.*Description.*│\|│.*Comments.*│"hs=s+1,he=e-1 contains=viraDetails
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
 syntax match viraTitleComment /.*{{1/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
 syntax match viraTitleFold /{{.*/hs=s,he=e contained
