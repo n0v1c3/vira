@@ -10,9 +10,11 @@ syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsType
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
-syntax match viraCommentAuthor /^\w.*\s@\s\d\{4\}/hs=s,he=e contains=viraCommentDate nextgroup=viraCommentDate
+syntax match viraCommentAuthor /^\w.*\s@\s\d\{4\}.*/hs=s,he=e contains=viraCommentDate
+syntax match viraCommentDate / @ .* {/hs=s,he=e-1 contained contains=viraCommentOpen,viraCommentDateAt
+syntax match viraCommentDateAt /@/hs=s,he=e contained
+syntax match viraCommentOpen /.*{{{.*/hs=e-4 contained
 syntax match viraCommentClose "}}}"
-syntax match viraCommentDate /@.*/hs=s,he=e contained
 
 " Report {{{2
 syntax match viraDetails "┌.*"
@@ -94,9 +96,9 @@ highlight default link viraIssuesIssue Title
 highlight default link viraBullets Identifier
 highlight default link viraCitvtion Title
 highlight default link viraCode Question
-highlight default link viraCommentAuthor Identifier
-highlight default link viraCommentClose Statement
-highlight default link viraCommentDate Statement
+highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
+highlight viraCommentDate ctermfg=darkblue guifg=darkblue
+highlight viraCommentDateAt ctermfg=blue guifg=blue
 highlight default link viraDetailsA Identifier
 highlight default link viraDetailsB Identifier
 highlight default link viraDetailsC Identifier
@@ -115,12 +117,10 @@ highlight default link viraTitle Title
 highlight default link viraTitleComment Question
 highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
-highlight default link viraDetailsTypeAssignee Statement
-highlight default link viraDetailsTypeReporter Statement
 highlight default link viraDetailsDates Statement
-" highlight default link viraDetailsVersionP Question
-" highlight default link viraDetailsVersionN Title
-highlight viraDetailsDates ctermfg=yellow guifg=yellow
+highlight viraDetailsTypeAssignee ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
+highlight viraDetailsTypeReporter ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
+highlight viraDetailsDates ctermfg=darkblue guifg=darkblue
 highlight viraBold cterm=bold gui=bold
 highlight viraDetailsHigh ctermfg=red guifg=red
 highlight viraDetailsHighest ctermfg=darkred guifg=darkred
@@ -147,5 +147,7 @@ highlight viraLink cterm=underline gui=underline
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername ctermfg=lightblue guifg=blue cterm=underline gui=underline
+highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
+highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 
 let b:current_syntax = 'vira_report'

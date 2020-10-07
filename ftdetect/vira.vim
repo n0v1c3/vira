@@ -32,6 +32,7 @@ augroup Vira
   " autocmd BufEnter vira_report setlocal winfixwidth
   autocmd Filetype vira_report nnoremap <silent> <buffer> <cr> :call vira#_edit_report()<cr>
   autocmd Filetype vira_report setlocal nonumber
+  " autocmd Filetype vira_report setlocal conceallevel=3
   autocmd Filetype vira_report setlocal norelativenumber
 
   " Common

@@ -884,14 +884,15 @@ class ViraAPI():
                     if field == 'Summary':
                         self.report_lines[idx + 2] = command
                         self.report_lines[idx + 3] = command
+                        self.report_lines[idx + 4] = command
                     continue
 
         description_len = description.count('\n') + 3
-        for x in range(18, 18 + description_len):
+        for x in range(20, 22 + description_len):
             self.report_lines[x] = 'ViraEditDescription'
 
         offset = 2 if len(issue['comment']['comments']) > 4 else 1
-        comment_line = 18 + description_len + offset
+        comment_line = 24 + description_len + offset
         for comment in issue['comment']['comments']:
             comment_len = comment['body'].count('\n') + 3
             for x in range(comment_line, comment_line + comment_len):
