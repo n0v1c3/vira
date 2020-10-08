@@ -10,6 +10,7 @@ syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsType
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
+syntax region viraCommentOlder start=/^\d.* Older Comment.* {/ end=/{{\d/
 syntax match viraCommentAuthor /^\w.*\s@\s\d\{4\}.*/hs=s,he=e contains=viraCommentDate
 syntax match viraCommentDate / @ .* {/hs=s,he=e-1 contained contains=viraCommentOpen,viraCommentDateAt
 syntax match viraCommentDateAt /@/hs=s,he=e contained
@@ -71,6 +72,7 @@ syntax match viraDetailsTypeReporter ".* .* "hs=s+1 contained
 syntax match viraDetails "├.*"
 syntax match viraDetails "└.*"
 
+" Font Style {{{2
 syntax match viraItalic "_.*_"
 syntax match viraLink "\[.*|.*\]"
 syntax match viraMonospaced "{{.*}}"
@@ -81,73 +83,78 @@ syntax match viraSubscript "\~.*\~"
 syntax match viraTheLine "----"
 syntax match viraTitles "  .*-.*  \|│.*Summary.*│\|│.*Description.*│\|│.*Comments.*│"hs=s+1,he=e-1 contains=viraDetails
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
-syntax match viraTitleComment /.*{{1/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
-syntax match viraTitleFold /{{.*/hs=s,he=e contained
 syntax match viraUnderline "+.*+"
-syntax match viraUsername "\[\~.*\]"
 syntax region viraCode start=/{code.*}/ end=/{code}/
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
+syntax match viraList "\[ ]\|\[X]\|\[x]\|\[✓]" contains=viraListCheck
+syntax match viraListCheck "\[X]\|\[x]\|\[✓]"hs=s+1,he=e-1 contained
+syntax match viraPointer "└──>"
+syntax match viraUsername "\[\~.*\]"
 
-" Highlighting
-highlight default link viraHTML Title
-highlight default link viraIssuesStatus Statement
-highlight default link viraIssuesDescription Question
-highlight default link viraIssuesIssue Title
+" Highlighting {{{1
 highlight default link viraBullets Identifier
 highlight default link viraCitvtion Title
 highlight default link viraCode Question
-highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
-highlight viraCommentDate ctermfg=darkblue guifg=darkblue
-highlight viraCommentDateAt ctermfg=blue guifg=blue
+highlight default link viraDetails Identifier
 highlight default link viraDetailsA Identifier
 highlight default link viraDetailsB Identifier
 highlight default link viraDetailsC Identifier
 highlight default link viraDetailsD Normal
+highlight default link viraDetailsDates Statement
 highlight default link viraDetailsE Identifier
 highlight default link viraDetailsF Identifier
-highlight default link viraDetails Identifier
+highlight default link viraHTML Title
+highlight default link viraIssuesDescription Question
+highlight default link viraIssuesIssue Title
+highlight default link viraIssuesStatus Statement
 highlight default link viraMonospaced Question
 highlight default link viraNoformat Normal
 highlight default link viraPhoto Title
 highlight default link viraStory Identifier
 highlight default link viraSubscript Question
 highlight default link viraTheLine Title
-highlight default link viraTitles Title
 highlight default link viraTitle Title
 highlight default link viraTitleComment Question
 highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
-highlight default link viraDetailsDates Statement
-highlight viraDetailsTypeAssignee ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
-highlight viraDetailsTypeReporter ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
-highlight viraDetailsDates ctermfg=darkblue guifg=darkblue
+highlight default link viraTitles Title
 highlight viraBold cterm=bold gui=bold
+highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold,underline gui=bold,underline
+highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
+highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline, gui=underline
+highlight viraCommentDateAt ctermfg=blue guifg=blue cterm=underline, gui=underline
+highlight viraCommentOlder ctermbg=bg ctermfg=bg guifg=bg guibg=bg cterm=bold gui=bold
+highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
+highlight viraDetailsComponent ctermfg=lightblue guifg=lightblue
+highlight viraDetailsDates ctermfg=darkblue guifg=darkblue
 highlight viraDetailsHigh ctermfg=red guifg=red
 highlight viraDetailsHighest ctermfg=darkred guifg=darkred
 highlight viraDetailsLow ctermfg=darkgreen guifg=darkgreen
 highlight viraDetailsLowest ctermfg=green guifg=green
 highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
+highlight viraDetailsStatusBacklog ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
 highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusInProgress ctermbg=darkblue ctermfg=white guibg=darkblue guifg=white
-highlight viraDetailsStatusTodo ctermbg=grey ctermfg=black guibg=grey guifg=black
-highlight viraDetailsStatusBacklog ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
 highlight viraDetailsStatusSelected ctermbg=grey ctermfg=black guibg=grey guifg=black
+highlight viraDetailsStatusTodo ctermbg=grey ctermfg=black guibg=grey guifg=black
+highlight viraDetailsStoryPoints ctermfg=darkyellow guifg=lightblue
+highlight viraDetailsTypeAssignee ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeBug ctermfg=red guifg=red
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
+highlight viraDetailsTypeReporter ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
 highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
-highlight viraDetailsStoryPoints ctermfg=darkyellow guifg=lightblue
-highlight viraDetailsComponent ctermfg=lightblue guifg=lightblue
 highlight viraDetailsVersion ctermfg=darkblue guifg=darkblue
-highlight viraDetailsVersionP ctermfg=darkyellow guifg=darkblue
 highlight viraDetailsVersionN ctermfg=lightblue guifg=darkblue
+highlight viraDetailsVersionP ctermfg=darkyellow guifg=darkblue
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
+highlight viraList ctermfg=brown guifg=brown
+highlight viraListCheck ctermfg=lightgreen guifg=lightgreen
+highlight viraPointer ctermfg=darkblue guifg=darkblue
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername ctermfg=lightblue guifg=blue cterm=underline gui=underline
-highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
-highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 
 let b:current_syntax = 'vira_report'
