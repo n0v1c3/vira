@@ -85,13 +85,20 @@ syntax match viraTheLine "----"
 syntax match viraTitles "  .*-.*  \|│.*Summary.*│\|│.*Description.*│\|│.*Comments.*│"hs=s+1,he=e-1 contains=viraDetails
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
 syntax match viraUnderline "+.*+"
-syntax region viraCode start=/{code.*}/ end=/{code}/
-syntax match viraCode "{code.*}.*{code}"
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
 syntax match viraList "\[ ]\|\[X]\|\[x]\|\[✓]" contains=viraListCheck
 syntax match viraListCheck "\[X]\|\[x]\|\[✓]"hs=s+1,he=e-1 contained
 syntax match viraPointer "└──>"
 syntax match viraUsername "\[\~.*\]"
+
+" Code Wrap {{{2
+" OoO is very important
+syntax match viraCodeComment "//.*\|#.*\|\".*" contained
+syntax match viraCodeSemi ";\|(\|\[\|]\|)\|=" contained
+syntax match viraCodeQuote "\".*\"\|'.*'" contained
+syntax match viraCodeFunction "string\|int\|echo\|print" contained
+syntax region viraCode start=/{code.*}/ end=/{code}/ contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
+syntax match viraCode "{code.*}.*{code}" contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
 
 " Highlighting {{{1
 highlight default link viraBullets Identifier
@@ -120,7 +127,11 @@ highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
 highlight default link viraTitles Title
 highlight viraBold cterm=bold gui=bold
-highlight viraCode ctermfg=106 guifg=#87af00 cterm=bold gui=bold
+highlight viraCode ctermfg=5 guifg=#875f5f
+highlight viraCodeComment ctermfg=245 guifg=#87af00
+highlight viraCodeFunction ctermfg=32 guifg=#00afd7 cterm=bold gui=bold
+highlight viraCodeQuote ctermfg=76 guifg=#5fd700
+highlight viraCodeSemi ctermfg=245 guifg=#87af00
 highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold,underline gui=bold,underline
 highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline, gui=underline
