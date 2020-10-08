@@ -85,6 +85,7 @@ syntax match viraTitles "  .*-.*  \|│.*Summary.*│\|│.*Description.*│\|�
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
 syntax match viraUnderline "+.*+"
 syntax region viraCode start=/{code.*}/ end=/{code}/
+syntax match viraCode "{code.*}.*{code}"
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
 syntax match viraList "\[ ]\|\[X]\|\[x]\|\[✓]" contains=viraListCheck
 syntax match viraListCheck "\[X]\|\[x]\|\[✓]"hs=s+1,he=e-1 contained
@@ -94,7 +95,6 @@ syntax match viraUsername "\[\~.*\]"
 " Highlighting {{{1
 highlight default link viraBullets Identifier
 highlight default link viraCitvtion Title
-highlight default link viraCode Question
 highlight default link viraDetails Identifier
 highlight default link viraDetailsA Identifier
 highlight default link viraDetailsB Identifier
@@ -119,6 +119,7 @@ highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
 highlight default link viraTitles Title
 highlight viraBold cterm=bold gui=bold
+highlight viraCode ctermfg=106 guifg=#87af00 cterm=bold gui=bold
 highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold,underline gui=bold,underline
 highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline, gui=underline
@@ -146,8 +147,8 @@ highlight viraDetailsTypeReporter ctermfg=lightblue guifg=lightblue cterm=bold g
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
 highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
 highlight viraDetailsVersion ctermfg=darkblue guifg=darkblue
-highlight viraDetailsVersionN ctermfg=lightblue guifg=darkblue
-highlight viraDetailsVersionP ctermfg=darkyellow guifg=darkblue
+highlight viraDetailsVersionN ctermfg=lightblue guifg=lightblue
+highlight viraDetailsVersionP ctermfg=darkyellow guifg=darkyellow
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
 highlight viraList ctermfg=brown guifg=brown
@@ -155,6 +156,6 @@ highlight viraListCheck ctermfg=lightgreen guifg=lightgreen
 highlight viraPointer ctermfg=darkblue guifg=darkblue
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
-highlight viraUsername ctermfg=lightblue guifg=blue cterm=underline gui=underline
+highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=underline
 
 let b:current_syntax = 'vira_report'
