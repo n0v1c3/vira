@@ -8,6 +8,7 @@ syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus cont
 syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
 
 syntax match viraBold "\*.*\*"
+syntax match viraQuote "\".*\"\|'.*'"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
 syntax region viraCommentOlder start=/^\d.* Older Comment.* {/ end=/{{\d/
@@ -154,6 +155,7 @@ highlight viraLink cterm=underline gui=underline
 highlight viraList ctermfg=brown guifg=brown
 highlight viraListCheck ctermfg=lightgreen guifg=lightgreen
 highlight viraPointer ctermfg=darkblue guifg=darkblue
+highlight viraQuote ctermfg=38 guifg=#00afd7
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=underline
