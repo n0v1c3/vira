@@ -8,6 +8,7 @@ syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus cont
 syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
 
 syntax match viraBold "\*.*\*"
+syntax match viraQuote "\".*\"\|'.*'"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
 syntax region viraCommentOlder start=/^\d.* Older Comment.* {/ end=/{{\d/
@@ -84,17 +85,24 @@ syntax match viraTheLine "----"
 syntax match viraTitles "  .*-.*  \|│.*Summary.*│\|│.*Description.*│\|│.*Comments.*│"hs=s+1,he=e-1 contains=viraDetails
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
 syntax match viraUnderline "+.*+"
-syntax region viraCode start=/{code.*}/ end=/{code}/
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
 syntax match viraList "\[ ]\|\[X]\|\[x]\|\[✓]" contains=viraListCheck
 syntax match viraListCheck "\[X]\|\[x]\|\[✓]"hs=s+1,he=e-1 contained
 syntax match viraPointer "└──>"
 syntax match viraUsername "\[\~.*\]"
 
+" Code Wrap {{{2
+" OoO is very important
+syntax match viraCodeComment "//.*\|#.*\|\".*" contained
+syntax match viraCodeSemi ";\|(\|\[\|]\|)\|=" contained
+syntax match viraCodeQuote "\".*\"\|'.*'" contained
+syntax match viraCodeFunction "string\|int\|echo\|print" contained
+syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
+syntax match viraCode "{code:.*}.*{code}" contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
+
 " Highlighting {{{1
 highlight default link viraBullets Identifier
 highlight default link viraCitvtion Title
-highlight default link viraCode Question
 highlight default link viraDetails Identifier
 highlight default link viraDetailsA Identifier
 highlight default link viraDetailsB Identifier
@@ -119,6 +127,11 @@ highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
 highlight default link viraTitles Title
 highlight viraBold cterm=bold gui=bold
+highlight viraCode ctermfg=5 guifg=#875f5f
+highlight viraCodeComment ctermfg=245 guifg=#87af00
+highlight viraCodeFunction ctermfg=32 guifg=#00afd7 cterm=bold gui=bold
+highlight viraCodeQuote ctermfg=76 guifg=#5fd700
+highlight viraCodeSemi ctermfg=245 guifg=#87af00
 highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold,underline gui=bold,underline
 highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline, gui=underline
@@ -146,15 +159,16 @@ highlight viraDetailsTypeReporter ctermfg=lightblue guifg=lightblue cterm=bold g
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
 highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
 highlight viraDetailsVersion ctermfg=darkblue guifg=darkblue
-highlight viraDetailsVersionN ctermfg=lightblue guifg=darkblue
-highlight viraDetailsVersionP ctermfg=darkyellow guifg=darkblue
+highlight viraDetailsVersionN ctermfg=lightblue guifg=lightblue
+highlight viraDetailsVersionP ctermfg=darkyellow guifg=darkyellow
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
 highlight viraList ctermfg=brown guifg=brown
 highlight viraListCheck ctermfg=lightgreen guifg=lightgreen
 highlight viraPointer ctermfg=darkblue guifg=darkblue
+highlight viraQuote ctermfg=38 guifg=#00afd7
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
-highlight viraUsername ctermfg=lightblue guifg=blue cterm=underline gui=underline
+highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=underline
 
 let b:current_syntax = 'vira_report'
