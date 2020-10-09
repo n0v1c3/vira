@@ -97,8 +97,8 @@ syntax match viraCodeComment "//.*\|#.*\|\".*" contained
 syntax match viraCodeSemi ";\|(\|\[\|]\|)\|=" contained
 syntax match viraCodeQuote "\".*\"\|'.*'" contained
 syntax match viraCodeFunction "string\|int\|echo\|print" contained
-syntax region viraCode start=/{code.*}/ end=/{code}/ contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
-syntax match viraCode "{code.*}.*{code}" contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
+syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
+syntax match viraCode "{code:.*}.*{code}" contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
 
 " Highlighting {{{1
 highlight default link viraBullets Identifier
