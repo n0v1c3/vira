@@ -40,6 +40,7 @@ class ViraAPI():
             'project': '',
             'reporter': '',
             'status': '',
+            'epics': '',
             'statusCategory': ['To Do', 'In Progress'],
             'text': ''
         }
@@ -51,6 +52,7 @@ class ViraAPI():
             'fixVersion': '',
             'issuetype': 'Bug',
             'priority': '',
+            'epics': '',
             'status': '',
         }
 
@@ -269,9 +271,10 @@ class ViraAPI():
         '''
         Get my issues with JQL
         '''
-
-        for issue in self.query_issues(issuetypes="Epic"):
-            print(issue["key"] + '  -  ' + issue["fields"]['summary'])
+        hold = self.userconfig_filter["issuetype"]
+        self.userconfig_filter["issuetype"] = "Epic"
+        self.get_issues()
+        self.userconfig_filter["issuetype"] = hold
 
     def get_issue(self, issue):
         '''

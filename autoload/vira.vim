@@ -489,7 +489,7 @@ endfunction
 function! vira#_highlight_reload() "{{{2
     if s:vira_menu_type != 'assign_issue' && s:vira_menu_type != 'component' && s:vira_menu_type != 'priority' && s:vira_menu_type != 'set_status' && s:vira_menu_type != 'version' && s:vira_menu_type != 'issuetype'
         call vira#_filter_load()
-        if s:vira_menu_type == 'issues'
+        if s:vira_menu_type == 'issues' || s:vira_menu_type == 'epics'
             let s:vira_highlight = '|' . g:vira_active_issue
         elseif s:vira_menu_type == 'servers'
             if exists('g:vira_serv') && g:vira_serv != ''
