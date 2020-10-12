@@ -65,10 +65,6 @@ syntax match viraDetailsC "│.*"hs=s,he=e-1
 syntax match viraDetailsE "│.*│.*"hs=e,he=e
 syntax match viraDetails "│"
 
-syntax match viraDetails "│.*Created.* │" contains=viraDetailsDates
-syntax match viraDetails "│.*Updated.* │" contains=viraDetailsDates
-syntax match viraDetailsDates "│ .*.-.*.-.* │"hs=s+17,he=e-2 contained
-
 syntax match viraDetails "│.*Type │"
 syntax match viraDetailsTypeBug "Bug  "he=e-2
 syntax match viraDetailsTypeEpic "Epic  "he=e-2
@@ -81,7 +77,6 @@ syntax match viraDetailsStatusDone "Done   "he=e-3
 syntax match viraDetailsStatusInProgress "In Progress   "he=e-3
 syntax match viraDetailsStatusTodo "To Do   "he=e-3
 syntax match viraDetailsStatusBacklog "Backlog   "he=e-3
-" TODO: VIRA-177 [200612] - "Selected for Development" can be the longest string re: style
 syntax match viraDetailsStatusSelected "Selected for Development "he=e-1
 
 syntax match viraDetails "│.*Story Points │"
@@ -147,9 +142,7 @@ highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
 highlight default link viraDetailsTypeAssignee Statement
 highlight default link viraDetailsTypeReporter Statement
-highlight default link viraDetailsDates Statement
 
-highlight viraDetailsDates ctermfg=yellow guifg=yellow
 highlight viraDetailsHigh ctermfg=red guifg=red
 highlight viraDetailsHighest ctermfg=darkred guifg=darkred
 highlight viraDetailsLow ctermfg=darkgreen guifg=darkgreen

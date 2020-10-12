@@ -8,8 +8,6 @@ syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus cont
 syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
 
 syntax match viraBold "\*.*\*"
-" syntax region viraQuote start="\n'\| '" end="' \|'\n" skip="\\'"
-" syntax region viraQuote start="\n\"\| \"" end="\" \|\"\n" skip="\\\""
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
 syntax region viraCommentOlder start=/^\d.* Older Comment.* {/ end=/{{\d/
@@ -71,6 +69,9 @@ syntax match viraDetailsTypeAssignee ".* .* "hs=s+1 contained
 syntax match viraDetails "│.*Reporter │" nextgroup=viraDetailsTypeReporter
 syntax match viraDetailsTypeReporter ".* .* "hs=s+1 contained
 
+syntax match viraDetails "│.*Epic Link │" nextgroup=viraDetailsEpic
+syntax match viraDetailsEpic ".*-.*\d \|None "hs=s+1,he=e-1 contained
+
 syntax match viraDetails "├.*"
 syntax match viraDetails "└.*"
 
@@ -96,15 +97,17 @@ syntax match viraUsername "\[\~.*\]"
 " OoO is very important
 syntax match viraCodeNumber "\d" contained
 syntax match viraCodeNumber "\d.\d" contained
-syntax match viraCodeMethod "for\|in\|true\|True\|false\|False" contained
-syntax match viraCodeComment "//.*\|#.*\|\".*" contained
-syntax match viraCodeSemi ";\|(\|\[\|]\|)\|=\|:\|,\|\." contained
+syntax match viraCodeComment "//.*\|#.*\|\".*\n" contained
+syntax match viraCodeSemi "\~\|;\|(\|\[\|]\|)\|=\|:\|,\|\." contained
 syntax region viraCodeQuote start="\(^\|=\|\s\|\[\|\,\|\-\)'"hs=s+1 end="'" skip="\\'"
 syntax region viraCodeQuote start="\(^\|=\|\s\|\[\|\,\|\-\)\""hs=s+1 end="\"" skip="\\\""
 syntax region viraCodeQuote start="'" end="'" skip="\\'" contained
 syntax region viraCodeQuote start="\"" end="\"" skip="\\\"" contained
-syntax match viraCodeSemiFix "\[\|=" contained
-syntax match viraCodeFunction "string\|int\|echo\|print" contained
+syntax match viraCodeFunction " \w.*\w(" contained contains=viraCodeSemiFix
+syntax match viraCodeMethod "ASC\|DESC\|desc\|\~\|ORDER \|order \|BY \|by \|or \|OR \|and\|AND\|in\|return\|==\|!=\|<\|>\|def\|for\|in\|true\|True\|false\|False" contained
+syntax match viraCodeFunction "syntax\|string\|int\|echo\|print\|self" contained
+syntax match viraCodeSemiFix "\.\|(\|\[\|=" contained
+syntax region viraCodeQuote start="\"" end="\"" skip="\\\"" contained
 syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax match viraCode "{code:.*}.*{code}" contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 
@@ -166,6 +169,7 @@ highlight viraDetailsStoryPoints ctermfg=darkyellow guifg=lightblue
 highlight viraDetailsTypeAssignee ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeBug ctermfg=red guifg=red
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
+highlight viraDetailsEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsTypeReporter ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
 highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
@@ -177,7 +181,6 @@ highlight viraLink cterm=underline gui=underline
 highlight viraList ctermfg=brown guifg=brown
 highlight viraListCheck ctermfg=lightgreen guifg=lightgreen
 highlight viraPointer ctermfg=darkblue guifg=darkblue
-highlight viraQuote ctermfg=38 guifg=#00afd7
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=underline

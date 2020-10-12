@@ -38,6 +38,7 @@ let s:vira_set_lookup = {
       \'version': 'fixVersions',
       \'statusCategories': 'statusCategory',
       \'statuses': 'status',
+      \'epics': 'epics',
       \'versions': 'fixVersion',
       \'issuetype': 'issuetypes',
       \'component': 'components',
