@@ -70,7 +70,7 @@ syntax match viraDetails "│.*Reporter │" nextgroup=viraDetailsTypeReporter
 syntax match viraDetailsTypeReporter ".* .* "hs=s+1 contained
 
 syntax match viraDetails "│.*Epic Link │" nextgroup=viraDetailsEpic
-syntax match viraDetailsEpic ".*-.*\d \|None "hs=s+1,he=e-1 contained
+syntax match viraDetailsEpic ".*-.*\d \| None "hs=s+1,he=e-1 contained
 
 syntax match viraDetails "├.*"
 syntax match viraDetails "└.*"

@@ -267,12 +267,17 @@ class ViraAPI():
 
         self.get_components()
 
+    def get_set_epic(self):
+        self.get_epics()
+
     def get_epics(self):
         '''
         Get my issues with JQL
         '''
         hold = self.userconfig_filter["issuetype"]
+        #  self.userconfig_filter = self.userconfig_filter_default
         self.userconfig_filter["issuetype"] = "Epic"
+        self.userconfig_filter["'Epic Link'"] = ""
         self.get_issues()
         self.userconfig_filter["issuetype"] = hold
 
@@ -494,7 +499,7 @@ class ViraAPI():
                 [
                     'project', 'summary', 'comment', 'component', 'description',
                     'issuetype', 'priority', 'status', 'created', 'updated', 'assignee',
-                    'reporter', 'fixVersion', 'customfield_10106', 'customfield_10100'
+                    'reporter', 'fixVersion', 'customfield_10106', 'customfield_10100', 'labels'
                 ]),
             json_result='True')
         issue = issues['issues'][0]['fields']
@@ -875,6 +880,7 @@ class ViraAPI():
             'Assignee': 'ViraSetAssignee',
             'Component': 'ViraSetComponent',
             'Priority': 'ViraSetPriority',
+            'Epic Link': 'ViraSetEpic',
             'Status': 'ViraSetStatus',
             'Type': 'ViraSetType',
             'Version': 'ViraSetVersion',

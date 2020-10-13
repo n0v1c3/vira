@@ -34,7 +34,6 @@ let g:vira_version_hide = get(g:, 'vira_version_hide', 1)
 " Basics
 command! -nargs=0 -bang ViraBrowse call vira#_browse()
 command! -nargs=0 -bang ViraComment call vira#_prompt_start('add_comment')
-command! -nargs=0 -bang ViraEpics call vira#_menu("epics")
 command! -nargs=0 -bang ViraIssue call vira#_prompt_start('issue')
 command! -nargs=0 -bang ViraIssues call vira#_menu("issues")
 command! -nargs=* -bang ViraLoadProject call vira#_load_project_config(<q-args>)
@@ -48,10 +47,11 @@ command! -nargs=0 -bang ViraTodos call vira#_todos()
 " Sets
 command! -nargs=0 -bang ViraSetAssignee call vira#_menu('assign_issue');
 command! -nargs=0 -bang ViraSetComponent call vira#_menu('component');
+command! -nargs=0 -bang ViraSetEpic call vira#_menu('set_epic');
 command! -nargs=0 -bang ViraSetPriority call vira#_menu('priority');
 command! -nargs=0 -bang ViraSetStatus call vira#_menu('set_status');
-command! -nargs=0 -bang ViraSetVersion call vira#_menu('version');
 command! -nargs=0 -bang ViraSetType call vira#_menu('issuetype');
+command! -nargs=0 -bang ViraSetVersion call vira#_menu('version');
 
 " Edit
 command! -nargs=0 -bang ViraEditDescription call vira#_prompt_start('description')
@@ -63,6 +63,7 @@ command! -nargs=0 -bang ViraFilterReset call vira#_reset_filters()
 command! -nargs=0 -bang ViraFilterEdit call vira#_prompt_start('edit_filter')
 command! -nargs=0 -bang ViraFilterAssignees call vira#_menu('assignees')
 command! -nargs=0 -bang ViraFilterComponents call vira#_menu('components')
+command! -nargs=0 -bang ViraFilterEpics call vira#_menu("epics")
 command! -nargs=0 -bang ViraFilterPriorities call vira#_menu('priorities')
 command! -nargs=0 -bang ViraFilterProjects call vira#_menu('projects')
 command! -nargs=0 -bang ViraFilterReporters call vira#_menu('reporters')

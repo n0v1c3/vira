@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.0'
+let s:vira_version = '0.4.1'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -38,7 +38,8 @@ let s:vira_set_lookup = {
       \'version': 'fixVersions',
       \'statusCategories': 'statusCategory',
       \'statuses': 'status',
-      \'epics': 'epics',
+      \'set_epic': "set_epic",
+      \'epics': "'Epic Link'",
       \'versions': 'fixVersion',
       \'issuetype': 'issuetypes',
       \'component': 'components',
@@ -420,7 +421,7 @@ endfunction
 
 function! vira#_getter() "{{{2
     " Return the proper form of the selected data
-    if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    if s:vira_menu_type == 'epics' || s:vira_menu_type=='epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
         normal! 0
         return expand('<cWORD>')
     elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
@@ -439,7 +440,7 @@ function! vira#_select() "{{{2
   let value = vira#_getter()
   call vira#_filter_load()
   if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
-      if s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
+      if s:vira_menu_type == 'epics' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
           let s:vira_highlight = '|' . value . '|'
       else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
   elseif s:vira_highlight == ''
@@ -469,7 +470,7 @@ function! vira#_unselect() "{{{2
 endfunction
 
 function! vira#_highlight() "{{{2
-  if s:vira_menu_type == 'issues' || s:vira_menu_type == 'versions'
+  if s:vira_menu_type == 'epics' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'versions'
       let end_line = '' | let end_seperator = ''
   else | let end_line = '\n' | let end_seperator = '$' | endif
 
@@ -490,7 +491,8 @@ endfunction
 function! vira#_highlight_reload() "{{{2
     if s:vira_menu_type != 'assign_issue' && s:vira_menu_type != 'component' && s:vira_menu_type != 'priority' && s:vira_menu_type != 'set_status' && s:vira_menu_type != 'version' && s:vira_menu_type != 'issuetype'
         call vira#_filter_load()
-        if s:vira_menu_type == 'issues' || s:vira_menu_type == 'epics'
+        " TODO: VIRA-69 [201012] - Epics need reload here
+        if s:vira_menu_type == 'issues'
             let s:vira_highlight = '|' . g:vira_active_issue
         elseif s:vira_menu_type == 'servers'
             if exists('g:vira_serv') && g:vira_serv != ''
@@ -537,7 +539,7 @@ function! vira#_set() "{{{2
         if value != "null" | let value = '"' . value . '"'
         else | let value = "None" | endif
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[{"name":' . value . '}]})'
-    elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
+    elseif variable == 'set_epic' || variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
         execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
     " FILTER
