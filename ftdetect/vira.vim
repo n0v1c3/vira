@@ -22,7 +22,6 @@ augroup Vira
   autocmd Filetype vira_menu nnoremap <silent> <buffer> d :set hlsearch<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> D :call vira#_unset()<cr>:q!<cr>:call vira#_refresh()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> H :call vira#_toggle_hide()<cr>
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> s :set hlsearch<cr>:call vira#_select()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> u :set hlsearch<cr>:call vira#_unselect()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> j :set syntax=vira_menu<cr>gj
   autocmd Filetype vira_menu nnoremap <silent> <buffer> k :set syntax=vira_menu<cr>gk
@@ -40,9 +39,10 @@ augroup Vira
   autocmd Filetype vira_report nnoremap <silent> <buffer> k :set syntax=<cr>:set syntax=vira_report<cr>gk
 
   " Common
-  autocmd Filetype vira_menu,vira_report setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   autocmd Filetype vira_menu,vira_report cnoremap <silent> <buffer> q!<cr> :q!<cr>:call vira#_resize()<cr>
   autocmd Filetype vira_menu,vira_report cnoremap <silent> <buffer> q<cr> :q!<cr>:call vira#_resize()<cr>
   autocmd Filetype vira_menu,vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_resize()<cr>
+  autocmd Filetype vira_menu,vira_report nnoremap <silent> <buffer> s :set hlsearch<cr>:call vira#_select()<cr>
+  autocmd Filetype vira_menu,vira_report setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   autocmd BufLeave vira_menu,vira_report call vira#_filter_unload()
 augroup END

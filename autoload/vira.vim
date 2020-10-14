@@ -421,7 +421,9 @@ endfunction
 
 function! vira#_getter() "{{{2
     " Return the proper form of the selected data
-    if s:vira_menu_type == 'epics' || s:vira_menu_type=='epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    if expand('%:t') == 'vira_report'
+        return expand('<cWORD>')
+    elseif s:vira_menu_type == 'epics' || s:vira_menu_type=='epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
         normal! 0
         return expand('<cWORD>')
     elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
@@ -436,18 +438,25 @@ endfunction
 
 function! vira#_select() "{{{2
   let current_pos = getpos('.')
-
   let value = vira#_getter()
-  call vira#_filter_load()
-  if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
-      if s:vira_menu_type == 'epics' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
-          let s:vira_highlight = '|' . value . '|'
-      else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
-  elseif s:vira_highlight == ''
-    let s:vira_highlight = '|' . value . '|'
+
+  if expand('%:t') == 'vira_report'
+    silent! if execute('python3 Vira.api.jira.search_issues("issue = ' . value . '")') == ''
+      let g:vira_active_issue = value
+      call vira#_menu('report')
+    endif
+  else
+    call vira#_filter_load()
+    if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
+        if s:vira_menu_type == 'epics' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
+            let s:vira_highlight = '|' . value . '|'
+        else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
+    elseif s:vira_highlight == ''
+      let s:vira_highlight = '|' . value . '|'
+    endif
+    call vira#_highlight()
+    call setpos('.', current_pos)
   endif
-  call vira#_highlight()
-  call setpos('.', current_pos)
 endfunction
 
 function! vira#_unselect() "{{{2
