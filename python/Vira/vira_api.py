@@ -267,7 +267,7 @@ class ViraAPI():
 
         self.get_components()
 
-    def get_set_epic(self):
+    def get_epic(self):
         self.get_epics()
 
     def get_epics(self):
