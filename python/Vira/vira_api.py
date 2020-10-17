@@ -215,9 +215,11 @@ class ViraAPI():
             self.userconfig_filter[filterType]
         ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
-        return str(f"{filterType} in ({selection})").replace("'null'", "Null").replace(
-            "'Unassigned'",
-            "Null").replace(f"text in ({selection})", f"text ~ {selection}")
+        return str(f"{filterType} in ({selection})").replace(
+            "'null'","Null").replace(
+                "'Unassigned'", "Null").replace(
+                    "'None'", "Null").replace(
+                        f"text in ({selection})", f"text ~ {selection}")
 
     def get_assign_issue(self):
         '''
@@ -279,6 +281,7 @@ class ViraAPI():
         self.userconfig_filter["issuetype"] = "Epic"
         self.userconfig_filter["'Epic Link'"] = ""
         self.get_issues()
+        print('None')
         self.userconfig_filter["issuetype"] = hold
 
     def get_issue(self, issue):

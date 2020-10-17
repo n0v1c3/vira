@@ -549,7 +549,8 @@ function! vira#_set() "{{{2
         else | let value = "None" | endif
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[{"name":' . value . '}]})'
     elseif s:vira_menu_type == 'epic'
-        execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":"' . value . '"})'
+          if value != "None" | let value = '"' . value . '"' | endif
+        execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":' . value . '})'
     elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
         execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
@@ -558,7 +559,7 @@ function! vira#_set() "{{{2
         if s:vira_filter[:0] == '"'
             let value = substitute(s:vira_filter,'|',', ','')
         else | let value = '"' . value . '"' | endif
-        execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
+        execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = ' . value
         if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif
     endif
 
