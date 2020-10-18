@@ -44,7 +44,6 @@ let s:vira_set_lookup = {
       \'issuetype': 'issuetypes',
       \'component': 'components',
       \}
-      " \'epic': "customfield_10100",
 
 " AutoCommands {{{1
 augroup ViraPrompt
@@ -499,9 +498,8 @@ function! vira#_highlight() "{{{2
 endfunction
 
 function! vira#_highlight_reload() "{{{2
-    if s:vira_menu_type != 'assign_issue' && s:vira_menu_type != 'component' && s:vira_menu_type != 'priority' && s:vira_menu_type != 'set_status' && s:vira_menu_type != 'version' && s:vira_menu_type != 'issuetype'
+    if s:vira_menu_type != 'epic' && s:vira_menu_type != 'assign_issue' && s:vira_menu_type != 'component' && s:vira_menu_type != 'priority' && s:vira_menu_type != 'set_status' && s:vira_menu_type != 'version' && s:vira_menu_type != 'issuetype'
         call vira#_filter_load()
-        " TODO: VIRA-69 [201012] - Epics need reload here
         if s:vira_menu_type == 'issues'
             let s:vira_highlight = '|' . g:vira_active_issue
         elseif s:vira_menu_type == 'servers'

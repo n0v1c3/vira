@@ -40,7 +40,7 @@ class ViraAPI():
             'project': '',
             'reporter': '',
             'status': '',
-            'epics': '',
+            "'Epic Link'": '',
             'statusCategory': ['To Do', 'In Progress'],
             'text': ''
         }
@@ -276,13 +276,14 @@ class ViraAPI():
         '''
         Get my issues with JQL
         '''
-        hold = self.userconfig_filter["issuetype"]
-        #  self.userconfig_filter = self.userconfig_filter_default
+        holdtype = self.userconfig_filter['issuetype']
+        holdepic = self.userconfig_filter["'Epic Link'"]
         self.userconfig_filter["issuetype"] = "Epic"
         self.userconfig_filter["'Epic Link'"] = ""
         self.get_issues()
         print('None')
-        self.userconfig_filter["issuetype"] = hold
+        self.userconfig_filter['issuetype'] = holdtype
+        self.userconfig_filter["'Epic Link'"] = holdepic
 
     def get_issue(self, issue):
         '''
@@ -542,7 +543,7 @@ class ViraAPI():
             comments += ''.join(
                 [
                     comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
-                    ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] +
+                    ' ' + comment['updated'][11:16] + ' {{' + '{2\n' + comment['body'] +
                     '\n}}}\n'
                 ])
         old_count = idx - 3
