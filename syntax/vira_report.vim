@@ -147,11 +147,11 @@ highlight viraCodeSemi ctermfg=245 guifg=#87af00
 highlight viraCodeMethod ctermfg=3 guifg=#808000
 highlight viraCodeNumber ctermfg=39 guifg=#808000
 highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold,underline gui=bold,underline
-highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
-highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline, gui=underline
-highlight viraCommentDateAt ctermfg=blue guifg=blue cterm=underline, gui=underline
-highlight viraCommentOlder ctermbg=bg ctermfg=bg guifg=bg guibg=bg cterm=bold gui=bold
-highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
+" highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
+highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline gui=underline
+highlight viraCommentDateAt ctermfg=blue guifg=blue cterm=underline gui=underline
+" highlight viraCommentOlder ctermbg=bg ctermfg=bg guifg=bg guibg=bg cterm=bold gui=bold
+" highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 highlight viraDetailsComponent ctermfg=lightblue guifg=lightblue
 highlight viraDetailsDates ctermfg=darkblue guifg=darkblue
 highlight viraDetailsHigh ctermfg=red guifg=red
