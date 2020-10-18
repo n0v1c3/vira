@@ -38,12 +38,13 @@ let s:vira_set_lookup = {
       \'version': 'fixVersions',
       \'statusCategories': 'statusCategory',
       \'statuses': 'status',
-      \'epic': "customfield_10100",
+      \'epic': "customfield_10014",
       \'epics': "'Epic Link'",
       \'versions': 'fixVersion',
       \'issuetype': 'issuetypes',
       \'component': 'components',
       \}
+      " \'epic': "customfield_10100",
 
 " AutoCommands {{{1
 augroup ViraPrompt
@@ -549,7 +550,8 @@ function! vira#_set() "{{{2
         else | let value = "None" | endif
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[{"name":' . value . '}]})'
     elseif s:vira_menu_type == 'epic'
-          if value != "None" | let value = '"' . value . '"' | endif
+        if value != "None" | let value = '"' . value . '"' | endif
+        let variable = s:vira_epic_field
         execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":' . value . '})'
     elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
         execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
