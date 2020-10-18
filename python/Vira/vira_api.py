@@ -494,6 +494,10 @@ class ViraAPI():
         Print a report for the given issue
         '''
 
+        for customfield in self.jira.fields():
+            if customfield['name'] == 'Epic Link':
+                epicID = customfield['id']
+
         # Get passed issue content
         active_issue = vim.eval("g:vira_active_issue")
         issues = self.jira.search_issues(
@@ -502,8 +506,7 @@ class ViraAPI():
                 [
                     'project', 'summary', 'comment', 'component', 'description',
                     'issuetype', 'priority', 'status', 'created', 'updated', 'assignee',
-                    'reporter', 'fixVersion', 'customfield_10106', 'customfield_10100',
-                    'customfield_10014', 'labels'
+                    'reporter', 'fixVersion', 'customfield_10106', 'labels', epicID
                 ]),
             json_result='True')
         issue = issues['issues'][0]['fields']
@@ -525,12 +528,8 @@ class ViraAPI():
         reporter = issue['reporter']['displayName']
         component = ', '.join([c['name'] for c in issue['components']])
         version = ', '.join([v['name'] for v in issue['fixVersions']])
-        if str(issue.get('customfield_10014')) != 'None':
-            epics = str(issue.get('customfield_10014'))
-            vim.command(f'let s:vira_epic_field = "customfield_10014"')
-        else:
-            epics = str(issue.get('customfield_10100'))
-            vim.command(f'let s:vira_epic_field = "customfield_10100"')
+        epics = str(issue.get(epicID))
+        vim.command(f'let s:vira_epic_field = "' + epicID + '"')
         description = str(issue.get('description'))
 
         if version != '':  # Prevent no version error for percent
