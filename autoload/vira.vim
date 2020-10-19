@@ -52,15 +52,12 @@ augroup ViraPrompt
 augroup END
 
 " Functions {{{1
-function! vira#_browse() "{{{2
+function! vira#_browse(url) "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
       echo "Please select an issue first"
       return
   endif
-
-  " Create URL path from server and issue key
-  let l:url = g:vira_serv . '/browse/' . vira#_get_active_issue()
 
   " Set browser - either user defined or $BROWSER
   if exists('g:vira_browser') | let l:browser = g:vira_browser
@@ -78,7 +75,7 @@ function! vira#_browse() "{{{2
   endif
 
   " Open current issue in browser
-  silent! call execute('!' . l:browser . ' "' . l:url . '" > /dev/null 2>&1 &')
+  silent! call execute('!' . l:browser . ' "' . a:url . '" > /dev/null 2>&1 &')
   redraw!
 endfunction
 
@@ -444,6 +441,8 @@ function! vira#_select() "{{{2
     silent! if execute('python3 Vira.api.jira.search_issues("issue = ' . value . '")') == ''
       let g:vira_active_issue = value
       call vira#_menu('report')
+    else
+      call vira#_browse(expand('<cWORD>'))
     endif
   else
     call vira#_filter_load()
