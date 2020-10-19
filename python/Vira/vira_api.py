@@ -276,14 +276,14 @@ class ViraAPI():
         '''
         Get my issues with JQL
         '''
-        holdtype = self.userconfig_filter['issuetype']
-        holdepic = self.userconfig_filter["'Epic Link'"]
+        hold = self.userconfig_filter
+        project = self.userconfig_filter['project']
+        self.userconfig_filter = self.userconfig_filter_default
         self.userconfig_filter["issuetype"] = "Epic"
-        self.userconfig_filter["'Epic Link'"] = ""
+        self.userconfig_filter["project"] = project
         self.get_issues()
         print('None')
-        self.userconfig_filter['issuetype'] = holdtype
-        self.userconfig_filter["'Epic Link'"] = holdepic
+        self.userconfig_filter = hold
 
     def get_issue(self, issue):
         '''
