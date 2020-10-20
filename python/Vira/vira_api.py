@@ -215,11 +215,15 @@ class ViraAPI():
             self.userconfig_filter[filterType]
         ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
-        return str(f"{filterType} in ({selection})").replace(
-            "'null'","Null").replace(
-                "'Unassigned'", "Null").replace(
-                    "'None'", "Null").replace(
-                        f"text in ({selection})", f"text ~ {selection}")
+        return str(f"{filterType} in ({selection})"
+                ).replace("'None'", "Null"
+                ).replace("'Unassigned'", "Null"
+                ).replace("'currentUser'", "currentUser()"
+                ).replace("'currentUser()'", "currentUser()"
+                ).replace("'currentuser'", "currentUser()"
+                ).replace("'currentuser()'", "currentUser()"
+                ).replace("'null'", "Null"
+                ).replace(f"text in ({selection})", f"text ~ {selection}")
 
     def get_assign_issue(self):
         '''
