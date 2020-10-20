@@ -8,7 +8,6 @@ syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus cont
 syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
 
 syntax match viraBold "\*.*\*"
-syntax match viraQuote "\".*\"\|'.*'"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
 syntax region viraCommentOlder start=/^\d.* Older Comment.* {/ end=/{{\d/
@@ -70,17 +69,20 @@ syntax match viraDetailsTypeAssignee ".* .* "hs=s+1 contained
 syntax match viraDetails "│.*Reporter │" nextgroup=viraDetailsTypeReporter
 syntax match viraDetailsTypeReporter ".* .* "hs=s+1 contained
 
+syntax match viraDetails "│.*Epic Link │" nextgroup=viraDetailsEpic
+syntax match viraDetailsEpic ".*-.*\d \| None "hs=s+1,he=e-1 contained
+
 syntax match viraDetails "├.*"
 syntax match viraDetails "└.*"
 
 " Font Style {{{2
-syntax match viraItalic "_.*_"
-syntax match viraLink "\[.*|.*\]"
-syntax match viraMonospaced "{{.*}}"
-syntax match viraPhoto "\!.*|.*\!"
+syntax match viraItalic " _.*_ "hs=s+1,he=e-1
+syntax match viraLink " \[.*|.*\] "hs=s+1,he=e-1
+syntax match viraMonospaced " {{.*}} "hs=s+1,he=e-1
+syntax match viraPhoto " \!.*|.*\! "hs=s+1,he=e-1
 syntax match viraStory "\v.*" contained
-syntax match viraStrikethrough "-.*-"
-syntax match viraSubscript "\~.*\~"
+syntax match viraStrikethrough " -.*- "hs=s+1,he=e-1
+syntax match viraSubscript " \~.*\~ "hs=s+1,he=e-1
 syntax match viraTheLine "----"
 syntax match viraTitles "  .*-.*  \|│.*Summary.*│\|│.*Description.*│\|│.*Comments.*│"hs=s+1,he=e-1 contains=viraDetails
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
@@ -93,12 +95,21 @@ syntax match viraUsername "\[\~.*\]"
 
 " Code Wrap {{{2
 " OoO is very important
-syntax match viraCodeComment "//.*\|#.*\|\".*" contained
-syntax match viraCodeSemi ";\|(\|\[\|]\|)\|=" contained
-syntax match viraCodeQuote "\".*\"\|'.*'" contained
-syntax match viraCodeFunction "string\|int\|echo\|print" contained
-syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
-syntax match viraCode "{code:.*}.*{code}" contains=viraQuote,viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable
+syntax match viraCodeNumber "\d" contained
+syntax match viraCodeNumber "\d.\d" contained
+syntax match viraCodeComment "//.*\|#.*\|\".*\n" contained
+syntax match viraCodeSemi "\~\|;\|(\|\[\|]\|)\|=\|:\|,\|\." contained
+syntax region viraCodeQuote start="\(^\|=\|\s\|\[\|\,\|\-\)'"hs=s+1 end="'" skip="\\'"
+syntax region viraCodeQuote start="\(^\|=\|\s\|\[\|\,\|\-\)\""hs=s+1 end="\"" skip="\\\""
+syntax region viraCodeQuote start="'" end="'" skip="\\'" contained
+syntax region viraCodeQuote start="\"" end="\"" skip="\\\"" contained
+syntax match viraCodeFunction " \w.*\w(" contained contains=viraCodeSemiFix
+syntax match viraCodeMethod "ASC\|DESC\|desc\|\~\|ORDER \|order \|BY \|by \|or \|OR \|and\|AND\|in\|return\|==\|!=\|<\|>\|def\|for\|in\|true\|True\|false\|False" contained
+syntax match viraCodeFunction "syntax\|string\|int\|echo\|print\|self" contained
+syntax match viraCodeSemiFix "\.\|(\|\[\|=" contained
+syntax region viraCodeQuote start="\"" end="\"" skip="\\\"" contained
+syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
+syntax match viraCode "{code:.*}.*{code}" contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 
 " Highlighting {{{1
 highlight default link viraBullets Identifier
@@ -129,15 +140,18 @@ highlight default link viraTitles Title
 highlight viraBold cterm=bold gui=bold
 highlight viraCode ctermfg=5 guifg=#875f5f
 highlight viraCodeComment ctermfg=245 guifg=#87af00
-highlight viraCodeFunction ctermfg=32 guifg=#00afd7 cterm=bold gui=bold
+highlight viraCodeFunction ctermfg=26 guifg=#00afd7 cterm=bold gui=bold
 highlight viraCodeQuote ctermfg=76 guifg=#5fd700
+highlight viraCodeSemiFix ctermfg=245 guifg=#87af00
 highlight viraCodeSemi ctermfg=245 guifg=#87af00
+highlight viraCodeMethod ctermfg=3 guifg=#808000
+highlight viraCodeNumber ctermfg=39 guifg=#808000
 highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold,underline gui=bold,underline
-highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
-highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline, gui=underline
-highlight viraCommentDateAt ctermfg=blue guifg=blue cterm=underline, gui=underline
-highlight viraCommentOlder ctermbg=bg ctermfg=bg guifg=bg guibg=bg cterm=bold gui=bold
-highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
+" highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
+highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline gui=underline
+highlight viraCommentDateAt ctermfg=blue guifg=blue cterm=underline gui=underline
+" highlight viraCommentOlder ctermbg=bg ctermfg=bg guifg=bg guibg=bg cterm=bold gui=bold
+" highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 highlight viraDetailsComponent ctermfg=lightblue guifg=lightblue
 highlight viraDetailsDates ctermfg=darkblue guifg=darkblue
 highlight viraDetailsHigh ctermfg=red guifg=red
@@ -155,6 +169,7 @@ highlight viraDetailsStoryPoints ctermfg=darkyellow guifg=lightblue
 highlight viraDetailsTypeAssignee ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeBug ctermfg=red guifg=red
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
+highlight viraDetailsEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsTypeReporter ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
 highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
@@ -166,7 +181,6 @@ highlight viraLink cterm=underline gui=underline
 highlight viraList ctermfg=brown guifg=brown
 highlight viraListCheck ctermfg=lightgreen guifg=lightgreen
 highlight viraPointer ctermfg=darkblue guifg=darkblue
-highlight viraQuote ctermfg=38 guifg=#00afd7
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=underline

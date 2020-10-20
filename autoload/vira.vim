@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.0'
+let s:vira_version = '0.4.1'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -38,6 +38,8 @@ let s:vira_set_lookup = {
       \'version': 'fixVersions',
       \'statusCategories': 'statusCategory',
       \'statuses': 'status',
+      \'epic': "customfield_10014",
+      \'epics': "'Epic Link'",
       \'versions': 'fixVersion',
       \'issuetype': 'issuetypes',
       \'component': 'components',
@@ -50,15 +52,12 @@ augroup ViraPrompt
 augroup END
 
 " Functions {{{1
-function! vira#_browse() "{{{2
+function! vira#_browse(url) "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
       echo "Please select an issue first"
       return
   endif
-
-  " Create URL path from server and issue key
-  let l:url = g:vira_serv . '/browse/' . vira#_get_active_issue()
 
   " Set browser - either user defined or $BROWSER
   if exists('g:vira_browser') | let l:browser = g:vira_browser
@@ -76,7 +75,7 @@ function! vira#_browse() "{{{2
   endif
 
   " Open current issue in browser
-  silent! call execute('!' . l:browser . ' "' . l:url . '" > /dev/null 2>&1 &')
+  silent! call execute('!' . l:browser . ' "' . a:url . '" > /dev/null 2>&1 &')
   redraw!
 endfunction
 
@@ -419,7 +418,9 @@ endfunction
 
 function! vira#_getter() "{{{2
     " Return the proper form of the selected data
-    if s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    if expand('%:t') == 'vira_report'
+        return expand('<cWORD>')
+    elseif s:vira_menu_type == 'epics' || s:vira_menu_type=='epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
         normal! 0
         return expand('<cWORD>')
     elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
@@ -434,18 +435,27 @@ endfunction
 
 function! vira#_select() "{{{2
   let current_pos = getpos('.')
-
   let value = vira#_getter()
-  call vira#_filter_load()
-  if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
-      if s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
-          let s:vira_highlight = '|' . value . '|'
-      else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
-  elseif s:vira_highlight == ''
-    let s:vira_highlight = '|' . value . '|'
+
+  if expand('%:t') == 'vira_report'
+    silent! if execute('python3 Vira.api.jira.search_issues("issue = ' . value . '")') == ''
+      let g:vira_active_issue = value
+      call vira#_menu('report')
+    else
+      call vira#_browse(expand('<cWORD>'))
+    endif
+  else
+    call vira#_filter_load()
+    if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
+        if s:vira_menu_type == 'epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
+            let s:vira_highlight = '|' . value . '|'
+        else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
+    elseif s:vira_highlight == ''
+      let s:vira_highlight = '|' . value . '|'
+    endif
+    call vira#_highlight()
+    call setpos('.', current_pos)
   endif
-  call vira#_highlight()
-  call setpos('.', current_pos)
 endfunction
 
 function! vira#_unselect() "{{{2
@@ -468,7 +478,7 @@ function! vira#_unselect() "{{{2
 endfunction
 
 function! vira#_highlight() "{{{2
-  if s:vira_menu_type == 'issues' || s:vira_menu_type == 'versions'
+  if s:vira_menu_type == 'epic' || s:vira_menu_type == 'epics' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'versions'
       let end_line = '' | let end_seperator = ''
   else | let end_line = '\n' | let end_seperator = '$' | endif
 
@@ -487,7 +497,7 @@ function! vira#_highlight() "{{{2
 endfunction
 
 function! vira#_highlight_reload() "{{{2
-    if s:vira_menu_type != 'assign_issue' && s:vira_menu_type != 'component' && s:vira_menu_type != 'priority' && s:vira_menu_type != 'set_status' && s:vira_menu_type != 'version' && s:vira_menu_type != 'issuetype'
+    if s:vira_menu_type != 'epic' && s:vira_menu_type != 'assign_issue' && s:vira_menu_type != 'component' && s:vira_menu_type != 'priority' && s:vira_menu_type != 'set_status' && s:vira_menu_type != 'version' && s:vira_menu_type != 'issuetype'
         call vira#_filter_load()
         if s:vira_menu_type == 'issues'
             let s:vira_highlight = '|' . g:vira_active_issue
@@ -536,6 +546,10 @@ function! vira#_set() "{{{2
         if value != "null" | let value = '"' . value . '"'
         else | let value = "None" | endif
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[{"name":' . value . '}]})'
+    elseif s:vira_menu_type == 'epic'
+        if value != "None" | let value = '"' . value . '"' | endif
+        let variable = s:vira_epic_field
+        execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":' . value . '})'
     elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
         execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
@@ -544,7 +558,7 @@ function! vira#_set() "{{{2
         if s:vira_filter[:0] == '"'
             let value = substitute(s:vira_filter,'|',', ','')
         else | let value = '"' . value . '"' | endif
-        execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = '. value .''
+        execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = ' . value
         if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif
     endif
 

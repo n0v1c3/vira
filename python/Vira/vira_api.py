@@ -40,6 +40,7 @@ class ViraAPI():
             'project': '',
             'reporter': '',
             'status': '',
+            "'Epic Link'": '',
             'statusCategory': ['To Do', 'In Progress'],
             'text': ''
         }
@@ -51,6 +52,7 @@ class ViraAPI():
             'fixVersion': '',
             'issuetype': 'Bug',
             'priority': '',
+            'epics': '',
             'status': '',
         }
 
@@ -213,9 +215,11 @@ class ViraAPI():
             self.userconfig_filter[filterType]
         ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
-        return str(f"{filterType} in ({selection})").replace("'null'", "Null").replace(
-            "'Unassigned'",
-            "Null").replace(f"text in ({selection})", f"text ~ {selection}")
+        return str(f"{filterType} in ({selection})").replace(
+            "'null'","Null").replace(
+                "'Unassigned'", "Null").replace(
+                    "'None'", "Null").replace(
+                        f"text in ({selection})", f"text ~ {selection}")
 
     def get_assign_issue(self):
         '''
@@ -265,13 +269,21 @@ class ViraAPI():
 
         self.get_components()
 
+    def get_epic(self):
+        self.get_epics()
+
     def get_epics(self):
         '''
         Get my issues with JQL
         '''
-
-        for issue in self.query_issues(issuetypes="Epic"):
-            print(issue["key"] + '  -  ' + issue["fields"]['summary'])
+        hold = self.userconfig_filter
+        project = self.userconfig_filter['project']
+        self.userconfig_filter = self.userconfig_filter_default
+        self.userconfig_filter["issuetype"] = "Epic"
+        self.userconfig_filter["project"] = project
+        self.get_issues()
+        print('None')
+        self.userconfig_filter = hold
 
     def get_issue(self, issue):
         '''
@@ -483,16 +495,19 @@ class ViraAPI():
         Print a report for the given issue
         '''
 
+        for customfield in self.jira.fields():
+            if customfield['name'] == 'Epic Link':
+                epicID = customfield['id']
+
         # Get passed issue content
         active_issue = vim.eval("g:vira_active_issue")
         issues = self.jira.search_issues(
             'issue = "' + active_issue + '"',
-            #  fields='*',
             fields=','.join(
                 [
                     'project', 'summary', 'comment', 'component', 'description',
                     'issuetype', 'priority', 'status', 'created', 'updated', 'assignee',
-                    'reporter', 'fixVersion', 'customfield_10106'
+                    'reporter', 'fixVersion', 'customfield_10106', 'labels', epicID
                 ]),
             json_result='True')
         issue = issues['issues'][0]['fields']
@@ -514,6 +529,8 @@ class ViraAPI():
         reporter = issue['reporter']['displayName']
         component = ', '.join([c['name'] for c in issue['components']])
         version = ', '.join([v['name'] for v in issue['fixVersions']])
+        epics = str(issue.get(epicID))
+        vim.command(f'let s:vira_epic_field = "' + epicID + '"')
         description = str(issue.get('description'))
 
         if version != '':  # Prevent no version error for percent
@@ -526,7 +543,7 @@ class ViraAPI():
             comments += ''.join(
                 [
                     comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
-                    ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] +
+                    ' ' + comment['updated'][11:16] + ' {{' + '{2\n' + comment['body'] +
                     '\n}}}\n'
                 ])
         old_count = idx - 3
@@ -540,7 +557,7 @@ class ViraAPI():
         # Find the length of the longest word [-1]
         words = [
             created, updated, issuetype, status, story_points, priority, component,
-            version, assignee, reporter
+            version, assignee, reporter, epics
         ]
         wordslength = sorted(words, key=len)[-1]
         s = '─'
@@ -569,6 +586,8 @@ class ViraAPI():
             [char * (len(dashlength) - len(assignee)) for char in ' '])
         reporter_spaces = ''.join(
             [char * (len(dashlength) - len(reporter)) for char in ' '])
+        epics_spaces = ''.join(
+            [char * (len(dashlength) - len(epics)) for char in ' '])
 
         # Create report template and fill with data
         report = '''┌────────────────{dashlength}─┐
@@ -580,6 +599,7 @@ class ViraAPI():
 │       Status │ {status}{status_spaces} │
 │ Story Points │ {story_points}{story_points_spaces} │
 │     Priority │ {priority}{priority_spaces} │
+│    Epic Link │ {epics}{epics_spaces} │
 │    Component │ {component}{component_spaces} │
 │      Version │ {version}{version_spaces} │
 │     Assignee │ {assignee}{assignee_spaces} │
@@ -869,6 +889,7 @@ class ViraAPI():
             'Assignee': 'ViraSetAssignee',
             'Component': 'ViraSetComponent',
             'Priority': 'ViraSetPriority',
+            'Epic Link': 'ViraSetEpic',
             'Status': 'ViraSetStatus',
             'Type': 'ViraSetType',
             'Version': 'ViraSetVersion',
