@@ -7,7 +7,7 @@ from __future__ import print_function, unicode_literals
 from Vira.helper import load_config, run_command, parse_prompt_text
 from jira import JIRA
 from jira.exceptions import JIRAError
-import datetime
+from datetime import datetime
 import json
 import urllib3
 import vim
@@ -123,7 +123,7 @@ class ViraAPI():
         Calculate the offset for the start time of the time tracking
         '''
 
-        earlier = datetime.datetime.now() - datetime.timedelta(seconds=timeSpentSeconds)
+        earlier = datetime.now() - datetime.timedelta(seconds=timeSpentSeconds)
 
         self.jira.add_worklog(
             issue=issue,
@@ -490,6 +490,10 @@ class ViraAPI():
 {self.prompt_text_commented}'''
         return self.prompt_text
 
+    def format_date(self, date):
+        time = datetime.now().strptime(date, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
+        return str(time)[0:10] + ' ' + str(time)[11:16]
+
     def get_report(self):
         '''
         Print a report for the given issue
@@ -517,10 +521,8 @@ class ViraAPI():
         close_fold = '}}}'
         summary = issue['summary']
         story_points = str(issue.get('customfield_10106', ''))
-        created = issue['created'][0:10] + ' ' + issues['issues'][0]['fields']['created'][
-            11:16]
-        updated = issue['updated'][0:10] + ' ' + issues['issues'][0]['fields']['updated'][
-            11:16]
+        created = self.format_date(issue['created'])
+        updated = self.format_date(issue['updated'])
         issuetype = issue['issuetype']['name']
         status = issue['status']['name']
         priority = issue['priority']['name']
@@ -542,9 +544,8 @@ class ViraAPI():
         for idx, comment in enumerate((issue['comment']['comments'])):
             comments += ''.join(
                 [
-                    comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
-                    ' ' + comment['updated'][11:16] + ' {{' + '{2\n' + comment['body'] +
-                    '\n}}}\n'
+                    comment['author']['displayName'] + ' @ ' + self.format_date(comment['updated']) +
+                    ' {{' + '{2\n' + comment['body'] + '\n}}}\n'
                 ])
         old_count = idx - 3
         old_comment = 'Comment' if old_count == 1 else 'Comments'
