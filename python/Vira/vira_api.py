@@ -699,6 +699,7 @@ class ViraAPI():
         Print users
         '''
 
+        print('currentUser ~ ' + self.jira.current_user())
         for user in self.users:
             print(user)
         print('Unassigned')
