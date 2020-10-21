@@ -158,6 +158,96 @@ The acceptable values for the filter key are:
 - `reporter` - Filter these reporters. Can be a single item or list.
 - `status` - Filter these statuses. Can be a single item or list.
 
+_NOTE:_ `currentUser()` is also connected to the active account and can be used for all user related tasks.
+
+#### New Issues
+
+Similar to the `filter` key, you can define a `newissue` key to set repo-based.
+default configuration for the new-issue fields.
+
+For example:
+
+```yaml
+vira:
+  server: https://n0v1c3.atlassian.net
+  newissue:
+    issuetype: Task
+OtherProject:
+  server: https://jira.career.com
+  newissue:
+    assignee: travis
+  filter:
+    assignee: travis
+    status: In-Progress
+```
+
+The acceptable values for filter keys are:
+
+- `assignee` - Define assignee.
+- `component` - Define component. Note - these are project specific.
+- `epic` - Define epic. Current project filters apply to list.
+- `fixVersion` - Define fixVersion. Note - these are project specific.
+- `issuetype` - Define issue type. The default is Bug.
+- `priority` - Define priority.
+- `status` - Define status. Vira will transition issue to this status.
+
+#### Project Templates
+
+Templates can be defined in the same way that projects are defined. These templates can be referenced for multiple projects, by using the template key.
+Any name can be used for a template, but it is recommended to use the pythonic syntax of `__name__` in order to make a distinction from a project.
+Refer to the yaml example below. Note that the priority in `repo2` will override the `__maintemplate__` priority.
+
+```yaml
+__maintemplate__:
+  server: https://n0v1c3.atlassian.net
+  filter:
+    project: VIRA
+    assignee: travis
+    priority: [High, Highest]
+repo1:
+  template: __maintemplate__
+repo2:
+  template: __maintemplate__
+  filter:
+    priority: High
+```
+
+#### Default Project Template
+
+If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file.
+Refer to the yaml example below.
+
+```yaml
+__default__:
+  server: https://n0v1c3.atlassian.net
+  filter:
+    assignee: mike
+  newissue:
+    issuetype: Task
+```
+
+### Browser
+
+By default, the `open` or `xdg-open` command will be used by `:ViraBrowse` to open the current issue in the default
+browser. If either command is missing or you wish to override the default browser, you may set the `g:vira_browser`
+variable or provide the `BROWSER` environment variable.
+
+Example setting **custom** default browser using `g:vira_browser`:
+
+```
+let g:vira_browser = 'chromium'
+```
+
+## Usage
+
+A list of the important commands, functions and global variables to be used to help configure Vira to work for you.
+
+### Keyboard
+
+It is possible to _select multiple_ items from all menus, if nothing is selected prior to the item will be selected from the current column.
+
+_OTE:_ `currentUser()` is also connected to the active account and can be used for all user related tasks.
+
 #### New Issues
 
 Similar to the `filter` key, you can define a `newissue` key to set repo-based.
