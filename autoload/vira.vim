@@ -425,10 +425,13 @@ function! vira#_getter() "{{{2
         return expand('<cWORD>')
     elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
         let line = getline('.')
-        if line == 'Unassigned' || line == 'null'
+        if line == 'currentUser' || line == 'Unassigned' || line == 'null'
             if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
-                return line
-            elseif s:vira_menu_type == 'assign_issue' | return '-1' | endif
+                return substitute(line, 'currentUser', 'currentUser()','g')
+            elseif s:vira_menu_type == 'assign_issue'
+                if line == 'currentUser' | return substitute(line, 'currentUser', 'currentUser()','g') | endif
+                return '-1'
+            endif
         else | return  split(getline('.'),' \~ ')[1] | endif
     else | return getline('.') | endif
 endfunction
