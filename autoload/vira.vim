@@ -216,15 +216,14 @@ function! vira#_load_project_config(...) " {{{2
 endfunction
 
 function! vira#_menu(type) abort " {{{2
-  " Load config from user-defined file
-  if (g:vira_load_project_enabled == 1)
-    call vira#_load_project_config()
-  endif
-
-  " User to select jira server and connect to it if not done already
-  if (!exists('g:vira_serv') || g:vira_serv == '') && a:type != 'servers'
-    call vira#_menu('servers')
-    return
+  if a:type != 'servers'
+    " Load config from user-defined file
+    if (g:vira_load_project_enabled == 1) | call vira#_load_project_config() | endif
+    " User to select jira server and connect to it if not done already
+    if (!exists('g:vira_serv') || g:vira_serv == '')
+      call vira#_menu('servers')
+      return
+    endif
   endif
 
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
