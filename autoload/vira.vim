@@ -545,9 +545,9 @@ function! vira#_set() "{{{2
     elseif variable == 'issuetypes' || variable == 'priorities'
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(' . s:vira_menu_type . '={"name":"' . value . '"})'
     elseif variable == 'fixVersions' || variable == 'components'
-        if value != "null" | let value = '"' . value . '"'
-        else | let value = "None" | endif
-        execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[{"name":' . value . '}]})'
+        if value == "null" | let value = '{"name": "None"}'
+        else | let value = '{"name":' . substitute(s:vira_filter,'","', '"}, {"name": "', 'g') . '}' | endif
+        execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[' . value . ']})'
     elseif s:vira_menu_type == 'epic'
         if value != "None" | let value = '"' . value . '"' | endif
         let variable = s:vira_epic_field

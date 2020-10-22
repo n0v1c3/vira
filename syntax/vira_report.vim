@@ -138,7 +138,7 @@ highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
 highlight default link viraTitles Title
 highlight viraBold cterm=bold gui=bold
-highlight viraCode ctermfg=5 guifg=#875f5f
+highlight viraCode ctermfg=3 guifg=#808000
 highlight viraCodeComment ctermfg=245 guifg=#87af00
 highlight viraCodeFunction ctermfg=26 guifg=#00afd7 cterm=bold gui=bold
 highlight viraCodeQuote ctermfg=76 guifg=#5fd700
