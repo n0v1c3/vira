@@ -424,7 +424,7 @@ function! vira#_getter() "{{{2
         return expand('<cWORD>')
     elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
         let line = getline('.')
-        if line == 'currentUser' || line == 'Unassigned' || line == 'null'
+        if line == 'currentUser' || line == 'Unassigned' || line == 'null' || line == 'None'
             if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
                 return substitute(line, 'currentUser', 'currentUser()','g')
             elseif s:vira_menu_type == 'assign_issue'
@@ -545,7 +545,7 @@ function! vira#_set() "{{{2
     elseif variable == 'issuetypes' || variable == 'priorities'
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(' . s:vira_menu_type . '={"name":"' . value . '"})'
     elseif variable == 'fixVersions' || variable == 'components'
-        if value == "null" | let value = '{"name": "None"}'
+        if value == "None" | let value = '{}'
         else | let value = '{"name":' . substitute(s:vira_filter,'","', '"}, {"name": "', 'g') . '}' | endif
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[' . value . ']})'
     elseif s:vira_menu_type == 'epic'

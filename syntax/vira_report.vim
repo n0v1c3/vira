@@ -110,8 +110,7 @@ syntax match viraCodeFunction " \w.*\w(" contained contains=viraCodeSemiFix
 syntax match viraCodeMethod "ASC\|DESC\|desc\|\~\|ORDER \|order \|BY \|by \|or \|OR \|and\|AND\|in\|return\|==\|!=\|<\|>\|def\|for\|in\|true\|True\|false\|False" contained
 syntax match viraCodeFunction "syntax\|string\|int\|echo\|print\|self" contained
 syntax match viraCodeSemiFix "\.\|(\|\[\|=" contained
-syntax region viraCodeQuote start="\"" end="\"" skip="\\\"" contained
-syntax match viraCode "`.*`"hs=s+1,he=e-1 contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
+syntax region viraCode start="`" end="`" skip="\\\""
 syntax region viraCode start=/```/hs=s+3 end=/```/he=e-3 contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax match viraCode "{code:.*}.*{code}" contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix

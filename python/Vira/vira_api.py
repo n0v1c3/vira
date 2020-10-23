@@ -265,6 +265,7 @@ class ViraAPI():
 
         for component in self.jira.project_components(self.userconfig_filter['project']):
             print(component.name)
+        print('None')
 
     def get_component(self):
         '''
@@ -749,7 +750,7 @@ class ViraAPI():
                 version.split('|')[0] +
                 ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
                 '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
-        print('null')
+        print('None')
 
     def version_percent(self, project, fixVersion):
         query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(
