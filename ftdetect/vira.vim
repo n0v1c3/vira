@@ -35,8 +35,8 @@ augroup Vira
   " autocmd Filetype vira_report setlocal conceallevel=3
   autocmd Filetype vira_report setlocal norelativenumber
   autocmd Filetype vira_report nnoremap <silent> <buffer> <cr> :call vira#_edit_report()<cr>
-  autocmd Filetype vira_report nnoremap <silent> <buffer> j :set syntax=<cr>:set syntax=vira_report<cr>gj
-  autocmd Filetype vira_report nnoremap <silent> <buffer> k :set syntax=<cr>:set syntax=vira_report<cr>gk
+  autocmd Filetype vira_report nnoremap <silent> <buffer> j :set syntax=vira_report<cr>gj
+  autocmd Filetype vira_report nnoremap <silent> <buffer> k :set syntax=vira_report<cr>gk
 
   " Common
   autocmd Filetype vira_menu,vira_report cnoremap <silent> <buffer> q!<cr> :q!<cr>:call vira#_resize()<cr>
