@@ -570,7 +570,7 @@ class ViraAPI():
 
         active_issue_spacing = int((16 + len(dashlength)) / 2 - len(active_issue) / 2)
         active_issue_spaces = ' '.join([char * (active_issue_spacing) for char in ' '])
-        active_issue_space = ' '.join([char * (len(active_issue) % 2) for char in ' '])
+        active_issue_space = ' '.join([char * ((len(active_issue) + len(dashlength)) % 2) for char in ' '])
 
         created_spaces = ' '.join(
             [char * (len(dashlength) - len(created)) for char in ' '])
@@ -605,8 +605,8 @@ class ViraAPI():
 │ Story Points │ {story_points}{story_points_spaces} │
 │     Priority │ {priority}{priority_spaces} │
 │    Epic Link │ {epics}{epics_spaces} │
-│    Component │ {component}{component_spaces} │
-│      Version │ {version}{version_spaces} │
+│ Component(s) │ {component}{component_spaces} │
+│   Version(s) │ {version}{version_spaces} │
 │     Assignee │ {assignee}{assignee_spaces} │
 │     Reporter │ {reporter}{reporter_spaces} │
 └──────────────┴─{dashlength}─┘
@@ -686,6 +686,13 @@ class ViraAPI():
         '''
 
         self.print_versions()
+
+    def new_component(self, name, project):
+        '''
+        New component added to project
+        '''
+
+        self.jira.create_component(name=name, project=project, description=name)
 
     def new_version(self, name, project, description):
         '''

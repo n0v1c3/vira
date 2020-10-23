@@ -55,12 +55,13 @@ syntax match viraDetailsLow "│ Low"hs=s+2 contained
 syntax match viraDetailsLowest "│ Lowest"hs=s+2 contained
 syntax match viraDetailsMedium "│ Medium"hs=s+2 contained
 
-syntax match viraDetails "│.*Component │.*" contains=viraDetailsComponent
+syntax match viraDetails "│.*Component(s) │.*" contains=viraDetailsComponent
 syntax match viraDetailsComponent " │.*│"hs=s+3,he=e-1 contained
 
-syntax match viraDetails "│.*Version │" contains=viraDetailsVersionN,viraDetailsVersionP,viraDetailsVersion
-syntax match viraDetailsVersionN " │.* .* |"hs=s+3,he=e-1 contained contains=viraDetailsVersionP
-syntax match viraDetailsVersionP " | .*%"hs=s+2 contained contains=viraDetailsVersion
+syntax match viraDetails "│.*Version(s) │" contains=viraDetailsVersionN,viraDetailsVersionP,viraDetailsVersion
+syntax match viraDetailsVersionN " │ .* "hs=s+3,he=e-1 contained contains=viraDetailsVersionP
+syntax match viraDetailsVersionN " │ .* .*,.* "hs=s+3,he=e-1 contained contains=viraDetailsVersionP
+" syntax match viraDetailsVersionP " | .*%"hs=s+2 contained contains=viraDetailsVersion
 syntax match viraDetailsVersion "|" contained
 
 syntax match viraDetails "│.*Assignee │" nextgroup=viraDetailsTypeAssignee
@@ -88,8 +89,10 @@ syntax match viraTitles "  .*-.*  \|│.*Summary.*│\|│.*Description.*│\|�
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
 syntax match viraUnderline "+.*+"
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
-syntax match viraList "\[ ]\|\[X]\|\[x]\|\[✓]" contains=viraListCheck
-syntax match viraListCheck "\[X]\|\[x]\|\[✓]"hs=s+1,he=e-1 contained
+syntax match viraList "\[ ]\|\[X]\|\[x]\|\[✓]\|\[-]\|\[>]" contains=viraListComplete,viraListRemoved,viraListForward
+syntax match viraListComplete "\[X]\|\[x]\|\[✓]"hs=s+1,he=e-1 contained
+syntax match viraListRemoved "\[-]"hs=s+1,he=e-1 contained
+syntax match viraListForward "\[>]"hs=s+1,he=e-1 contained
 syntax match viraPointer "└──>"
 syntax match viraUsername "\[\~.*\]"
 
@@ -108,6 +111,8 @@ syntax match viraCodeMethod "ASC\|DESC\|desc\|\~\|ORDER \|order \|BY \|by \|or \
 syntax match viraCodeFunction "syntax\|string\|int\|echo\|print\|self" contained
 syntax match viraCodeSemiFix "\.\|(\|\[\|=" contained
 syntax region viraCodeQuote start="\"" end="\"" skip="\\\"" contained
+syntax match viraCode "`.*`"hs=s+1,he=e-1 contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
+syntax region viraCode start=/```/hs=s+3 end=/```/he=e-3 contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax match viraCode "{code:.*}.*{code}" contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 
@@ -178,9 +183,11 @@ highlight viraDetailsVersionN ctermfg=lightblue guifg=lightblue
 highlight viraDetailsVersionP ctermfg=darkyellow guifg=darkyellow
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
-highlight viraList ctermfg=brown guifg=brown
-highlight viraListCheck ctermfg=lightgreen guifg=lightgreen
-highlight viraPointer ctermfg=darkblue guifg=darkblue
+highlight viraList ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
+highlight viraListComplete ctermfg=lightgreen guifg=lightgreen cterm=bold gui=bold
+highlight viraListForward ctermfg=yellow guifg=yellow cterm=bold gui=bold
+highlight viraListRemoved ctermfg=darkred guifg=darkred cterm=bold gui=bold
+highlight viraPointer ctermfg=yellow guifg=yellow cterm=bold gui=bold
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=underline

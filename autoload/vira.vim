@@ -587,5 +587,8 @@ function! vira#_toggle_hide() "{{{2
 endfunction
 " New {{{1
 function! vira#_new(menu, name, project, description) "{{{2
-    execute 'python3 Vira.api.new_' . a:menu . '("' . a:name . '","' . a:project . '","' . a:description . '")'
+  if a:menu == 'component'
+    execute 'python3 Vira.api.new_' . a:menu . '("' . a:name . '","' . a:project . '")'
+  else | execute 'python3 Vira.api.new_' . a:menu . '("' . a:name . '","' . a:project . '","' . a:description . '")'
+  endif
 endfunction
