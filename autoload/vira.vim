@@ -426,9 +426,9 @@ function! vira#_getter() "{{{2
         let line = getline('.')
         if line == 'currentUser' || line == 'Unassigned' || line == 'null' || line == 'None'
             if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
-                return substitute(line, 'currentUser', 'currentUser()','g')
+                return substitute(line, 'currentUser', 'currentUser','g')
             elseif s:vira_menu_type == 'assign_issue'
-                if line == 'currentUser' | return substitute(line, 'currentUser', 'currentUser()','g') | endif
+                if line != 'Unassigned' | return substitute(line, 'currentUser', 'currentUser','g') | endif
                 return '-1'
             endif
         else | return  split(getline('.'),' \~ ')[1] | endif
@@ -449,9 +449,9 @@ function! vira#_select() "{{{2
   else
     call vira#_filter_load()
     if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
-        if s:vira_menu_type == 'epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
-            let s:vira_highlight = '|' . value . '|'
-        else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
+      if s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'epic' || s:vira_menu_type == 'issuetype' || s:vira_menu_type == 'set_status' || s:vira_menu_type == 'priority' || s:vira_menu_type == 'epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
+        let s:vira_highlight = '|' . value . '|'
+      else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
     elseif s:vira_highlight == ''
       let s:vira_highlight = '|' . value . '|'
     endif
@@ -546,8 +546,8 @@ function! vira#_set() "{{{2
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(' . s:vira_menu_type . '={"name":"' . value . '"})'
     elseif variable == 'fixVersions' || variable == 'components'
         let value = s:vira_filter
-        if value[:0] == '"' | let value = '{"name":' . substitute(s:vira_filter,'","', '"}, {"name": "', 'g') . '}'
-        elseif value == "None" | let value = '{}'
+        if value == '"None"' | let value = '{}'
+        elseif value[:0] == '"' | let value = '{"name":' . substitute(s:vira_filter,'","', '"}, {"name": "', 'g') . '}'
         else | let value =  '{"name":"' . value . '"}'| endif
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[' . value . ']})'
     elseif s:vira_menu_type == 'epic'
@@ -555,6 +555,7 @@ function! vira#_set() "{{{2
         let variable = s:vira_epic_field
         execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":' . value . '})'
     elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
+        if value == 'currentUser' | let value = execute('python3 print(str(Vira.api.jira.current_user()))')[1:] | endif
         execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
     " FILTER
