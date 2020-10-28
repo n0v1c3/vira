@@ -424,14 +424,13 @@ function! vira#_getter() "{{{2
         return expand('<cWORD>')
     elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
         let line = getline('.')
-        if line == 'currentUser' || line == 'Unassigned' || line == 'null' || line == 'None'
-            if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
-                return substitute(line, 'currentUser', 'currentUser','g')
-            elseif s:vira_menu_type == 'assign_issue'
-                if line != 'Unassigned' | return substitute(line, 'currentUser', 'currentUser','g') | endif
-                return '-1'
-            endif
-        else | return  split(getline('.'),' \~ ')[1] | endif
+        if line == 'Unassigned' || line == 'null' || line == 'None'
+          if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
+            return line
+          elseif s:vira_menu_type == 'assign_issue'
+            return '-1'
+          endif
+        else | return split(getline('.'),' \~ ')[1] | endif
     else | return getline('.') | endif
 endfunction
 
@@ -530,6 +529,10 @@ function! vira#_set() "{{{2
     let value = vira#_getter()
     let variable = s:vira_set_lookup[s:vira_menu_type]
 
+    " TODO: VIRA-239 [201027] - Flip menu selects for nice user highlights
+    " Grab proper user id for `currentUser` lookup
+    let currentUser = split(getline('.'),' \~ ')[0]
+
     " GLOBAL
     if variable[:1] == 'g:'
         execute 'let ' . variable . ' = "' . value . '"'
@@ -554,8 +557,8 @@ function! vira#_set() "{{{2
         if value != "None" | let value = '"' . value . '"' | endif
         let variable = s:vira_epic_field
         execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":' . value . '})'
-    elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
-        if value == 'currentUser' | let value = execute('python3 print(str(Vira.api.jira.current_user()))')[1:] | endif
+    elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . substitute(value, 'currentUser', currentUser, '') . '"})'))
+        let value = substitute(value, 'currentUser', currentUser, '')
         execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
     " FILTER
