@@ -416,22 +416,25 @@ function! vira#_filter_load() " {{{2
 endfunction
 
 function! vira#_getter() "{{{2
+    let line = getline('.')
+    let lineSplit = split(line,' \~ ')
+
     " Return the proper form of the selected data
     if expand('%:t') == 'vira_report'
         return expand('<cWORD>')
     elseif s:vira_menu_type == 'epics' || s:vira_menu_type=='epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
         normal! 0
         return expand('<cWORD>')
-    elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
-        let line = getline('.')
-        if line == 'Unassigned' || line == 'null' || line == 'None'
-          if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
-            return line
-          elseif s:vira_menu_type == 'assign_issue'
-            return '-1'
-          endif
-        else | return split(getline('.'),' \~ ')[1] | endif
-    else | return getline('.') | endif
+    elseif s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
+      if line == 'None' | return line | endif
+      return lineSplit[1]
+    elseif s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
+      if line == 'Unassigned' | return line | endif
+      return lineSplit[1]
+    elseif s:vira_menu_type == 'assign_issue'
+      if line == 'Unassigned' | return 'Unassigned' | endif
+      return lineSplit[1]
+    else | return line | endif
 endfunction
 
 function! vira#_select() "{{{2
@@ -479,11 +482,12 @@ function! vira#_unselect() "{{{2
 endfunction
 
 function! vira#_highlight() "{{{2
-  if s:vira_menu_type == 'epic' || s:vira_menu_type == 'epics' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'versions'
+  let type = s:vira_menu_type
+  if type == 'epic' || type == 'epics' || type == 'issues' || type == 'versions' || type == 'version'
       let end_line = '' | let end_seperator = ''
   else | let end_line = '\n' | let end_seperator = '$' | endif
 
-  if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions'
+  if type == 'assign_issue' || type == 'assignees' || type == 'reporters' || type == 'versions' || type == 'version'
     let seperator = ''
   else | let seperator = '^' | endif
 
@@ -531,7 +535,7 @@ function! vira#_set() "{{{2
 
     " TODO: VIRA-239 [201027] - Flip menu selects for nice user highlights
     " Grab proper user id for `currentUser` lookup
-    let currentUser = split(getline('.'),' \~ ')[0]
+    silent! let currentUser = split(getline('.'),' \~ ')[0]
 
     " GLOBAL
     if variable[:1] == 'g:'
@@ -564,7 +568,7 @@ function! vira#_set() "{{{2
     " FILTER
     else
         if s:vira_filter[:0] == '"'
-            let value = substitute(s:vira_filter,'|',', ','')
+          let value = substitute(s:vira_filter,'|',', ','')
         else | let value = '"' . value . '"' | endif
         execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = ' . value
         if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif

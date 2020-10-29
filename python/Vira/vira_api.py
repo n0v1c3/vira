@@ -540,9 +540,10 @@ class ViraAPI():
         vim.command(f'let s:vira_epic_field = "' + epicID + '"')
         description = str(issue.get('description'))
 
-        #  if version != '':  # Prevent no version error for percent
-            #  version += ' | ' + self.version_percent(
-                #  str(issue['project']['key']), version) + '%'
+        # Version percent for single version attacted
+        if len(issue['fixVersions']) == 1 and version != '':
+                version += ' | ' + self.version_percent(
+                    str(issue['project']['key']), version) + '%'
 
         comments = ''
         idx = 0
