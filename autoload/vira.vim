@@ -418,20 +418,21 @@ endfunction
 function! vira#_getter() "{{{2
     let line = getline('.')
     let lineSplit = split(line,' \~ ')
+    let type = s:vira_menu_type
 
     " Return the proper form of the selected data
     if expand('%:t') == 'vira_report'
         return expand('<cWORD>')
-    elseif s:vira_menu_type == 'epics' || s:vira_menu_type=='epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    elseif type == 'epic' || type == 'epics' || type || type == 'issues' || type == 'projects' || type == 'set_servers'
         normal! 0
         return expand('<cWORD>')
-    elseif s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
+    elseif type == 'versions' || type == 'version'
       if line == 'None' | return line | endif
       return lineSplit[1]
-    elseif s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters'
+    elseif type == 'assignees' || type == 'reporters'
       if line == 'Unassigned' | return line | endif
       return lineSplit[1]
-    elseif s:vira_menu_type == 'assign_issue'
+    elseif type == 'assign_issue'
       if line == 'Unassigned' | return 'Unassigned' | endif
       return lineSplit[1]
     else | return line | endif
