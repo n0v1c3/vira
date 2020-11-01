@@ -110,10 +110,15 @@ syntax match viraCodeFunction " \w.*\w(" contained contains=viraCodeSemiFix
 syntax match viraCodeMethod "ASC\|DESC\|desc\|\~\|ORDER \|order \|BY \|by \|or \|OR \|and\|AND\|in\|return\|==\|!=\|<\|>\|def\|for\|in\|true\|True\|false\|False" contained
 syntax match viraCodeFunction "syntax\|string\|int\|echo\|print\|self" contained
 syntax match viraCodeSemiFix "\.\|(\|\[\|=" contained
-syntax region viraCode start="`" end="`" skip="\\\""
-syntax region viraCode start=/```/hs=s+3 end=/```/he=e-3 contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
+syntax region viraCode start=" `" end="`."he=e-1 skip="\\\""
+syntax region viraCode start=" `" end="\n\|`" skip="\\\""
+syntax region viraCode start="(`"hs=s+1 end="`)"he=e-1 skip="\\\""
+syntax region viraCode start=/$\n```/ end=/```\n\n\|}}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax match viraCode "{code:.*}.*{code}" contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
+
+" Common Tags {{{2
+syntax match viraTodos "FYI\|TODOs\|TODO"
 
 " Highlighting {{{1
 highlight default link viraBullets Identifier
@@ -151,11 +156,11 @@ highlight viraCodeSemi ctermfg=245 guifg=#87af00
 highlight viraCodeMethod ctermfg=3 guifg=#808000
 highlight viraCodeNumber ctermfg=39 guifg=#808000
 highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold,underline gui=bold,underline
-" highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
+highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline gui=underline
 highlight viraCommentDateAt ctermfg=blue guifg=blue cterm=underline gui=underline
-" highlight viraCommentOlder ctermbg=bg ctermfg=bg guifg=bg guibg=bg cterm=bold gui=bold
-" highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
+highlight viraCommentOlder ctermbg=bg ctermfg=bg guifg=bg guibg=bg cterm=bold gui=bold
+highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 highlight viraDetailsComponent ctermfg=lightblue guifg=lightblue
 highlight viraDetailsDates ctermfg=darkblue guifg=darkblue
 highlight viraDetailsHigh ctermfg=red guifg=red
@@ -188,6 +193,7 @@ highlight viraListForward ctermfg=yellow guifg=yellow cterm=bold gui=bold
 highlight viraListRemoved ctermfg=darkred guifg=darkred cterm=bold gui=bold
 highlight viraPointer ctermfg=yellow guifg=yellow cterm=bold gui=bold
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough
+highlight viraTodos cterm=bold,underline gui=bold,underline
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=underline
 

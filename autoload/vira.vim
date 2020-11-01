@@ -391,8 +391,12 @@ endfunction
 
 function! vira#_filter_all(mode) "{{{2
   " Un/select all items in current menu
+  let type = s:vira_menu_type
+  if type == 'component' || type == 'version'
+    let offset = 1
+  else | let offset = 0 | endif
   let current_pos = getpos('.')
-  silent! execute '1' . ',' . line('$') . 'call vira#_' . a:mode . '()'
+  silent! execute '1' . ',' . (line('$') - offset) . 'call vira#_' . a:mode . '()'
   echo s:vira_highlight
   call setpos('.', current_pos)
 endfunction
@@ -416,23 +420,26 @@ function! vira#_filter_load() " {{{2
 endfunction
 
 function! vira#_getter() "{{{2
+    let line = getline('.')
+    let lineSplit = split(line,' \~ ')
+    let type = s:vira_menu_type
+
     " Return the proper form of the selected data
     if expand('%:t') == 'vira_report'
         return expand('<cWORD>')
-    elseif s:vira_menu_type == 'epics' || s:vira_menu_type=='epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'projects' || s:vira_menu_type == 'set_servers'
+    elseif type == 'epic' || type == 'epics' || type || type == 'issues' || type == 'projects' || type == 'set_servers'
         normal! 0
         return expand('<cWORD>')
-    elseif s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
-        let line = getline('.')
-        if line == 'currentUser' || line == 'Unassigned' || line == 'null' || line == 'None'
-            if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions' || s:vira_menu_type == 'version'
-                return substitute(line, 'currentUser', 'currentUser()','g')
-            elseif s:vira_menu_type == 'assign_issue'
-                if line == 'currentUser' | return substitute(line, 'currentUser', 'currentUser()','g') | endif
-                return '-1'
-            endif
-        else | return  split(getline('.'),' \~ ')[1] | endif
-    else | return getline('.') | endif
+    elseif type == 'versions' || type == 'version'
+      if line == 'None' | return line | endif
+      return lineSplit[1]
+    elseif type == 'assignees' || type == 'reporters'
+      if line == 'Unassigned' | return line | endif
+      return lineSplit[1]
+    elseif type == 'assign_issue'
+      if line == 'Unassigned' | return 'Unassigned' | endif
+      return lineSplit[1]
+    else | return line | endif
 endfunction
 
 function! vira#_select() "{{{2
@@ -449,9 +456,9 @@ function! vira#_select() "{{{2
   else
     call vira#_filter_load()
     if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
-        if s:vira_menu_type == 'epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
-            let s:vira_highlight = '|' . value . '|'
-        else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
+      if s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'epic' || s:vira_menu_type == 'issuetype' || s:vira_menu_type == 'set_status' || s:vira_menu_type == 'priority' || s:vira_menu_type == 'epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
+        let s:vira_highlight = '|' . value . '|'
+      else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
     elseif s:vira_highlight == ''
       let s:vira_highlight = '|' . value . '|'
     endif
@@ -480,11 +487,12 @@ function! vira#_unselect() "{{{2
 endfunction
 
 function! vira#_highlight() "{{{2
-  if s:vira_menu_type == 'epic' || s:vira_menu_type == 'epics' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'versions'
+  let type = s:vira_menu_type
+  if type == 'epic' || type == 'epics' || type == 'issues' || type == 'versions' || type == 'version'
       let end_line = '' | let end_seperator = ''
   else | let end_line = '\n' | let end_seperator = '$' | endif
 
-  if s:vira_menu_type == 'assignees' || s:vira_menu_type == 'reporters' || s:vira_menu_type == 'versions'
+  if type == 'assign_issue' || type == 'assignees' || type == 'reporters' || type == 'versions' || type == 'version'
     let seperator = ''
   else | let seperator = '^' | endif
 
@@ -530,6 +538,10 @@ function! vira#_set() "{{{2
     let value = vira#_getter()
     let variable = s:vira_set_lookup[s:vira_menu_type]
 
+    " TODO: VIRA-239 [201027] - Flip menu selects for nice user highlights
+    " Grab proper user id for `currentUser` lookup
+    silent! let currentUser = split(getline('.'),' \~ ')[0]
+
     " GLOBAL
     if variable[:1] == 'g:'
         execute 'let ' . variable . ' = "' . value . '"'
@@ -546,21 +558,23 @@ function! vira#_set() "{{{2
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(' . s:vira_menu_type . '={"name":"' . value . '"})'
     elseif variable == 'fixVersions' || variable == 'components'
         let value = s:vira_filter
-        if value[:0] == '"' | let value = '{"name":' . substitute(s:vira_filter,'","', '"}, {"name": "', 'g') . '}'
-        elseif value == "None" | let value = '{}'
+        if value == '"None"' | let value = '{}'
+        elseif value[:0] == '"' | let value = '{"name":' . substitute(s:vira_filter,'","', '"}, {"name": "', 'g') . '}'
         else | let value =  '{"name":"' . value . '"}'| endif
         execute 'silent! python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":[' . value . ']})'
     elseif s:vira_menu_type == 'epic'
         if value != "None" | let value = '"' . value . '"' | endif
         let variable = s:vira_epic_field
         execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":' . value . '})'
-    elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . value . '"})'))
+    elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . substitute(value, 'currentUser', currentUser, '') . '"})'))
+        let value = substitute(value, 'currentUser', currentUser, '')
+        let value = substitute(value, 'Unassigned', '-1', '')
         execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
     " FILTER
     else
         if s:vira_filter[:0] == '"'
-            let value = substitute(s:vira_filter,'|',', ','')
+          let value = substitute(s:vira_filter,'|',', ','')
         else | let value = '"' . value . '"' | endif
         execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = ' . value
         if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif

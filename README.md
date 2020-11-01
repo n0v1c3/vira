@@ -158,14 +158,12 @@ The acceptable values for the filter key are:
 - `reporter` - Filter these reporters. Can be a single item or list.
 - `status` - Filter these statuses. Can be a single item or list.
 
-_NOTE:_ `currentUser()` is also connected to the active account and can be used for all user related tasks.
+_NOTE:_ `currentUser` is also connected to the active account and can be used for all user related tasks.
 
 #### New Issues
 
 Similar to the `filter` key, you can define a `newissue` key to set repo-based.
-default configuration for the new-issue fields.
-
-For example:
+default configuration for the new-issue fields, for example:
 
 ```yaml
 vira:
@@ -195,7 +193,7 @@ The acceptable values for filter keys are:
 
 Templates can be defined in the same way that projects are defined. These templates can be referenced for multiple projects, by using the template key.
 Any name can be used for a template, but it is recommended to use the pythonic syntax of `__name__` in order to make a distinction from a project.
-Refer to the yaml example below. Note that the priority in `repo2` will override the `__maintemplate__` priority.
+Refer to the yaml example below, note that the priority in `repo2` will override the `__maintemplate__` priority:
 
 ```yaml
 __maintemplate__:
@@ -214,8 +212,7 @@ repo2:
 
 #### Default Project Template
 
-If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file.
-Refer to the yaml example below.
+If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file. Refer to the yaml example below:
 
 ```yaml
 __default__:
@@ -246,14 +243,12 @@ A list of the important commands, functions and global variables to be used to h
 
 It is possible to _select multiple_ items from all menus, if nothing is selected prior to the item will be selected from the current column.
 
-_OTE:_ `currentUser()` is also connected to the active account and can be used for all user related tasks.
+_NOTE:_ `currentUser` is also connected to the active account and can be used for all user related tasks.
 
 #### New Issues
 
 Similar to the `filter` key, you can define a `newissue` key to set repo-based.
-default configuration for the new-issue fields.
-
-For example:
+default configuration for the new-issue fields, see example:
 
 ```yaml
 vira:
@@ -283,7 +278,7 @@ The acceptable values for filter keys are:
 
 Templates can be defined in the same way that projects are defined. These templates can be referenced for multiple projects, by using the template key.
 Any name can be used for a template, but it is recommended to use the pythonic syntax of `__name__` in order to make a distinction from a project.
-Refer to the yaml example below. Note that the priority in `repo2` will override the `__maintemplate__` priority.
+Refer to the yaml example below, note that the priority in `repo2` will override the `__maintemplate__` priority:
 
 ```yaml
 __maintemplate__:
@@ -302,8 +297,7 @@ repo2:
 
 #### Default Project Template
 
-If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file.
-Refer to the yaml example below.
+If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file. Refer to the yaml example below:
 
 ```yaml
 __default__:

@@ -540,9 +540,10 @@ class ViraAPI():
         vim.command(f'let s:vira_epic_field = "' + epicID + '"')
         description = str(issue.get('description'))
 
-        #  if version != '':  # Prevent no version error for percent
-            #  version += ' | ' + self.version_percent(
-                #  str(issue['project']['key']), version) + '%'
+        # Version percent for single version attacted
+        if len(issue['fixVersions']) == 1 and version != '':
+                version += ' | ' + self.version_percent(
+                    str(issue['project']['key']), version) + '%'
 
         comments = ''
         idx = 0
@@ -707,7 +708,7 @@ class ViraAPI():
         Print users
         '''
 
-        print(str(self.jira.current_user()) + ' ~ currentUser')
+        print(self.get_current_user() + ' ~ currentUser')
         for user in self.users:
             print(user)
         print('Unassigned')
@@ -735,6 +736,16 @@ class ViraAPI():
             self.users.add(user)
 
         return sorted(self.users)
+
+    def get_current_user(self):
+        query = 'reporter = currentUser() or assignee = currentUser()'
+        issues = self.jira.search_issues(
+            query, fields='assignee, reporter', json_result='True', maxResults=-1)
+
+        issue = issues['issues'][0]['fields']
+        return str(issue['assignee'][self.users_type] if type(issue['assignee']
+               ) == dict else issue['reporter'][self.users_type] if type (issue['reporter']
+               ) == dict else 'Unassigned')
 
     def print_versions(self):
         '''
