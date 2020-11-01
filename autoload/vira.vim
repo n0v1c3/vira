@@ -391,8 +391,12 @@ endfunction
 
 function! vira#_filter_all(mode) "{{{2
   " Un/select all items in current menu
+  let type = s:vira_menu_type
+  if type == 'component' || type == 'version'
+    let offset = 1
+  else | let offset = 0 | endif
   let current_pos = getpos('.')
-  silent! execute '1' . ',' . line('$') . 'call vira#_' . a:mode . '()'
+  silent! execute '1' . ',' . (line('$') - offset) . 'call vira#_' . a:mode . '()'
   echo s:vira_highlight
   call setpos('.', current_pos)
 endfunction
@@ -564,6 +568,7 @@ function! vira#_set() "{{{2
         execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":' . value . '})'
     elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . substitute(value, 'currentUser', currentUser, '') . '"})'))
         let value = substitute(value, 'currentUser', currentUser, '')
+        let value = substitute(value, 'Unassigned', '-1', '')
         execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
 
     " FILTER
