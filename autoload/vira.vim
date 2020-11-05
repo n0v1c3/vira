@@ -447,8 +447,12 @@ function! vira#_select() "{{{2
   let value = vira#_getter()
 
   if expand('%:t') == 'vira_report'
-    silent! if execute('python3 Vira.api.jira.search_issues("issue = ' . value . '")') == ''
-      let g:vira_active_issue = value
+      let issueTest = substitute(substitute(value,'(','','g'),')','','g')
+      let issueTest = substitute(substitute(issueTest,'[','','g'),']','','g')
+      let issueTest = substitute(substitute(issueTest,'{','','g'),'}','','g')
+      let issueTest = substitute(issueTest,'│','','g')
+    silent! if execute('python3 Vira.api.jira.search_issues("issue = ' . issueTest . '")') == ''
+      let g:vira_active_issue = issueTest
       call vira#_menu('report')
     else
       call vira#_browse(expand('<cWORD>'))
@@ -473,7 +477,14 @@ function! vira#_unselect() "{{{2
   let value = vira#_getter()
   let s:vira_highlight = substitute(s:vira_highlight,'|'.value.'|','|','g')
   let length = len(s:vira_highlight)
-  if s:vira_highlight[1:2] == '||' || s:vira_highlight == '|' || s:vira_highlight[length-1:] != '|'
+  if expand('%:t') == 'vira_report'
+    silent! undo
+    silent! undo
+    let line = line('.')
+    execute 2
+    let g:vira_active_issue = split(getline('.')[4:],' ')[0]
+    execute line
+  elseif s:vira_highlight[1:2] == '||' || s:vira_highlight == '|' || s:vira_highlight[length-1:] != '|'
     let s:vira_filter_setkey = 0
     silent! call vira#_filter_unload()
     let s:vira_filter = ''
