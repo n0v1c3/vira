@@ -938,7 +938,7 @@ class ViraAPI():
             self.report_lines[x] = 'ViraEditDescription'
 
         offset = 2 if len(issue['comment']['comments']) > 4 else 1
-        comment_line = 24 + description_len + offset
+        comment_line = 25 + description_len + offset
         for comment in issue['comment']['comments']:
             comment_len = comment['body'].count('\n') + 3
             for x in range(comment_line, comment_line + comment_len):
