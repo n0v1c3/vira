@@ -215,15 +215,12 @@ class ViraAPI():
             self.userconfig_filter[filterType]
         ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
-        return str(f"{filterType} in ({selection})"
-                ).replace("'None'", "Null"
-                ).replace("'Unassigned'", "Null"
-                ).replace("'currentUser'", "currentUser()"
-                ).replace("'currentUser()'", "currentUser()"
-                ).replace("'currentuser'", "currentUser()"
-                ).replace("'currentuser()'", "currentUser()"
-                ).replace("'null'", "Null"
-                ).replace(f"text in ({selection})", f"text ~ {selection}")
+        return str(f"{filterType} in ({selection})").replace("'None'", "Null").replace(
+            "'Unassigned'", "Null").replace("'currentUser'", "currentUser()").replace(
+                "'currentUser()'",
+                "currentUser()").replace("'currentuser'", "currentUser()").replace(
+                    "'currentuser()'", "currentUser()").replace("'null'", "Null").replace(
+                        f"text in ({selection})", f"text ~ {selection}")
 
     def get_assign_issue(self):
         '''
@@ -281,9 +278,9 @@ class ViraAPI():
         '''
         Get my issues with JQL
         '''
-        hold = self.userconfig_filter
+        hold = dict(self.userconfig_filter)
         project = self.userconfig_filter['project']
-        self.userconfig_filter = self.userconfig_filter_default
+        self.reset_filters()
         self.userconfig_filter["issuetype"] = "Epic"
         self.userconfig_filter["project"] = project
         self.get_issues()
@@ -430,7 +427,7 @@ class ViraAPI():
             self.prompt_text = description + self.prompt_text_commented
             return self.prompt_text
 
-        self.prompt_text_commented = f'''
+        self.prompt_text_commented = '''
 # ---------------------------------
 # Please enter text above this line
 # An empty message will abort the operation.
@@ -537,21 +534,22 @@ class ViraAPI():
         component = ', '.join([c['name'] for c in issue['components']])
         version = ', '.join([v['name'] for v in issue['fixVersions']])
         epics = str(issue.get(epicID))
-        vim.command(f'let s:vira_epic_field = "' + epicID + '"')
+        vim.command(f'let s:vira_epic_field = "{epicID}"')
         description = str(issue.get('description'))
 
         # Version percent for single version attacted
         if len(issue['fixVersions']) == 1 and version != '':
-                version += ' | ' + self.version_percent(
-                    str(issue['project']['key']), version) + '%'
+            version += ' | ' + self.version_percent(
+                str(issue['project']['key']), version) + '%'
 
         comments = ''
         idx = 0
         for idx, comment in enumerate((issue['comment']['comments'])):
             comments += ''.join(
                 [
-                    comment['author']['displayName'] + ' @ ' + self.format_date(comment['updated']) +
-                    ' {{' + '{2\n' + comment['body'] + '\n}}}\n'
+                    comment['author']['displayName'] + ' @ ' +
+                    self.format_date(comment['updated']) + ' {{' + '{2\n' +
+                    comment['body'] + '\n}}}\n'
                 ])
         old_count = idx - 3
         old_comment = 'Comment' if old_count == 1 else 'Comments'
@@ -572,7 +570,8 @@ class ViraAPI():
 
         active_issue_spacing = int((16 + len(dashlength)) / 2 - len(active_issue) / 2)
         active_issue_spaces = ' '.join([char * (active_issue_spacing) for char in ' '])
-        active_issue_space = ' '.join([char * ((len(active_issue) + len(dashlength)) % 2) for char in ' '])
+        active_issue_space = ' '.join(
+            [char * ((len(active_issue) + len(dashlength)) % 2) for char in ' '])
 
         created_spaces = ' '.join(
             [char * (len(dashlength) - len(created)) for char in ' '])
@@ -593,8 +592,7 @@ class ViraAPI():
             [char * (len(dashlength) - len(assignee)) for char in ' '])
         reporter_spaces = ''.join(
             [char * (len(dashlength) - len(reporter)) for char in ' '])
-        epics_spaces = ''.join(
-            [char * (len(dashlength) - len(epics)) for char in ' '])
+        epics_spaces = ''.join([char * (len(dashlength) - len(epics)) for char in ' '])
 
         # Create report template and fill with data
         report = '''┌────────────────{dashlength}─┐
@@ -743,9 +741,10 @@ class ViraAPI():
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
 
         issue = issues['issues'][0]['fields']
-        return str(issue['assignee'][self.users_type] if type(issue['assignee']
-               ) == dict else issue['reporter'][self.users_type] if type (issue['reporter']
-               ) == dict else 'Unassigned')
+        return str(
+            issue['assignee'][self.users_type] if type(issue['assignee']) ==
+            dict else issue['reporter'][self.users_type] if type(issue['reporter']) ==
+            dict else 'Unassigned')
 
     def print_versions(self):
         '''
