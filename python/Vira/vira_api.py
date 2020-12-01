@@ -876,6 +876,11 @@ class ViraAPI():
             if value:
                 self.userconfig_newissue[key] = value
 
+        # Set user-defined issue sort options
+        sort_order = self.vira_projects.get(repo, {}).get('issuesort', 'updated DESC')
+        self.userconfig_issuesort = ', '.join(sort_order) if type(
+            sort_order) == list else sort_order
+
     def query_issues(self):
         '''
         Query issues based on current filters
@@ -887,7 +892,7 @@ class ViraAPI():
             if filter_str:
                 q.append(filter_str)
 
-        query = ' AND '.join(q) + ' ORDER BY updated DESC'
+        query = ' AND '.join(q) + ' ORDER BY ' + self.userconfig_issuesort
         issues = self.jira.search_issues(
             query,
             fields='summary,comment,status,statusCategory,issuetype,assignee',

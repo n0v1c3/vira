@@ -189,6 +189,31 @@ The acceptable values for filter keys are:
 - `priority` - Define priority.
 - `status` - Define status. Vira will transition issue to this status.
 
+#### Issue sort order
+
+Optionally, it is possible to define a custom sort order for the issues displayed in `vira_menu`. This sort order is project based - meaning you can define different sort orders for your projects.
+
+Define the sort order using the `issuesort` key as follows:
+
+```yaml
+vira:
+  server: https://n0v1c3.atlassian.net
+  issuesort: status
+OtherProject:
+  server: https://jira.career.com
+  filter:
+    assignee: travis
+    status: In-Progress
+  issuesort:
+    - status ASC
+    - updated DESC
+```
+
+The value of `issuesort` can either be a string or a list.
+If no `issuesort` key is provided, the default sort order used is `updated DESC`.
+
+Note that it is possible to define a custom status order in Jira-web in Administration > Issues > Statuses. This can be used to achieve a similar functionality to kanban boards.
+
 #### Project Templates
 
 Templates can be defined in the same way that projects are defined. These templates can be referenced for multiple projects, by using the template key.
