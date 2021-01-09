@@ -280,7 +280,7 @@ function! vira#_menu(type) abort " {{{2
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
 
   " Clean-up existing report buffer
-  execute winnr . ' wincmd "' . execute("normal ggVGd") . '"'
+  execute winnr . ' wincmd "' . execute("normal! ggVGd") . '"'
 
   " Write report output into buffer
   if type == 'menu'
@@ -294,9 +294,9 @@ function! vira#_menu(type) abort " {{{2
   " Clean-up extra output and remove blank lines
   if a:type != 'text'
       silent! execute '%s/\^M//g' | call histdel("search", -1)
-      silent! normal! gg2dd
+      silent! 1,2d x
       silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
-      silent! normal zCGVzOgg
+      silent! normal! zCGVzOgg
   endif
 
   " Ensure wrap and linebreak are enabled
@@ -365,7 +365,7 @@ function! vira#_todo() "{{{2
 
     " Vim comment
     let current_pos = getpos('.')
-    execute "normal O" . comment_header . comment . "\<esc>"
+    execute "normal! O" . comment_header . comment . "\<esc>"
     call setpos('.', current_pos)
     call NERDComment(0, "Toggle")
   endif
@@ -533,7 +533,7 @@ endfunction
 
 function! vira#_set() "{{{2
     " This function is used to set vim and python variables
-    execute 'normal 0'
+    execute 'normal! 0'
 
     let value = vira#_getter()
     let variable = s:vira_set_lookup[s:vira_menu_type]
