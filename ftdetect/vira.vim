@@ -19,9 +19,8 @@ augroup Vira
   autocmd Filetype vira_menu nnoremap <silent> <buffer> <cr> 0:call vira#_set()<cr>:q!<cr>:call vira#_refresh()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> S :set hlsearch<cr>:call vira#_filter_all('select')<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> U :set hlsearch<cr>:call vira#_filter_all('unselect')<cr>
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> d :set hlsearch<cr>
-  autocmd Filetype vira_menu nnoremap <silent> <buffer> D :call vira#_unset()<cr>:q!<cr>:call vira#_refresh()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> H :call vira#_toggle_hide()<cr>
+  autocmd Filetype vira_menu nnoremap <silent> <buffer> D :call vira#_unset()<cr>:q!<cr>:call vira#_refresh()<cr>
   autocmd Filetype vira_menu nnoremap <silent> <buffer> j :set syntax=vira_menu<cr>gj
   autocmd Filetype vira_menu nnoremap <silent> <buffer> k :set syntax=vira_menu<cr>gk
   autocmd Filetype vira_menu setlocal norelativenumber
@@ -35,9 +34,9 @@ augroup Vira
   autocmd Filetype vira_report setlocal norelativenumber
   autocmd Filetype vira_report nnoremap <silent> <buffer> <cr> :call vira#_edit_report()<cr>
   " autocmd Filetype vira_report nnoremap <silent> <buffer> j :set syntax=vira_report<cr>gj
-  autocmd Filetype vira_report nnoremap <silent> <buffer> j gj
   " autocmd Filetype vira_report nnoremap <silent> <buffer> k :set syntax=vira_report<cr>gk
-  autocmd Filetype vira_report nnoremap <silent> <buffer> k gk
+  autocmd Filetype vira_report noremap <silent> <buffer> j gj
+  autocmd Filetype vira_report noremap <silent> <buffer> k gk
 
   " Common
   autocmd Filetype vira_menu,vira_report cnoremap <silent> <buffer> q!<cr> :q!<cr>:call vira#_resize()<cr>
@@ -47,4 +46,24 @@ augroup Vira
   autocmd Filetype vira_menu,vira_report nnoremap <silent> <buffer> u :set hlsearch<cr>:call vira#_unselect()<cr>
   autocmd Filetype vira_menu,vira_report setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   autocmd BufLeave vira_menu,vira_report call vira#_filter_unload()
+
+  " Unmapped
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> A <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> C <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> I <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> J <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> O <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> P <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> R <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> X <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> a <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> c <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> d <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> i <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> o <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> p <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> r <nop>
+  autocmd Filetype vira_menu,vira_report noremap <silent> <buffer> x <nop>
+  autocmd Filetype vira_report noremap <silent> <buffer> D <nop>
+  autocmd Filetype vira_report noremap <silent> <buffer> S <nop>
 augroup END
