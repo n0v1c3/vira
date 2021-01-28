@@ -7,8 +7,9 @@ These functions don't reference the jira API
 # dev: let b:startfile = "%"
 # dev: let b:startargs = ""
 
-import json
+import copy
 import datetime
+import json
 import subprocess
 
 def load_config(file_path) -> dict:
@@ -31,11 +32,11 @@ def load_templates(config) -> dict:
     '''
 
     # Create copy of original dictionary
-    template_config = dict(config)
+    template_config = copy.deepcopy(config)
 
     for key, value in config.items():
         if value.get('template'):
-            template = dict(config[value.get('template')])
+            template = copy.deepcopy(config[value.get('template')])
             try:
                 template['filter'].update(template_config[key]['filter'])
                 template['newissue'].update(template_config[key]['newissue'])
