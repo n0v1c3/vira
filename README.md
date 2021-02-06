@@ -31,7 +31,8 @@ Plug 'n0v1c3/vira', { 'do': './install.sh', 'branch': 'dev' }
 ### Jira servers (required)
 
 The configuration for your jira server(s) needs to be done in a json or yaml file.
-The default file file-type is json, because it comes with the python standard library. The default file location is `~/.config/vira/vira_servers.json`.
+The default file-type is json, because it comes with the python standard library.
+The default file location is `~/.config/vira/vira_servers.json`.
 
 The following is an example of a typical `vira_servers.json` configuration:
 
@@ -77,15 +78,15 @@ If **no** configuration is found you will be asked for a manual URL, username, a
 
 [Atlassian Cloud Jira Key](https://id.atlassian.com/manage-profile/security/api-tokens)
 may be required if you are using the Atlassian Cloud service.
-Once an `API token` has been created that key can be used for `password`.
+Create an `API token` and use set it the value of the `password` in your `vira_servers.json` file.
 
 ### Quick Start
 
 - Configure `~/.config/vira/vira_servers.json` as per [Jira servers](#jira-servers-required)
-- Run `:ViraServers` and press `<cr> to select server
-- Run `:ViraIssues` and press `<cr> to select issue
+- Run `:ViraServers` and press `<cr>` to select server
+- Run `:ViraIssues` and press `<cr>` to select issue
 - Run `:ViraReport` to view report
-- Press `<cr> to edit any field
+- Press `<cr>` to edit any field
 - Rejoice because you have one less reason to leave vim
 
 ### Jira projects
@@ -97,9 +98,9 @@ When you're in a git repo, vira will auto-load your pre-defined settings by matc
 
 For each jira project, set:
 
-- `server` - The jira server to connect to (using authentication details from vira_servers.json/yaml).
+- `server` - The jira server to connect to (using authentication details from `vira_servers.json/yaml`).
 
-The following is an example of a typical `vira_project.json` configuration:
+The following is an example of a typical `vira_projects.json` configuration:
 
 ```json
 {
@@ -548,9 +549,11 @@ to use as your `password`.
 
 ### Vim Plugins
 
-Plugins may be used and supported. This list will build as required from other requests. Support will be focused on providing functions that provide information along with the related Jira commands for easy usage.
+Plugins may be used and supported. This list will build as required from other requests.
+Support will be focused on providing functions that provide information along with the related Jira commands for easy usage.
 
-Below are a few common examples. Please recommend any other tools that could use some good features to make your development easier.
+Below are a few common examples.
+Please recommend any other tools that could use some good features to make your development easier.
 
 #### vim-fugitive
 
