@@ -180,7 +180,7 @@ class ViraAPI():
 
             # User list update
             self.users = self.get_users()
-            self.versions = self.get_versions()
+            #  self.versions = self.get_versions()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
