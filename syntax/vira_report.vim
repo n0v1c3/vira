@@ -168,12 +168,12 @@ highlight viraDetailsHighest ctermfg=darkred guifg=darkred
 highlight viraDetailsLow ctermfg=darkgreen guifg=darkgreen
 highlight viraDetailsLowest ctermfg=green guifg=green
 highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
-highlight viraDetailsStatusBacklog ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
+highlight viraDetailsStatusBacklog ctermbg=237 ctermfg=white guibg=darkgrey guifg=white
 highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusInProgress ctermbg=darkblue ctermfg=white guibg=darkblue guifg=white
-highlight viraDetailsStatusSelected ctermbg=grey ctermfg=black guibg=grey guifg=black
-highlight viraDetailsStatusTodo ctermbg=grey ctermfg=black guibg=grey guifg=black
+highlight viraDetailsStatusSelected ctermbg=237 ctermfg=black guibg=grey guifg=black
+highlight viraDetailsStatusTodo ctermbg=237 ctermfg=black guibg=grey guifg=black
 highlight viraDetailsStoryPoints ctermfg=darkyellow guifg=lightblue
 highlight viraDetailsTypeAssignee ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeBug ctermfg=red guifg=red
