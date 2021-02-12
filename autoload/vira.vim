@@ -60,17 +60,20 @@ augroup END
 function! vira#_version_percent() abort
     " Asycn version percent updates
     silent! execute 'python3 Vira.api.version_percent('s:projects[s:project], s:versions[s:version]])'
-    " echo s:version
 
-    silent! let s:version = s:versions[len(s:versions) - 1]
-    if s:version == ''
-        silent! let s:project = s:projects[len(s:projects) - 1]
+    silent! let s:versions = s:versions[:1]
+    silent! let s:version = s:versions[:0]
+    if string(s:version) == ''
+        silent! let s:projects = s:projects[:1]
+        silent! let s:project = s:projects[:0]
         if s:project == ''
             silent! execute 'python3 Vira.api.get_versions()'
         endif
     endif
-    call timer_start(5000, { -> execute('call vira#_version_percent(),' + '') })
+
+    call timer_start(1000, { -> execute('call vira#_version_percent()', '') })
 endfunction
+let s:message = 1
 call vira#_version_percent()
 
 function! vira#_browse(url) "{{{2

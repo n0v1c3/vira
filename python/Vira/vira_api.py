@@ -752,22 +752,18 @@ class ViraAPI():
         '''
 
         self.get_versions()
-        #  vim.eval(f's:versions')
         versions = vim.eval('s:versions')
-        versions = list(versions)
-        #  versions = str(versions.split('[]', 1))
-        #  versions = list(versions.split('<>', 1))
-        #  versions = versions.split('<>', 1)
-        #  versions = versions.split('\'', 1).pop(1)
+        versions = str(versions).split('<')
+        versions = str(versions).split('>')
 
         wordslength = sorted(vim.eval('s:versions'), key=len)[-1]
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
         for version in versions:
-
-            #  version = version.split('\'\'', 1)
-            print(''.join(version))
-            #  print(version)
+            version = version.split(',')
+            for v in range(len(version)):
+                if (v % 3 == 2):
+                    print(version[v])
             #  print(version.split("'", 1)[0]) #.split("'")[0])
             #  print(
                 #  version.split('|')[0] +
@@ -839,7 +835,7 @@ class ViraAPI():
         # Loop through each project and all versions within
         #  vim.command(f'let s:projects = [' + ','.join(projects) + ']')
         for p in projects:
-            vim.command(f'let s:versions = "[' + str(self.jira.project_versions(p)) + ']"')
+            vim.command('let s:versions = ["' + str(self.jira.project_versions(p)) + '"]')
 
             #  for v in reversed(self.jira.project_versions(p)):
                 #  vim.command(f'call vira#_version_percent()')
