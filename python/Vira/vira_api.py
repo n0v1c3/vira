@@ -752,14 +752,27 @@ class ViraAPI():
         '''
 
         self.get_versions()
-        wordslength = sorted(self.versions, key=len)[-1]
+        #  vim.eval(f's:versions')
+        versions = vim.eval('s:versions')
+        versions = list(versions)
+        #  versions = str(versions.split('[]', 1))
+        #  versions = list(versions.split('<>', 1))
+        #  versions = versions.split('<>', 1)
+        #  versions = versions.split('\'', 1).pop(1)
+
+        wordslength = sorted(vim.eval('s:versions'), key=len)[-1]
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
-        for version in self.versions:
-            print(
-                version.split('|')[0] +
-                ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
-                '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
+        for version in versions:
+
+            #  version = version.split('\'\'', 1)
+            print(''.join(version))
+            #  print(version)
+            #  print(version.split("'", 1)[0]) #.split("'")[0])
+            #  print(
+                #  version.split('|')[0] +
+                #  ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
+                #  '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
         print('None')
 
     def version_percent(self, project, fixVersion):
@@ -821,11 +834,16 @@ class ViraAPI():
         else:
             for p in self.userconfig_filter['project']:
                 projects.add(p)
+                vim.command(f'call add(s:projects, p)')
 
         # Loop through each project and all versions within
+        #  vim.command(f'let s:projects = [' + ','.join(projects) + ']')
         for p in projects:
-            for v in reversed(self.jira.project_versions(p)):
-                self.version_percent(p, v)  # Add and update the version list
+            vim.command(f'let s:versions = "[' + str(self.jira.project_versions(p)) + ']"')
+
+            #  for v in reversed(self.jira.project_versions(p)):
+                #  vim.command(f'call vira#_version_percent()')
+                #  self.version_percent(p, v)  # Add and update the version list
         return self.versions  # Return the version list
 
     def load_project_config(self, repo):

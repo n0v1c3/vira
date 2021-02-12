@@ -20,6 +20,10 @@ let s:vira_filter = ''
 let s:vira_filter_hold = @/
 let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
+let s:projects = []
+let s:project = ''
+let s:versions = []
+let s:version = ''
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -52,6 +56,23 @@ augroup ViraPrompt
 augroup END
 
 " Functions {{{1
+
+function! vira#_version_percent() abort
+    " Asycn version percent updates
+    silent! execute 'python3 Vira.api.version_percent('s:projects[s:project], s:versions[s:version]])'
+    " echo s:version
+
+    silent! let s:version = s:versions[len(s:versions) - 1]
+    if s:version == ''
+        silent! let s:project = s:projects[len(s:projects) - 1]
+        if s:project == ''
+            silent! execute 'python3 Vira.api.get_versions()'
+        endif
+    endif
+    call timer_start(5000, { -> execute('call vira#_version_percent(),' + '') })
+endfunction
+call vira#_version_percent()
+
 function! vira#_browse(url) "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
@@ -199,6 +220,7 @@ function! vira#_load_project_config(...) " {{{2
 
   " Load project configuration for the current git repo
   call vira#_reset_filters()
+  silent! call vira#_version_percent(s:projects, s:versions)
   exe 'python3 Vira.api.load_project_config("'.vira_repo.'")'
 
   " Return to current directory
@@ -496,7 +518,7 @@ function! vira#_highlight() "{{{2
     let seperator = ''
   else | let seperator = '^' | endif
 
-  echo s:vira_highlight
+  " echo s:vira_highlight
 
   let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
   let s:vira_highlight = substitute(s:vira_highlight,"\\\.","\\\\\\.",'g')
