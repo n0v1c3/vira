@@ -762,8 +762,11 @@ class ViraAPI():
         for version in versions:
             version = version.split(',')
             for v in range(len(version)):
-                if (v % 3 == 2):
-                    print(version[v])
+                if 'JIRA' in version[v]:
+                    version = version[v].split("'", 1)[1].split("\\", 1)[-1].split("^\'", 1)[0]
+                    version = version.replace("\'", '').replace('\\', '')
+                    print(version)
+                #  if (v == 1 or v % 2 == 0):
             #  print(version.split("'", 1)[0]) #.split("'")[0])
             #  print(
                 #  version.split('|')[0] +
