@@ -756,7 +756,7 @@ class ViraAPI():
         versions = str(versions).split('<')
         versions = str(versions).split('>')
 
-        wordslength = sorted(vim.eval('s:versions'), key=len)[-1]
+        wordslength = sorted(versions, key=len)[-1]
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
         for version in versions:
@@ -765,7 +765,8 @@ class ViraAPI():
                 if 'JIRA' in version[v]:
                     version = version[v].split("'", 1)[1].split("\\", 1)[-1].split("^\'", 1)[0]
                     version = version.replace("\'", '').replace('\\', '')
-                    print(version)
+                    print(vim.eval('s:project') + ' | ', '')
+                    #  print(self.version_percent(str(vim.eval('s:project')), version))
                 #  if (v == 1 or v % 2 == 0):
             #  print(version.split("'", 1)[0]) #.split("'")[0])
             #  print(
@@ -775,44 +776,48 @@ class ViraAPI():
         print('None')
 
     def version_percent(self, project, fixVersion):
-        query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(
-            project) + '"'
-        issues = self.jira.search_issues(
-            query, fields='fixVersion', json_result='True', maxResults=1)
+        if str(project) != '':
+            query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(
+                project) + '"'
+            issues = self.jira.search_issues(
+                query, fields='fixVersion', json_result='True', maxResults=1)
 
-        try:
-            issue = issues['issues'][0]['fields']['fixVersions'][0]
-            idx = issue['id']
-
-            total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
-            pending = self.jira.version_count_unresolved_issues(idx)
-            fixed = total - pending
-            percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
-            space = ''.join([char * (5 - len(percent)) for char in ' '])
-
-            name = fixVersion
             try:
-                description = issue['description']
+                issue = issues['issues'][0]['fields']['fixVersions'][0]
+                idx = issue['id']
+
+                total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
+                pending = self.jira.version_count_unresolved_issues(idx)
+                fixed = total - pending
+                percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
+                space = ''.join([char * (5 - len(percent)) for char in ' '])
+
+                name = fixVersion
+                try:
+                    description = issue['description']
+                except:
+                    description = 'None'
+                    pass
             except:
-                description = 'None'
+                total = 0
+                pending = 0
+                fixed = total - pending
+                percent = "0"
+                space = ''.join([char * (5 - len(percent)) for char in ' '])
+                name = fixVersion
+                description = ''
                 pass
-        except:
-            total = 0
-            pending = 0
-            fixed = total - pending
-            percent = "0"
-            space = ''.join([char * (5 - len(percent)) for char in ' '])
-            name = fixVersion
-            description = ''
-            pass
 
-        version = str(
-            str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
-            space + '|' + str(percent) + '%')
+            version = str(
+                str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
+                space + '|' + str(percent) + '%')
 
-        self.versions_hide = vim.eval('g:vira_version_hide')
-        if fixed != total or total == 0 or not int(self.versions_hide) == 1:
-            self.versions.add(str(project) + ' ~ ' + version)
+            self.versions_hide = vim.eval('g:vira_version_hide')
+            if fixed != total or total == 0 or not int(self.versions_hide) == 1:
+                self.versions.add(str(project) + ' ~ ' + version)
+
+        else:
+            percent = 2
 
         return percent
 
@@ -824,21 +829,27 @@ class ViraAPI():
         # Reset version list
         self.versions = set()
 
+        #  projects = vim.eval('s:projects')
+
         # Project filter for version list
-        projects = set()
-        if self.userconfig_filter['project'] == '':
-            projects = self.jira.projects()
-        elif isinstance(self.userconfig_filter['project'], str):
-            projects.add(self.userconfig_filter['project'])
+        projects = vim.eval('s:projects')
+        if projects == [] or projects == '':
+            projects = list(self.jira.projects())
+        elif isinstance(projects, str):
+            projects = list(projects)
         else:
-            for p in self.userconfig_filter['project']:
-                projects.add(p)
-                vim.command(f'call add(s:projects, p)')
+            projects = list(projects)
+
+            #  for p in projects:
+                #  vim.command('call add(s:projects, p)')
 
         # Loop through each project and all versions within
         #  vim.command(f'let s:projects = [' + ','.join(projects) + ']')
+        vim.command('let s:projects = [\"' + str(projects) + '\"]')
         for p in projects:
-            vim.command('let s:versions = ["' + str(self.jira.project_versions(p)) + '"]')
+            print(p)
+            vim.command('let s:versions = [\"' + str(self.jira.project_versions(p)) + '\"]')
+            print(vim.eval('s:versions'))
 
             #  for v in reversed(self.jira.project_versions(p)):
                 #  vim.command(f'call vira#_version_percent()')
