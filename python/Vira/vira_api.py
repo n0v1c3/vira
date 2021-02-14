@@ -58,6 +58,7 @@ class ViraAPI():
 
         self.users = set()
         self.versions = set()
+        self.servers = set()
         self.users_type = ''
 
         self.versions_hide(True)
@@ -180,8 +181,8 @@ class ViraAPI():
 
             # User list update
             self.users = self.get_users()
-            #  self.projects = self.get_projects()
-            #  self.versions = self.get_versions()
+            self.get_projects()
+            #  self.get_versions()
             vim.command("call vira#_async()")
 
             vim.command('echo "Connection to jira server was successful"')
@@ -397,12 +398,15 @@ class ViraAPI():
         #  projects = str(projects).split('<')
         #  projects = str(projects).split('>')
         #  vim.command('s:projects = ' + str(self.jira.projects()). '')
-        projects = []
+        #  projects = []
+        self.projects = []
         for project in self.jira.projects():
-            projects.append(str(project))
-        vim.command('let s:projects = ' + str(projects))
-        vim.command('let s:project = ' + str(projects[:1]))
-        return projects
+            self.projects.append(str(project))
+        vim.command('let s:projects = ' + str(self.projects))
+        #  vim.command('let s:project = ' + str(projects[0]))
+            #  projectDesc = self.jira.createmeta(
+                #  projectKeys=project, expand='projects')['projects'][0]
+        return self.projects
             #  projectDesc = self.jira.createmeta(
                 #  projectKeys=project, expand='projects')['projects'][0]
             #  print(str(project) + ' ~ ' + projectDesc['name'])
@@ -841,7 +845,7 @@ class ViraAPI():
 
             self.versions_hide = vim.eval('g:vira_version_hide')
             if fixed != total or total == 0 or not int(self.versions_hide) == 1:
-                self.versions.add(str(project) + ' ~ ' + version)
+                self.versions.add(str(project) + ' ~ ' + str(version))
 
         else:
             percent = 2
@@ -855,20 +859,33 @@ class ViraAPI():
 
         # Reset version list
         #  TODO: VIRA-247 [210213] - Single version at a time here
-        project = str(vim.eval('s:project'))
-        vim.command('let s:versions = ' + str(self.jira.project_versions(project)))
+        #  project = vim.eval('s:project')[1:1]
+        #  vim.command('let s:versions = [\'' + str(self.jira.project_versions("VIRA")) + '\']')
         #  version = vim.eval('s:version')
         #  self.versions.remove(version)
         #  version = self.version_percent(project, version)
         #  self.version_percent(project, version)
-        vim.command('let s:version = ' + version + '')
+        #  vim.command('let s:version = ' + version + '')
 
-        return self.versions  # Return the version list
+        # Project filter for version list
+        projects = vim.eval('s:projects')
+        versions = vim.eval('s:versions')
 
-    def get_versions_percent(self):
-        project = vim.eval('s:project')
-        version = vim.eval('s:version')
-        #  self.version_percent([project], [version])
+        # Loop through each project and all versions within
+        #  vim.command(f'let s:projects = [' + ','.join(projects) + ']')
+        #  print(projects)
+        vim.command('let s:projects = "' + str(projects)[1:1] + '"')
+        for p in projects:
+            #  print(p)
+            for v in self.jira.project_versions(p):
+                print(v)
+                vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
+            #  print(vim.eval('s:versions'))
+
+            #  for v in reversed(self.jira.project_versions(p)):
+                #  vim.command(f'call vira#_version_percent()')
+                #  self.version_percent(p, v)  # Add and update the version list
+        #  return self.versions  # Return the version list
 
     def load_project_config(self, repo):
         '''

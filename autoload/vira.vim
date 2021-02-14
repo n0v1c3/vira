@@ -8,6 +8,8 @@
 let s:vira_version = '0.4.1'
 let s:vira_connected = 0
 
+let s:vira_async_timer = 50
+
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
 let s:vira_end_time = 0
@@ -21,9 +23,7 @@ let s:vira_filter_hold = @/
 let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
 let s:projects = []
-let s:project = ''
 let s:versions = []
-let s:version = ''
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -59,23 +59,25 @@ augroup END
 
 function! vira#_async() abort
     " Asycn version percent updates
-    silent! execute 'python3 Vira.api.version_percent('s:projects[s:project], s:versions[s:version]])'
-    echo s:project
-
-    silent! let s:versions = s:versions[:1]
-    silent! let s:version = s:versions[:0]
-    if string(s:versions) == ''
-        silent! let s:projects = s:projects[:1]
-        silent! let s:project = s:projects[:0]
-        if string(s:projects) == ''
-            silent! execute('python3 Vira.api.get_projects()')
+    try
+        if string(s:versions) == '' || s:versions == []
+            let s:projects = s:projects[1:]
+        echo s:versions[0]
+            if string(s:projects) == '' || s:projects == []
+                execute('python3 Vira.api.get_projects()')
+            endif
+            execute('python3 Vira.api.get_versions()')
         endif
-        silent! execute('python3 Vira.api.get_version()')
-    endif
 
-    call timer_start(1000, { -> execute('call vira#_async()', '') })
+        silent! execute 'python3 Vira.api.print_versions()'
+        silent! execute 'python3 Vira.api.version_percent('s:projects[0], s:versions[0]])'
+        let s:versions = s:versions[1:]
+        echo s:versions[0]
+    catch
+        " call timer_start(s:vira_async_sleep, { -> execute('call vira#_async()', '') })
+    endtry
+    call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
 endfunction
-" call vira#_async()
 
 function! vira#_browse(url) "{{{2
   " Confirm an issue has been selected
