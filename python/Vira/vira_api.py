@@ -180,7 +180,9 @@ class ViraAPI():
 
             # User list update
             self.users = self.get_users()
+            #  self.projects = self.get_projects()
             #  self.versions = self.get_versions()
+            vim.command("call vira#_async()")
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -371,15 +373,39 @@ class ViraAPI():
         for priority in self.jira.priorities():
             print(priority)
 
+    def print_projects(self):
+        '''
+        Build a vim pop-up menu for a list of projects
+        '''
+
+        for project in self.get_projects():
+            projectDesc = self.jira.createmeta(
+                projectKeys=project, expand='projects')['projects'][0]
+            print(str(project) + ' ~ ' + projectDesc['name'])
+        #  print(self.jira.projects())
+        #  vim.command('s:projects = [' + self.jira.projects() + ']')
+
     def get_projects(self):
         '''
         Build a vim pop-up menu for a list of projects
         '''
 
+        # Project filter for version list
+        #  projects = list(self.jira.projects())
+        #  projects = vim.eval('s:projects')
+        #  if projects == '':
+        #  projects = str(projects).split('<')
+        #  projects = str(projects).split('>')
+        #  vim.command('s:projects = ' + str(self.jira.projects()). '')
+        projects = []
         for project in self.jira.projects():
-            projectDesc = self.jira.createmeta(
-                projectKeys=project, expand='projects')['projects'][0]
-            print(str(project) + ' ~ ' + projectDesc['name'])
+            projects.append(str(project))
+        vim.command('let s:projects = ' + str(projects))
+        vim.command('let s:project = ' + str(projects[:1]))
+        return projects
+            #  projectDesc = self.jira.createmeta(
+                #  projectKeys=project, expand='projects')['projects'][0]
+            #  print(str(project) + ' ~ ' + projectDesc['name'])
 
     def get_priority(self):
         '''
@@ -776,9 +802,10 @@ class ViraAPI():
         print('None')
 
     def version_percent(self, project, fixVersion):
-        if str(project) != '':
-            query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(
-                project) + '"'
+        project = str(project)
+        fixVersion = str(fixVersion)
+        if str(project) != '[]' and str(fixVersion) != '[]' and str(fixVersion) != '':
+            query = 'fixVersion = ' + fixVersion + ' AND project = "' + project + '"'
             issues = self.jira.search_issues(
                 query, fields='fixVersion', json_result='True', maxResults=1)
 
@@ -827,34 +854,21 @@ class ViraAPI():
         '''
 
         # Reset version list
-        self.versions = set()
+        #  TODO: VIRA-247 [210213] - Single version at a time here
+        project = str(vim.eval('s:project'))
+        vim.command('let s:versions = ' + str(self.jira.project_versions(project)))
+        #  version = vim.eval('s:version')
+        #  self.versions.remove(version)
+        #  version = self.version_percent(project, version)
+        #  self.version_percent(project, version)
+        vim.command('let s:version = ' + version + '')
 
-        #  projects = vim.eval('s:projects')
-
-        # Project filter for version list
-        projects = vim.eval('s:projects')
-        if projects == [] or projects == '':
-            projects = list(self.jira.projects())
-        elif isinstance(projects, str):
-            projects = list(projects)
-        else:
-            projects = list(projects)
-
-            #  for p in projects:
-                #  vim.command('call add(s:projects, p)')
-
-        # Loop through each project and all versions within
-        #  vim.command(f'let s:projects = [' + ','.join(projects) + ']')
-        vim.command('let s:projects = [\"' + str(projects) + '\"]')
-        for p in projects:
-            print(p)
-            vim.command('let s:versions = [\"' + str(self.jira.project_versions(p)) + '\"]')
-            print(vim.eval('s:versions'))
-
-            #  for v in reversed(self.jira.project_versions(p)):
-                #  vim.command(f'call vira#_version_percent()')
-                #  self.version_percent(p, v)  # Add and update the version list
         return self.versions  # Return the version list
+
+    def get_versions_percent(self):
+        project = vim.eval('s:project')
+        version = vim.eval('s:version')
+        #  self.version_percent([project], [version])
 
     def load_project_config(self, repo):
         '''

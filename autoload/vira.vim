@@ -57,24 +57,25 @@ augroup END
 
 " Functions {{{1
 
-function! vira#_version_percent() abort
+function! vira#_async() abort
     " Asycn version percent updates
     silent! execute 'python3 Vira.api.version_percent('s:projects[s:project], s:versions[s:version]])'
-    echo s:version
+    echo s:project
 
     silent! let s:versions = s:versions[:1]
     silent! let s:version = s:versions[:0]
-    if string(s:version) == ''
+    if string(s:versions) == ''
         silent! let s:projects = s:projects[:1]
         silent! let s:project = s:projects[:0]
-        if string(s:project) == ''
-            silent! execute('python3 Vira.api.get_versions()')
+        if string(s:projects) == ''
+            silent! execute('python3 Vira.api.get_projects()')
         endif
+        silent! execute('python3 Vira.api.get_version()')
     endif
 
-    call timer_start(1000, { -> execute('call vira#_version_percent()', '') })
+    call timer_start(1000, { -> execute('call vira#_async()', '') })
 endfunction
-call vira#_version_percent()
+" call vira#_async()
 
 function! vira#_browse(url) "{{{2
   " Confirm an issue has been selected
@@ -605,7 +606,7 @@ function! vira#_set() "{{{2
         if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif
     endif
 
-    if variable == 'project' | execute 'python3 Vira.api.get_versions()' | endif
+    if variable == 'project' | execute 'python3 Vira.api.get_version()' | endif
 
     call vira#_filter_closed()
 endfunction
