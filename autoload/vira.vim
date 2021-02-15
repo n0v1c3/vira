@@ -63,7 +63,7 @@ function! vira#_async() abort
         if string(s:versions) == '' || s:versions == []
             let s:projects = s:projects[1:]
             if string(s:projects) == '' || s:projects == []
-                s:projects = execute('python3 Vira.api.get_projects()')
+                let s:projects = execute('python3 Vira.api.get_projects()')
                 let g:vira_async_timer = 1000
             endif
             execute('python3 Vira.api.get_versions()')

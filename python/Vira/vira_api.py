@@ -404,7 +404,6 @@ class ViraAPI():
             self.projects.append(str(project))
         vim.command('let s:projects = ' + str(self.projects))
 
-        self.get_versions()
         #  vim.command('let s:project = ' + str(projects[0]))
             #  projectDesc = self.jira.createmeta(
                 #  projectKeys=project, expand='projects')['projects'][0]
@@ -784,7 +783,7 @@ class ViraAPI():
         '''
 
         #  self.get_versions()
-        versions = str(self.versions).split(',')
+        versions = str(vim.eval('s:versions')).split(',')
         versions = str(versions).split('{')
         versions = set(str(versions).replace('"', ''))
         #  versions = set(str(self.versions).replace('"', ''))
@@ -813,7 +812,6 @@ class ViraAPI():
                     ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
                     '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
             except:
-                print('None')
                 pass
         print('None')
 
@@ -871,9 +869,9 @@ class ViraAPI():
         '''
 
         # Loop through each project and all versions within
-        for p in vim.eval('s:projects'):
-            for v in reversed(self.jira.project_versions(p)):
-                vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
+        #  for p in vim.eval('s:projects'):
+        for v in reversed(self.jira.project_versions(vim.eval('s:projects[0]'))):
+            vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
 
     def load_project_config(self, repo):
         '''
