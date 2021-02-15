@@ -63,16 +63,17 @@ function! vira#_async() abort
         if string(s:versions) == '' || s:versions == []
             let s:projects = s:projects[1:]
             if string(s:projects) == '' || s:projects == []
-                let s:projects = execute('python3 Vira.api.get_projects()')
-                let g:vira_async_timer = 1000
+                silent! let s:projects = execute('python3 Vira.api.get_projects()')
             endif
-            execute('python3 Vira.api.get_versions()')
+            silent! execute('python3 Vira.api.get_versions()')
         endif
 
         silent! execute 'python3 Vira.api.version_percent("' . s:projects[0] . '","' . string(s:versions[0]) . '")'
-        " echo s:projects[0] . ' - ' . string(s:versions[0])
         let s:versions = s:versions[1:]
     catch
+        let s:projects = []
+        let s:versions = []
+        let g:vira_async_timer = 1000
         call vira#_msg_error('100', 'aysnc out of sync')
     endtry
     call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })

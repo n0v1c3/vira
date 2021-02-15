@@ -180,7 +180,7 @@ class ViraAPI():
                 max_retries=2)
 
             # User list update
-            self.users = self.get_users()
+            #  self.users = self.get_users()
             self.get_projects()
             #  self.get_versions()
             vim.command("call vira#_async()")
