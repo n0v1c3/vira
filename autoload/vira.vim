@@ -8,7 +8,7 @@
 let s:vira_version = '0.4.1'
 let s:vira_connected = 0
 
-let s:vira_async_timer = 5
+let s:vira_async_timer = 500
 
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
@@ -24,6 +24,7 @@ let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
 let s:projects = []
 let s:versions = []
+let s:debug = 0
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -63,20 +64,19 @@ function! vira#_async() abort
         if string(s:versions) == '' || s:versions == []
             let s:projects = s:projects[1:]
             if string(s:projects) == '' || s:projects == []
-                silent! let s:projects = execute('python3 Vira.api.get_projects()')
+                " let g:vira_async_timer = 1000
+                silent! execute('python3 Vira.api.get_projects()')
             endif
             silent! execute('python3 Vira.api.get_versions()')
+        else
+            silent! execute 'python3 Vira.api.version_percent("' . s:projects[0] . '","' . string(s:versions[0]) . '")'
+            " if s:debug == 1 | echo s:projects[0] . ' - ' . s:versions[0] | endif
+            let s:versions = s:versions[1:]
         endif
-
-        silent! execute 'python3 Vira.api.version_percent("' . s:projects[0] . '","' . string(s:versions[0]) . '")'
-        let s:versions = s:versions[1:]
     catch
-        let s:projects = []
-        let s:versions = []
-        let g:vira_async_timer = 1000
         call vira#_msg_error('100', 'aysnc out of sync')
     endtry
-    call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
+    silent! call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
 endfunction
 
 function! vira#_browse(url) "{{{2
