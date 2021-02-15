@@ -403,6 +403,8 @@ class ViraAPI():
         for project in self.jira.projects():
             self.projects.append(str(project))
         vim.command('let s:projects = ' + str(self.projects))
+
+        self.get_versions()
         #  vim.command('let s:project = ' + str(projects[0]))
             #  projectDesc = self.jira.createmeta(
                 #  projectKeys=project, expand='projects')['projects'][0]
@@ -868,24 +870,10 @@ class ViraAPI():
         Build a vim pop-up menu for a list of versions with project filters
         '''
 
-        # Project filter for version list
-        projects = vim.eval('s:projects')
-        versions = vim.eval('s:versions')
-
         # Loop through each project and all versions within
-        #  vim.command(f'let s:projects = [' + ','.join(projects) + ']')
-        #  print(projects)
-        #  vim.command('let s:projects = "' + str(projects)[1:1] + '"')
-        for p in projects:
-            #  print(p)
-            for v in self.jira.project_versions(p):
+        for p in vim.eval('s:projects'):
+            for v in reversed(self.jira.project_versions(p)):
                 vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
-            #  print(vim.eval('s:versions'))
-
-            #  for v in reversed(self.jira.project_versions(p)):
-                #  vim.command(f'call vira#_version_percent()')
-                #  self.version_percent(p, v)  # Add and update the version list
-        #  return self.versions  # Return the version list
 
     def load_project_config(self, repo):
         '''

@@ -8,7 +8,7 @@
 let s:vira_version = '0.4.1'
 let s:vira_connected = 0
 
-let s:vira_async_timer = 500
+let s:vira_async_timer = 5
 
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
@@ -24,8 +24,6 @@ let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
 let s:projects = []
 let s:versions = []
-let s:version_percents = []
-let s:version_desc = []
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -71,9 +69,8 @@ function! vira#_async() abort
             execute('python3 Vira.api.get_versions()')
         endif
 
-        " silent! execute 'python3 Vira.api.print_versions()'
         silent! execute 'python3 Vira.api.version_percent("' . s:projects[0] . '","' . string(s:versions[0]) . '")'
-        echo s:projects[0] . ' - ' . string(s:versions[0])
+        " echo s:projects[0] . ' - ' . string(s:versions[0])
         let s:versions = s:versions[1:]
     catch
         call vira#_msg_error('100', 'aysnc out of sync')
