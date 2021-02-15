@@ -65,14 +65,15 @@ function! vira#_async() abort
         if string(s:versions) == '' || s:versions == []
             let s:projects = s:projects[1:]
             if string(s:projects) == '' || s:projects == []
-                execute('python3 Vira.api.get_projects()')
+                s:projects = execute('python3 Vira.api.get_projects()')
                 let g:vira_async_timer = 1000
             endif
             execute('python3 Vira.api.get_versions()')
         endif
 
         " silent! execute 'python3 Vira.api.print_versions()'
-        silent! execute 'python3 Vira.api.version_percent(' . s:projects[0] . ',' . s:versions[0] . ')'
+        silent! execute 'python3 Vira.api.version_percent("' . s:projects[0] . '","' . string(s:versions[0]) . '")'
+        echo s:projects[0] . ' - ' . string(s:versions[0])
         let s:versions = s:versions[1:]
     catch
         call vira#_msg_error('100', 'aysnc out of sync')
@@ -109,7 +110,7 @@ endfunction
 
 function! vira#_msg_error(code, msg) "{{{2
   echohl ErrorMsg
-  echo 'VIRA ERROR [' . code . '] - ' . msg
+  echo 'VIRA ERROR [' . a:code . '] - ' . a:msg
   echohl None
 endfunction
 
