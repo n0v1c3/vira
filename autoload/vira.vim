@@ -8,7 +8,7 @@
 let s:vira_version = '0.4.1'
 let s:vira_connected = 0
 
-let s:vira_async_timer = 500
+let s:vira_async_timer = 1
 
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
@@ -61,15 +61,16 @@ augroup END
 function! vira#_async() abort
     " Asycn version percent updates
     try
-        if string(s:versions) == '' || s:versions == []
+        " echo s:projects
+        if len(s:versions) == 0
             let s:projects = s:projects[1:]
-            if string(s:projects) == '' || s:projects == []
-                " let g:vira_async_timer = 1000
+            if len(s:projects) == 0
+                let s:vira_async_timer = 10000
                 silent! execute('python3 Vira.api.get_projects()')
             endif
             silent! execute('python3 Vira.api.get_versions()')
         else
-            silent! execute 'python3 Vira.api.version_percent("' . s:projects[0] . '","' . string(s:versions[0]) . '")'
+            silent! execute('python3 Vira.api.version_percent("' . s:projects[0] . '","' . string(s:versions[0]) . '")')
             " if s:debug == 1 | echo s:projects[0] . ' - ' . s:versions[0] | endif
             let s:versions = s:versions[1:]
         endif
