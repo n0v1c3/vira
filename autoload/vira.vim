@@ -8,7 +8,7 @@
 let s:vira_version = '0.4.1'
 let s:vira_connected = 0
 
-let s:vira_async_timer = 50
+let s:vira_async_timer = 500
 
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
@@ -24,6 +24,8 @@ let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
 let s:projects = []
 let s:versions = []
+let s:version_percents = []
+let s:version_desc = []
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -62,19 +64,18 @@ function! vira#_async() abort
     try
         if string(s:versions) == '' || s:versions == []
             let s:projects = s:projects[1:]
-        echo s:versions[0]
             if string(s:projects) == '' || s:projects == []
                 execute('python3 Vira.api.get_projects()')
+                let g:vira_async_timer = 1000
             endif
             execute('python3 Vira.api.get_versions()')
         endif
 
-        silent! execute 'python3 Vira.api.print_versions()'
-        silent! execute 'python3 Vira.api.version_percent('s:projects[0], s:versions[0]])'
+        " silent! execute 'python3 Vira.api.print_versions()'
+        silent! execute 'python3 Vira.api.version_percent(' . s:projects[0] . ',' . s:versions[0] . ')'
         let s:versions = s:versions[1:]
-        echo s:versions[0]
     catch
-        " call timer_start(s:vira_async_sleep, { -> execute('call vira#_async()', '') })
+        call vira#_msg_error('100', 'aysnc out of sync')
     endtry
     call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
 endfunction
@@ -106,9 +107,9 @@ function! vira#_browse(url) "{{{2
   redraw!
 endfunction
 
-function! vira#_msg_error(string) "{{{2
+function! vira#_msg_error(code, msg) "{{{2
   echohl ErrorMsg
-  echo a:string
+  echo 'VIRA ERROR [' . code . '] - ' . msg
   echohl None
 endfunction
 
@@ -226,7 +227,6 @@ function! vira#_load_project_config(...) " {{{2
 
   " Load project configuration for the current git repo
   call vira#_reset_filters()
-  silent! call vira#_version_percent(s:projects, s:versions)
   exe 'python3 Vira.api.load_project_config("'.vira_repo.'")'
 
   " Return to current directory
@@ -279,7 +279,7 @@ function! vira#_menu(type) abort " {{{2
       return
     endif
     let type = 'menu'
-    if a:type == 'versions' | let printer = 'print_'
+    if a:type == 'versions' || a:type == 'projects' | let printer = 'print_'
     else | let printer = 'get_' | endif
     let list = execute('python3 Vira.api.' . printer . a:type . '()')
 

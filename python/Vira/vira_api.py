@@ -781,28 +781,38 @@ class ViraAPI():
         Print version list with project filters
         '''
 
-        self.get_versions()
-        versions = vim.eval('s:versions')
-        versions = str(versions).split('<')
-        versions = str(versions).split('>')
+        #  self.get_versions()
+        #  versions = str(self.versions).split(',')
+        #  versions = str(versions).split('{')
+        #  versions = set(str(versions).replace('"', ''))
+        #  versions = set(str(self.versions).replace('"', ''))
+        #  versions = set(str(self.versions).replace('"', ''))
+        #  versions = str(versions)
+        #  versions = set(str(self.versions).split(''))
 
-        wordslength = sorted(versions, key=len)[-1]
+        wordslength = sorted(self.versions, key=len)[-1]
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
-        for version in versions:
-            version = version.split(',')
-            for v in range(len(version)):
-                if 'JIRA' in version[v]:
-                    version = version[v].split("'", 1)[1].split("\\", 1)[-1].split("^\'", 1)[0]
-                    version = version.replace("\'", '').replace('\\', '')
-                    print(vim.eval('s:project') + ' | ', '')
+        for version in set(self.versions):
+            #  print(version)
+            #  version = version.split(',')
+            #  version = str(version)[4:3]
+            #  for v in range(len(version)):
+                #  if 'JIRA' in version[v]:
+                    #  version = version[v].split("'", 1)[1].split("\\", 1)[-1].split("^\'", 1)[0]
+                    #  version = version.replace("\'", '').replace('\\', '')
+                    #  print(vim.eval('s:project') + ' | ', '')
                     #  print(self.version_percent(str(vim.eval('s:project')), version))
-                #  if (v == 1 or v % 2 == 0):
-            #  print(version.split("'", 1)[0]) #.split("'")[0])
-            #  print(
-                #  version.split('|')[0] +
-                #  ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
-                #  '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
+            if (str(version) != ''):
+                try:
+                    #  version = version.split("'", 1)[0] #.split("'")[0])
+                    print(
+                        version.split('|')[0] +
+                        ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
+                        '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
+                except:
+                    print('None')
+                    pass
         print('None')
 
     def version_percent(self, project, fixVersion):
@@ -846,9 +856,10 @@ class ViraAPI():
             self.versions_hide = vim.eval('g:vira_version_hide')
             if fixed != total or total == 0 or not int(self.versions_hide) == 1:
                 self.versions.add(str(project) + ' ~ ' + str(version))
+                #  vim.command('let s:versions = add(s:versions,\"' + str(self.version_percent(p, v)) + '\")')
 
         else:
-            percent = 2
+            percent = 0
 
         return percent
 
@@ -857,16 +868,6 @@ class ViraAPI():
         Build a vim pop-up menu for a list of versions with project filters
         '''
 
-        # Reset version list
-        #  TODO: VIRA-247 [210213] - Single version at a time here
-        #  project = vim.eval('s:project')[1:1]
-        #  vim.command('let s:versions = [\'' + str(self.jira.project_versions("VIRA")) + '\']')
-        #  version = vim.eval('s:version')
-        #  self.versions.remove(version)
-        #  version = self.version_percent(project, version)
-        #  self.version_percent(project, version)
-        #  vim.command('let s:version = ' + version + '')
-
         # Project filter for version list
         projects = vim.eval('s:projects')
         versions = vim.eval('s:versions')
@@ -874,12 +875,11 @@ class ViraAPI():
         # Loop through each project and all versions within
         #  vim.command(f'let s:projects = [' + ','.join(projects) + ']')
         #  print(projects)
-        vim.command('let s:projects = "' + str(projects)[1:1] + '"')
+        #  vim.command('let s:projects = "' + str(projects)[1:1] + '"')
         for p in projects:
             #  print(p)
             for v in self.jira.project_versions(p):
-                print(v)
-                vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
+                vim.command('let s:versions = add(s:versions,\"' + str(self.version_percent(p, v)) + '\")')
             #  print(vim.eval('s:versions'))
 
             #  for v in reversed(self.jira.project_versions(p)):
