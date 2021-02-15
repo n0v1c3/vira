@@ -855,7 +855,7 @@ class ViraAPI():
 
             self.versions_hide = vim.eval('g:vira_version_hide')
             if fixed != total or total == 0 or not int(self.versions_hide) == 1:
-                self.versions.add(str(project) + ' ~ ' + str(version))
+                self.versions.add(str(project) + ' ~ ' + str(version.replace('\'', '')))
                 #  vim.command('let s:versions = add(s:versions,\"' + str(self.version_percent(p, v)) + '\")')
 
         else:
