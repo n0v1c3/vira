@@ -30,7 +30,11 @@ let g:vira_menu_height = get(g:, 'vira_menu_height', 7)
 let g:vira_issue_limit = get(g:, 'vira_issue_limit', 50)
 let g:vira_version_hide = get(g:, 'vira_version_hide', 1)
 
+" Report mapping {{{2
+let g:vira_report_position = get(g:, 'vira_report_position', 'L')
+
 " Commands {{{1
+
 " Basics
 command! -nargs=0 -bang ViraBrowse call vira#_browse(g:vira_serv . '/browse/' . vira#_get_active_issue())
 command! -nargs=0 -bang ViraComment call vira#_prompt_start('add_comment')

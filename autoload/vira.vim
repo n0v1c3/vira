@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.1'
+let s:vira_version = '0.4.2'
 let s:vira_connected = 0
 
 let s:vira_async_timer = 1
@@ -291,11 +291,13 @@ function! vira#_menu(type) abort " {{{2
   silent! let winnr = bufwinnr(s:vira_root_dir . '/vira_' . type . '$')
   if type == 'report'
     if (winnr <= 0)
-      silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_' . type)
-      if g:vira_report_width > 0
+      if g:vira_report_position == 'T'
+        autocmd BufEnter vira_report silent! wincmd T
+      elseif g:vira_report_width > 0
         autocmd BufEnter vira_report setlocal winfixwidth
         silent! execute 'vertical resize ' . g:vira_report_width
       endif
+      silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_' . type)
     else | call execute(winnr . ' windo e') | endif
   else
     if (winnr <= 0)
