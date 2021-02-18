@@ -82,12 +82,12 @@ Create an `API token` and use set it the value of the `password` in your `vira_s
 
 ### Quick Start
 
-- Configure `~/.config/vira/vira_servers.json` as per [Jira servers](#jira-servers-required)
-- Run `:ViraServers` and press `<cr>` to select server
-- Run `:ViraIssues` and press `<cr>` to select issue
-- Run `:ViraReport` to view report
-- Press `<cr>` to edit any field
-- Rejoice because you have one less reason to leave vim
+- Configure `~/.config/vira/vira_servers.json` as per [Jira servers](#jira-servers-required).
+- Run `:ViraServers` and press `<cr>` to select server.
+- Run `:ViraIssues` and press `<cr>` to select issue.
+- Run `:ViraReport` to view report.
+- Press `<cr>` to edit any field.
+- Rejoice because you have one less reason to leave vim.
 
 ### Jira projects
 
@@ -417,6 +417,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
 - `g:vira_menu_height` - Set the height of the menu (default 7).
 - `g:vira_null_issue` - Text used when there is no issue.
+- `g:vira_report_position` - Display reports as windows or tabs to preference.
 - `g:vira_report_width` - Set the width of the report (default 0).
 - `g:vira_version_hide` - Toggle the display of complete versions.
 
@@ -435,7 +436,7 @@ This is an example of a typical jira issue report (except the report looks color
 │ Story Points │ None             │
 │     Priority │ Highest          │
 │    Epic Link │ VIRA-32          │
-│    Component │                  │
+│    Component │ Software         │
 │      Version │ 1.0.0            │
 │     Assignee │ Mike Boiko       │
 │     Reporter │ Mike Boiko       │
