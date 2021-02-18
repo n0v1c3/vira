@@ -379,12 +379,15 @@ class ViraAPI():
         Build a vim pop-up menu for a list of projects
         '''
 
-        for project in self.get_projects():
-            projectDesc = self.jira.createmeta(
-                projectKeys=project, expand='projects')['projects'][0]
-            print(str(project) + ' ~ ' + projectDesc['name'])
-        #  print(self.jira.projects())
-        #  vim.command('s:projects = [' + self.jira.projects() + ']')
+        all_projects = self.get_projects()
+        batch_size = 10
+        project_batches = [all_projects[i:i + batch_size]
+                           for i in range(0, len(all_projects), batch_size)]
+
+        for batch in project_batches:
+            projects = self.jira.createmeta(
+                projectKeys=','.join(batch), expand='projects')['projects']
+            [print(p['key'] + ' ~ ' + p['name']) for p in projects]
 
     def get_projects(self):
         '''
@@ -392,25 +395,12 @@ class ViraAPI():
         '''
 
         # Project filter for version list
-        #  projects = list(self.jira.projects())
-        #  projects = vim.eval('s:projects')
-        #  if projects == '':
-        #  projects = str(projects).split('<')
-        #  projects = str(projects).split('>')
-        #  vim.command('s:projects = ' + str(self.jira.projects()). '')
-        #  projects = []
         self.projects = []
         for project in self.jira.projects():
             self.projects.append(str(project))
         vim.command('let s:projects = ' + str(self.projects))
 
-        #  vim.command('let s:project = ' + str(projects[0]))
-            #  projectDesc = self.jira.createmeta(
-                #  projectKeys=project, expand='projects')['projects'][0]
         return self.projects
-            #  projectDesc = self.jira.createmeta(
-                #  projectKeys=project, expand='projects')['projects'][0]
-            #  print(str(project) + ' ~ ' + projectDesc['name'])
 
     def get_priority(self):
         '''
@@ -782,31 +772,15 @@ class ViraAPI():
         Print version list with project filters
         '''
 
-        #  self.get_versions()
         versions = str(vim.eval('s:versions')).split(',')
         versions = str(versions).split('{')
         versions = set(str(versions).replace('"', ''))
-        #  versions = set(str(self.versions).replace('"', ''))
-        #  versions = set(str(self.versions).replace('"', ''))
-        #  versions = str(versions)
-        #  versions = set(str(self.versions).split(''))
 
         wordslength = sorted(versions, key=len)[-1]
         s = ' '
         dashlength = s.join([char * len(wordslength) for char in s])
         for version in self.versions:
-            #  print(version)
-            #  version = version.split(',')
-            #  version = str(version)[4:3]
-            #  for v in range(len(version)):
-                #  if 'JIRA' in version[v]:
-                    #  version = version[v].split("'", 1)[1].split("\\", 1)[-1].split("^\'", 1)[0]
-                    #  version = version.replace("\'", '').replace('\\', '')
-                    #  print(vim.eval('s:project') + ' | ', '')
-                    #  print(self.version_percent(str(vim.eval('s:project')), version))
-            #  if (str(version) != ''):
             try:
-                #  version = version.split("'", 1)[0] #.split("'")[0])
                 print(
                     version.split('|')[0] +
                     ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
@@ -869,7 +843,6 @@ class ViraAPI():
         '''
 
         # Loop through each project and all versions within
-        #  for p in vim.eval('s:projects'):
         for v in reversed(self.jira.project_versions(vim.eval('s:projects[0]'))):
             vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
 
