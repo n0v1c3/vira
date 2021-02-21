@@ -8,6 +8,7 @@ from Vira.helper import load_config, run_command, parse_prompt_text
 from jira import JIRA
 from jira.exceptions import JIRAError
 from datetime import datetime
+import asyncio
 import json
 import urllib3
 import vim
@@ -62,6 +63,28 @@ class ViraAPI():
         self.users_type = ''
 
         self.versions_hide(True)
+
+    async def _async(self, func, timeout):
+        try:
+            await asyncio.wait_for(func, timeout)
+            await asyncio.run(self._async(func, timeout))
+        except asyncio.TimeoutError:
+            print(f"operation timed out after {timeout} seconds")
+            pass
+
+    async def _async_vim(self):
+        try:
+            #  print(vim.eval('s:versions'))
+            if len(vim.eval('s:versions')) == 0:
+                vim.command('let s:projects = s:projects[1:]')
+                if len(vim.eval('s:projects')) == 0:
+                    self.get_projects()
+                self.get_versions()
+            else:
+                self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
+                vim.command('let s:versions = s:versions[1:]')
+        except:
+            pass
 
     def create_issue(self, input_stripped):
         '''
@@ -132,7 +155,7 @@ class ViraAPI():
             comment=comment,
             started=earlier)
 
-    def connect(self, server):
+    async def connect(self, server):
         '''
         Connect to Jira server with supplied auth details
         '''
@@ -181,8 +204,7 @@ class ViraAPI():
 
             # User list update
             self.users = self.get_users()
-            self.get_projects()
-            #  self.get_versions()
+            #  await self._async(self._async_vim(), 2)
             vim.command("call vira#_async()")
 
             vim.command('echo "Connection to jira server was successful"')
@@ -792,7 +814,7 @@ class ViraAPI():
     def version_percent(self, project, fixVersion):
         project = str(project)
         fixVersion = str(fixVersion)
-        if str(project) != '[]' and str(fixVersion) != '[]' and str(fixVersion) != '':
+        if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
             query = 'fixVersion = ' + fixVersion + ' AND project = "' + project + '"'
             issues = self.jira.search_issues(
                 query, fields='fixVersion', json_result='True', maxResults=1)
@@ -843,8 +865,11 @@ class ViraAPI():
         '''
 
         # Loop through each project and all versions within
-        for v in reversed(self.jira.project_versions(vim.eval('s:projects[0]'))):
-            vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
+        try:
+            for v in reversed(self.jira.project_versions(vim.eval('s:projects[0]'))):
+                vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
+        except:
+                vim.command('let s:versions = []')
 
     def load_project_config(self, repo):
         '''

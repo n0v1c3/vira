@@ -8,7 +8,7 @@
 let s:vira_version = '0.4.2'
 let s:vira_connected = 0
 
-let s:vira_async_timer = 1
+let s:vira_async_timer = 250
 
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
@@ -33,7 +33,7 @@ let s:vira_set_lookup = {
       \'assignees': 'assignee',
       \'components': 'component',
       \'issues': 'g:vira_active_issue',
-      \'issuetypes': 'issuetype',
+      \'issuetypes': 'issuetlpe',
       \'priority': 'priorities',
       \'priorities': 'priority',
       \'projects': 'project',
@@ -59,25 +59,8 @@ augroup END
 " Functions {{{1
 
 function! vira#_async() abort
-    " Asycn version percent updates
-    try
-        " echo s:projects
-        if len(s:versions) == 0
-            let s:projects = s:projects[1:]
-            if len(s:projects) == 0
-                let s:vira_async_timer = 10000
-                silent! execute('python3 Vira.api.get_projects()')
-            endif
-            silent! execute('python3 Vira.api.get_versions()')
-        else
-            silent! execute('python3 Vira.api.version_percent("' . s:projects[0] . '","' . string(s:versions[0]) . '")')
-            " if s:debug == 1 | echo s:projects[0] . ' - ' . s:versions[0] | endif
-            let s:versions = s:versions[1:]
-        endif
-    catch
-        call vira#_msg_error('100', 'aysnc out of sync')
-    endtry
-    silent! call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
+  silent! python3 asyncio.run(Vira.api._async(Vira.api._async_vim(), 2))
+  silent! call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
 endfunction
 
 function! vira#_browse(url) "{{{2
@@ -171,8 +154,8 @@ function! vira#_connect() abort "{{{2
 
   " Neovim requires this when trying to run vira from a brand new empty buffer
   python3 import vim
-
-  python3 Vira.api.connect(vim.eval("g:vira_serv"))
+  python3 import asyncio
+  python3 asyncio.run(Vira.api.connect(vim.eval("g:vira_serv")))
   let s:vira_connected = 1
 endfunction
 
