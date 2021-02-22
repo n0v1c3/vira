@@ -58,9 +58,9 @@ augroup ViraPrompt
 augroup END
 
 " Functions {{{1
-function! vira#_async() abort
+silent! function! vira#_async() abort
   try
-    python3 Vira.api._async(Vira.api._async_vim)
+    silent! python3 Vira.api._async(Vira.api._async_vim)
   endtry
   if s:debug_async | echo s:versions | endif
   silent! call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })

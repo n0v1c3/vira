@@ -88,7 +88,7 @@ class ViraAPI():
 
             if self.async_count == 0:
                 self.users = self.get_users()
-                self.async_count = 100
+                self.async_count = 1000
             self.async_count -= 1
         except:
             pass
@@ -800,22 +800,18 @@ class ViraAPI():
         '''
         Print version list with project filters
         '''
-
-        versions = str(vim.eval('s:versions')).split(',')
-        versions = str(versions).split('{')
-        versions = set(str(versions).replace('"', ''))
-
-        wordslength = sorted(versions, key=len)[-1]
-        s = ' '
-        dashlength = s.join([char * len(wordslength) for char in s])
-        for version in self.versions:
-            try:
+        try:
+            versions = sorted(self.versions)
+            wordslength = sorted(versions, key=len)[-1]
+            s = ' '
+            dashlength = s.join([char * len(wordslength) for char in s])
+            for version in versions:
                 print(
                     version.split('|')[0] +
                     ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
                     '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
-            except:
-                pass
+        except:
+            pass
         print('None')
 
     def version_percent(self, project, fixVersion):
