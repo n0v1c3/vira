@@ -64,12 +64,11 @@ class ViraAPI():
 
         self.versions_hide(True)
 
-    async def _async(self, func, timeout):
+    def _async(self, func):
         try:
-            await asyncio.wait_for(func, timeout)
-            await asyncio.run(self._async(func, timeout))
-        except asyncio.TimeoutError:
-            print(f"operation timed out after {timeout} seconds")
+            asyncio.run(func())
+        except:
+            self._async(func, timeout)
             pass
 
     async def _async_vim(self):
@@ -155,7 +154,7 @@ class ViraAPI():
             comment=comment,
             started=earlier)
 
-    async def connect(self, server):
+    def connect(self, server):
         '''
         Connect to Jira server with supplied auth details
         '''
@@ -204,8 +203,13 @@ class ViraAPI():
 
             # User list update
             self.users = self.get_users()
-            #  await self._async(self._async_vim(), 2)
-            vim.command("call vira#_async()")
+            self.projects = self.get_projects()
+            #  await self._vim_live()
+            #  self.async_task = asyncio.create_task(self.async_vim())
+            #  await asyncio.run(await self._async_vim())
+            #  self.async_task
+            #  await self._async(await self._async_vim(), 1)
+            #  await asyncio.sleep(10)
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -223,6 +227,14 @@ class ViraAPI():
                 'echo "Could not log into jira! See the README for vira_server.json information"'
             )
 
+        #  print("test")
+        #  vim.command('call vira#_async()')
+        #  loop = await asyncio.get_event_loop(None, await self._async_vim())
+        #  await asyncio.sleep(5)
+        #  await loop.run_until_complete()
+        #  await asyncio.sleep(5)
+
+        #  await self._async_vim()
     def filter_str(self, filterType):
         '''
         Build a filter string to add to a JQL query
@@ -852,7 +864,6 @@ class ViraAPI():
             self.versions_hide = vim.eval('g:vira_version_hide')
             if fixed != total or total == 0 or not int(self.versions_hide) == 1:
                 self.versions.add(str(project) + ' ~ ' + str(version.replace('\'', '')))
-                #  vim.command('let s:versions = add(s:versions,\"' + str(self.version_percent(p, v)) + '\")')
 
         else:
             percent = 0
