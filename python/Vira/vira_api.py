@@ -68,18 +68,20 @@ class ViraAPI():
         try:
             asyncio.run(func())
         except:
-            self._async(func, timeout)
+            self._async(func)
             pass
+
+        #  asyncio.get_event_loop(None, vim.command('silent! call vira#_async()'))
 
     async def _async_vim(self):
         try:
-            #  print(vim.eval('s:versions'))
             if len(vim.eval('s:versions')) == 0:
                 vim.command('let s:projects = s:projects[1:]')
                 if len(vim.eval('s:projects')) == 0:
                     self.get_projects()
                 self.get_versions()
             else:
+                #  self._async(self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]'))))
                 self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 vim.command('let s:versions = s:versions[1:]')
         except:
@@ -199,17 +201,11 @@ class ViraAPI():
                 },
                 basic_auth=(username, password),
                 timeout=2,
+                async_=True,
                 max_retries=2)
 
             # User list update
             self.users = self.get_users()
-            self.projects = self.get_projects()
-            #  await self._vim_live()
-            #  self.async_task = asyncio.create_task(self.async_vim())
-            #  await asyncio.run(await self._async_vim())
-            #  self.async_task
-            #  await self._async(await self._async_vim(), 1)
-            #  await asyncio.sleep(10)
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -227,14 +223,8 @@ class ViraAPI():
                 'echo "Could not log into jira! See the README for vira_server.json information"'
             )
 
-        #  print("test")
-        #  vim.command('call vira#_async()')
-        #  loop = await asyncio.get_event_loop(None, await self._async_vim())
-        #  await asyncio.sleep(5)
-        #  await loop.run_until_complete()
-        #  await asyncio.sleep(5)
+        asyncio.get_event_loop(None, vim.command('silent! call vira#_async()'))
 
-        #  await self._async_vim()
     def filter_str(self, filterType):
         '''
         Build a filter string to add to a JQL query

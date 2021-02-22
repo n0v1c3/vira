@@ -8,7 +8,7 @@
 let s:vira_version = '0.4.2'
 let s:vira_connected = 0
 
-let s:vira_async_timer = 1000
+let s:vira_async_timer = 2000
 
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
@@ -24,7 +24,8 @@ let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
 let s:projects = []
 let s:versions = []
-let s:debug = 0
+
+let s:debug_async = 0
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -57,13 +58,11 @@ augroup ViraPrompt
 augroup END
 
 " Functions {{{1
-
-python3 import asyncio
 function! vira#_async() abort
   try
-    silent! python3 Vira.api._async(Vira.api._async_vim)
+    python3 Vira.api._async(Vira.api._async_vim)
   endtry
-  if s:debug | echo s:versions | endif
+  if s:debug_async | echo s:versions | endif
   silent! call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
 endfunction
 
@@ -620,10 +619,12 @@ function! vira#_filter_closed() "{{{2
     let s:vira_filter_hold = ''
     call vira#_filter_unload()
 endfunction
+
 function! vira#_toggle_hide() "{{{2
     let g:vira_version_hide = 1 - g:vira_version_hide
     call vira#_menu(s:vira_menu_type)
 endfunction
+
 " New {{{1
 function! vira#_new(menu, name, project, description) "{{{2
   if a:menu == 'component'
