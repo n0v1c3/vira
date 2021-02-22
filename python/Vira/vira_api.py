@@ -61,6 +61,7 @@ class ViraAPI():
         self.versions = set()
         self.servers = set()
         self.users_type = ''
+        self.async_count = 0
 
         self.versions_hide(True)
 
@@ -84,6 +85,11 @@ class ViraAPI():
                 #  self._async(self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]'))))
                 self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 vim.command('let s:versions = s:versions[1:]')
+
+            if self.async_count == 0:
+                self.users = self.get_users()
+                self.async_count = 100
+            self.async_count -= 1
         except:
             pass
 
@@ -205,7 +211,6 @@ class ViraAPI():
                 max_retries=2)
 
             # User list update
-            self.users = self.get_users()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
