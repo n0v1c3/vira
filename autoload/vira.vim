@@ -291,10 +291,16 @@ function! vira#_menu(type) abort " {{{2
       endif
       silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_' . type)
       else | call execute(winnr . ' windo e') | endif
-  else
+  else " Menus
     if (winnr <= 0)
+      if g:vira_menu_height == 'j' || g:vira_menu_height == 'J' | let g:vira_menu_height = 10 | endif
+      if g:vira_menu_height == 't' || g:vira_menu_height == 'T' || g:vira_menu_height == 0
+        autocmd BufEnter vira_menu silent! wincmd T
+      endif
       silent! execute 'botright new ' . fnameescape(s:vira_root_dir . '/vira_' . type)
-      silent! execute 'resize ' . g:vira_menu_height
+      if g:vira_menu_height != 't' && g:vira_menu_height != 'T' && g:vira_menu_height != 0
+        execute 'resize ' . g:vira_menu_height
+      endif
     else | call execute(winnr . ' windo e') | endif
   endif
 

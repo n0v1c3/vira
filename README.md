@@ -416,6 +416,8 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `g:vira_highlight` - Text used when there is no issue.
 - `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
 - `g:vira_menu_height` - Set the height of the menu (default 7).
+  - Height - `g:vira_menu_height > 0` (may also equal 'J')
+  - Tab - `g:vira_menu_height = 0` (may also equal 'T')
 - `g:vira_null_issue` - Text used when there is no issue.
 - `g:vira_report_width` - Set the width of the report (default 0).
   - Left - `g:vira_report_width > 0` (may also equal 'L')
