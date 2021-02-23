@@ -413,6 +413,10 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 ### Config Variables
 
 - `g:vira_active_issue` - Set and get the active issue.
+- `g:vira_async_timer` - Normal time between vim "async" updates. (10000ms)
+- `g:vira_async_timer_init` - Faster initial time between "async" updates. (2000ms)
+  - Lower the number to increase the rate of the inital versions listing.
+  - WARNING: A lower number makes it "jumpy" but gets it over and onto `g:vira_async_timer` much faster.
 - `g:vira_highlight` - Text used when there is no issue.
 - `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
 - `g:vira_menu_height` - Set the height of the menu (default 7).

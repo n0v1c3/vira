@@ -71,17 +71,20 @@ class ViraAPI():
             pass
 
     def _async_vim(self):
+        #  TODO: VIRA-247 [210223] - Clean-up vim variables in python _async
         try:
             if len(vim.eval('s:versions')) == 0:
                 vim.command('let s:projects = s:projects[1:]')
                 if len(vim.eval('s:projects')) == 0:
+                    #  TODO: VIRA-247 [210223] - Check for new projects and versions and start PRIORITY ranking for updates
+                    vim.command('let s:vira_async_timer == g:vira_async_timer')
                     self.get_projects()
                 self.get_versions()
             else:
                 self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 vim.command('let s:versions = s:versions[1:]')
 
-            if self.async_count == 0:
+            if self.async_count == 0 and vim.eval('s:vira_async_timer') == 10000:
                 self.users = self.get_users()
                 self.async_count = 1000
             self.async_count -= 1
@@ -205,7 +208,10 @@ class ViraAPI():
                 async_=True,
                 max_retries=2)
 
-            # User list update
+            # Initial list updates
+            self.users = self.get_users()
+            self.get_projects()
+            self.get_versions()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:

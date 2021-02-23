@@ -8,8 +8,6 @@
 let s:vira_version = '0.4.2'
 let s:vira_connected = 0
 
-let s:vira_async_timer = 2000
-
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
 let s:vira_end_time = 0
@@ -25,7 +23,8 @@ let s:vira_highlight = ''
 let s:projects = []
 let s:versions = []
 
-let s:debug_async = 0
+let s:vira_async_timer = g:vira_async_init_timer
+let s:vira_async_debug = 0
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -58,12 +57,12 @@ augroup ViraPrompt
 augroup END
 
 " Functions {{{1
-silent! function! vira#_async() abort
+function! vira#_async() abort
   try
     python3 Vira.api._async(Vira.api._async_vim)
   endtry
-  if s:debug_async | echo s:versions | endif
-  silent! call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
+  if s:vira_async_debug | echo s:versions | endif
+  call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
 endfunction
 
 function! vira#_browse(url) "{{{2
@@ -158,9 +157,8 @@ function! vira#_connect() abort "{{{2
   " Neovim requires this when trying to run vira from a brand new empty buffer
   python3 import vim
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
-  call vira#_async()
-  " python3 Vira.api._vim_live()
   let s:vira_connected = 1
+  call vira#_async()
 endfunction
 
 function! vira#_edit_report() abort "{{{2
