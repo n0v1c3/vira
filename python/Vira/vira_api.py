@@ -8,7 +8,6 @@ from Vira.helper import load_config, run_command, parse_prompt_text
 from jira import JIRA
 from jira.exceptions import JIRAError
 from datetime import datetime
-import asyncio
 import json
 import urllib3
 import vim
@@ -67,14 +66,11 @@ class ViraAPI():
 
     def _async(self, func):
         try:
-            asyncio.run(func())
+            func()
         except:
-            self._async(func)
             pass
 
-        #  asyncio.get_event_loop(None, vim.command('silent! call vira#_async()'))
-
-    async def _async_vim(self):
+    def _async_vim(self):
         try:
             if len(vim.eval('s:versions')) == 0:
                 vim.command('let s:projects = s:projects[1:]')
@@ -82,7 +78,6 @@ class ViraAPI():
                     self.get_projects()
                 self.get_versions()
             else:
-                #  self._async(self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]'))))
                 self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 vim.command('let s:versions = s:versions[1:]')
 
@@ -227,8 +222,6 @@ class ViraAPI():
             vim.command(
                 'echo "Could not log into jira! See the README for vira_server.json information"'
             )
-
-        asyncio.get_event_loop(None, vim.command('silent! call vira#_async()'))
 
     def filter_str(self, filterType):
         '''
