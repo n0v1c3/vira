@@ -77,7 +77,7 @@ class ViraAPI():
                 vim.command('let s:projects = s:projects[1:]')
                 if len(vim.eval('s:projects')) == 0:
                     #  TODO: VIRA-247 [210223] - Check for new projects and versions and start PRIORITY ranking for updates
-                    vim.command('let s:vira_async_timer == g:vira_async_timer')
+                    vim.command('let s:vira_async_timer = g:vira_async_timer')
                     self.get_projects()
                 self.get_versions()
             else:
