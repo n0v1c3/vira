@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.1'
+let s:vira_version = '0.4.2'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -20,6 +20,11 @@ let s:vira_filter = ''
 let s:vira_filter_hold = @/
 let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
+let s:projects = []
+let s:versions = []
+
+let s:vira_async_timer = g:vira_async_init_timer
+let s:vira_async_debug = 0
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -28,7 +33,7 @@ let s:vira_set_lookup = {
       \'assignees': 'assignee',
       \'components': 'component',
       \'issues': 'g:vira_active_issue',
-      \'issuetypes': 'issuetype',
+      \'issuetypes': 'issuetlpe',
       \'priority': 'priorities',
       \'priorities': 'priority',
       \'projects': 'project',
@@ -52,6 +57,14 @@ augroup ViraPrompt
 augroup END
 
 " Functions {{{1
+function! vira#_async() abort
+  try
+    python3 Vira.api._async(Vira.api._async_vim)
+  endtry
+  if s:vira_async_debug | echo s:versions | endif
+  call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
+endfunction
+
 function! vira#_browse(url) "{{{2
   " Confirm an issue has been selected
   if (vira#_get_active_issue() == g:vira_null_issue)
@@ -79,9 +92,9 @@ function! vira#_browse(url) "{{{2
   redraw!
 endfunction
 
-function! vira#_msg_error(string) "{{{2
+function! vira#_msg_error(code, msg) "{{{2
   echohl ErrorMsg
-  echo a:string
+  echo 'VIRA ERROR [' . a:code . '] - ' . a:msg
   echohl None
 endfunction
 
@@ -143,9 +156,9 @@ function! vira#_connect() abort "{{{2
 
   " Neovim requires this when trying to run vira from a brand new empty buffer
   python3 import vim
-
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
+  call vira#_async()
 endfunction
 
 function! vira#_edit_report() abort "{{{2
@@ -251,7 +264,7 @@ function! vira#_menu(type) abort " {{{2
       return
     endif
     let type = 'menu'
-    if a:type == 'versions' | let printer = 'print_'
+    if a:type == 'versions' || a:type == 'projects' | let printer = 'print_'
     else | let printer = 'get_' | endif
     let list = execute('python3 Vira.api.' . printer . a:type . '()')
 
@@ -263,16 +276,27 @@ function! vira#_menu(type) abort " {{{2
   silent! let winnr = bufwinnr(s:vira_root_dir . '/vira_' . type . '$')
   if type == 'report'
     if (winnr <= 0)
-      silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_' . type)
-      if g:vira_report_width > 0
-        autocmd BufEnter vira_report setlocal winfixwidth
-        silent! execute 'vertical resize ' . g:vira_report_width
+      if g:vira_report_width == 'l' || g:vira_report_width == 'L' || g:vira_report_width > 0
+        autocmd BufEnter vira_report wincmd L
+      elseif g:vira_report_width == 'h' || g:vira_report_width == 'H' || g:vira_report_width < 0
+        autocmd BufEnter vira_report wincmd H
+      elseif g:vira_report_width == 't' || g:vira_report_width == 'T' || g:vira_report_width == '0'
+        autocmd BufEnter vira_report silent! wincmd T
       endif
-    else | call execute(winnr . ' windo e') | endif
-  else
+      autocmd BufEnter vira_report setlocal winfixwidth
+      silent! execute 'vertical resize ' . g:vira_report_width
+      silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_' . type)
+      else | call execute(winnr . ' windo e') | endif
+  else " Menus
     if (winnr <= 0)
+      if g:vira_menu_height == 'j' || g:vira_menu_height == 'J' | let g:vira_menu_height = 10 | endif
+      if g:vira_menu_height == 't' || g:vira_menu_height == 'T' || g:vira_menu_height == 0
+        autocmd BufEnter vira_menu silent! wincmd T
+      endif
       silent! execute 'botright new ' . fnameescape(s:vira_root_dir . '/vira_' . type)
-      silent! execute 'resize ' . g:vira_menu_height
+      if g:vira_menu_height != 't' && g:vira_menu_height != 'T' && g:vira_menu_height != 0
+        execute 'resize ' . g:vira_menu_height
+      endif
     else | call execute(winnr . ' windo e') | endif
   endif
 
@@ -447,8 +471,12 @@ function! vira#_select() "{{{2
   let value = vira#_getter()
 
   if expand('%:t') == 'vira_report'
-    silent! if execute('python3 Vira.api.jira.search_issues("issue = ' . value . '")') == ''
-      let g:vira_active_issue = value
+      let issueTest = substitute(substitute(value,'(','','g'),')','','g')
+      let issueTest = substitute(substitute(issueTest,'[','','g'),']','','g')
+      let issueTest = substitute(substitute(issueTest,'{','','g'),'}','','g')
+      let issueTest = substitute(issueTest,'│','','g')
+    silent! if execute('python3 Vira.api.jira.search_issues("issue = ' . issueTest . '")') == ''
+      let g:vira_active_issue = issueTest
       call vira#_menu('report')
     else
       call vira#_browse(expand('<cWORD>'))
@@ -473,7 +501,14 @@ function! vira#_unselect() "{{{2
   let value = vira#_getter()
   let s:vira_highlight = substitute(s:vira_highlight,'|'.value.'|','|','g')
   let length = len(s:vira_highlight)
-  if s:vira_highlight[1:2] == '||' || s:vira_highlight == '|' || s:vira_highlight[length-1:] != '|'
+  if expand('%:t') == 'vira_report'
+    silent! undo
+    silent! undo
+    let line = line('.')
+    execute 2
+    let g:vira_active_issue = split(getline('.')[4:],' ')[0]
+    execute line
+  elseif s:vira_highlight[1:2] == '||' || s:vira_highlight == '|' || s:vira_highlight[length-1:] != '|'
     let s:vira_filter_setkey = 0
     silent! call vira#_filter_unload()
     let s:vira_filter = ''
@@ -496,7 +531,7 @@ function! vira#_highlight() "{{{2
     let seperator = ''
   else | let seperator = '^' | endif
 
-  echo s:vira_highlight
+  " echo s:vira_highlight
 
   let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
   let s:vira_highlight = substitute(s:vira_highlight,"\\\.","\\\\\\.",'g')
@@ -580,7 +615,7 @@ function! vira#_set() "{{{2
         if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif
     endif
 
-    if variable == 'project' | execute 'python3 Vira.api.get_versions()' | endif
+    if variable == 'project' | execute 'python3 Vira.api.get_version()' | endif
 
     call vira#_filter_closed()
 endfunction
@@ -597,10 +632,12 @@ function! vira#_filter_closed() "{{{2
     let s:vira_filter_hold = ''
     call vira#_filter_unload()
 endfunction
+
 function! vira#_toggle_hide() "{{{2
     let g:vira_version_hide = 1 - g:vira_version_hide
     call vira#_menu(s:vira_menu_type)
 endfunction
+
 " New {{{1
 function! vira#_new(menu, name, project, description) "{{{2
   if a:menu == 'component'

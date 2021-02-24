@@ -58,9 +58,38 @@ class ViraAPI():
 
         self.users = set()
         self.versions = set()
+        self.servers = set()
         self.users_type = ''
+        self.async_count = 0
 
         self.versions_hide(True)
+
+    def _async(self, func):
+        try:
+            func()
+        except:
+            pass
+
+    def _async_vim(self):
+        #  TODO: VIRA-247 [210223] - Clean-up vim variables in python _async
+        try:
+            if len(vim.eval('s:versions')) == 0:
+                vim.command('let s:projects = s:projects[1:]')
+                if len(vim.eval('s:projects')) == 0:
+                    #  TODO: VIRA-247 [210223] - Check for new projects and versions and start PRIORITY ranking for updates
+                    vim.command('let s:vira_async_timer = g:vira_async_timer')
+                    self.get_projects()
+                self.get_versions()
+            else:
+                self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
+                vim.command('let s:versions = s:versions[1:]')
+
+            if self.async_count == 0 and vim.eval('s:vira_async_timer') == 10000:
+                self.users = self.get_users()
+                self.async_count = 1000
+            self.async_count -= 1
+        except:
+            pass
 
     def create_issue(self, input_stripped):
         '''
@@ -176,11 +205,13 @@ class ViraAPI():
                 },
                 basic_auth=(username, password),
                 timeout=2,
+                async_=True,
                 max_retries=2)
 
-            # User list update
+            # Initial list updates
             self.users = self.get_users()
-            self.versions = self.get_versions()
+            self.get_projects()
+            self.get_versions()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -371,15 +402,33 @@ class ViraAPI():
         for priority in self.jira.priorities():
             print(priority)
 
+    def print_projects(self):
+        '''
+        Build a vim pop-up menu for a list of projects
+        '''
+
+        all_projects = self.get_projects()
+        batch_size = 10
+        project_batches = [all_projects[i:i + batch_size]
+                           for i in range(0, len(all_projects), batch_size)]
+
+        for batch in project_batches:
+            projects = self.jira.createmeta(
+                projectKeys=','.join(batch), expand='projects')['projects']
+            [print(p['key'] + ' ~ ' + p['name']) for p in projects]
+
     def get_projects(self):
         '''
         Build a vim pop-up menu for a list of projects
         '''
 
+        # Project filter for version list
+        self.projects = []
         for project in self.jira.projects():
-            projectDesc = self.jira.createmeta(
-                projectKeys=project, expand='projects')['projects'][0]
-            print(str(project) + ' ~ ' + projectDesc['name'])
+            self.projects.append(str(project))
+        vim.command('let s:projects = ' + str(self.projects))
+
+        return self.projects
 
     def get_priority(self):
         '''
@@ -750,57 +799,64 @@ class ViraAPI():
         '''
         Print version list with project filters
         '''
-
-        self.get_versions()
-        wordslength = sorted(self.versions, key=len)[-1]
-        s = ' '
-        dashlength = s.join([char * len(wordslength) for char in s])
-        for version in self.versions:
-            print(
-                version.split('|')[0] +
-                ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
-                '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
+        try:
+            versions = sorted(self.versions)
+            wordslength = sorted(versions, key=len)[-1]
+            s = ' '
+            dashlength = s.join([char * len(wordslength) for char in s])
+            for version in versions:
+                print(
+                    version.split('|')[0] +
+                    ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
+                    '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
+        except:
+            pass
         print('None')
 
     def version_percent(self, project, fixVersion):
-        query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(
-            project) + '"'
-        issues = self.jira.search_issues(
-            query, fields='fixVersion', json_result='True', maxResults=1)
+        project = str(project)
+        fixVersion = str(fixVersion)
+        if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
+            query = 'fixVersion = ' + fixVersion + ' AND project = "' + project + '"'
+            issues = self.jira.search_issues(
+                query, fields='fixVersion', json_result='True', maxResults=1)
 
-        try:
-            issue = issues['issues'][0]['fields']['fixVersions'][0]
-            idx = issue['id']
-
-            total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
-            pending = self.jira.version_count_unresolved_issues(idx)
-            fixed = total - pending
-            percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
-            space = ''.join([char * (5 - len(percent)) for char in ' '])
-
-            name = fixVersion
             try:
-                description = issue['description']
+                issue = issues['issues'][0]['fields']['fixVersions'][0]
+                idx = issue['id']
+
+                total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
+                pending = self.jira.version_count_unresolved_issues(idx)
+                fixed = total - pending
+                percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
+                space = ''.join([char * (5 - len(percent)) for char in ' '])
+
+                name = fixVersion
+                try:
+                    description = issue['description']
+                except:
+                    description = 'None'
+                    pass
             except:
-                description = 'None'
+                total = 0
+                pending = 0
+                fixed = total - pending
+                percent = "0"
+                space = ''.join([char * (5 - len(percent)) for char in ' '])
+                name = fixVersion
+                description = ''
                 pass
-        except:
-            total = 0
-            pending = 0
-            fixed = total - pending
-            percent = "0"
-            space = ''.join([char * (5 - len(percent)) for char in ' '])
-            name = fixVersion
-            description = ''
-            pass
 
-        version = str(
-            str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
-            space + '|' + str(percent) + '%')
+            version = str(
+                str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
+                space + '|' + str(percent) + '%')
 
-        self.versions_hide = vim.eval('g:vira_version_hide')
-        if fixed != total or total == 0 or not int(self.versions_hide) == 1:
-            self.versions.add(str(project) + ' ~ ' + version)
+            self.versions_hide = vim.eval('g:vira_version_hide')
+            if fixed != total or total == 0 or not int(self.versions_hide) == 1:
+                self.versions.add(str(project) + ' ~ ' + str(version.replace('\'', '')))
+
+        else:
+            percent = 0
 
         return percent
 
@@ -809,24 +865,12 @@ class ViraAPI():
         Build a vim pop-up menu for a list of versions with project filters
         '''
 
-        # Reset version list
-        self.versions = set()
-
-        # Project filter for version list
-        projects = set()
-        if self.userconfig_filter['project'] == '':
-            projects = self.jira.projects()
-        elif isinstance(self.userconfig_filter['project'], str):
-            projects.add(self.userconfig_filter['project'])
-        else:
-            for p in self.userconfig_filter['project']:
-                projects.add(p)
-
         # Loop through each project and all versions within
-        for p in projects:
-            for v in reversed(self.jira.project_versions(p)):
-                self.version_percent(p, v)  # Add and update the version list
-        return self.versions  # Return the version list
+        try:
+            for v in reversed(self.jira.project_versions(vim.eval('s:projects[0]'))):
+                vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
+        except:
+                vim.command('let s:versions = []')
 
     def load_project_config(self, repo):
         '''

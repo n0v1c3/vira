@@ -82,12 +82,12 @@ Create an `API token` and use set it the value of the `password` in your `vira_s
 
 ### Quick Start
 
-- Configure `~/.config/vira/vira_servers.json` as per [Jira servers](#jira-servers-required)
-- Run `:ViraServers` and press `<cr>` to select server
-- Run `:ViraIssues` and press `<cr>` to select issue
-- Run `:ViraReport` to view report
-- Press `<cr>` to edit any field
-- Rejoice because you have one less reason to leave vim
+- Configure `~/.config/vira/vira_servers.json` as per [Jira servers](#jira-servers-required).
+- Run `:ViraServers` and press `<cr>` to select server.
+- Run `:ViraIssues` and press `<cr>` to select issue.
+- Run `:ViraReport` to view report.
+- Press `<cr>` to edit any field.
+- Rejoice because you have one less reason to leave vim.
 
 ### Jira projects
 
@@ -413,11 +413,20 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 ### Config Variables
 
 - `g:vira_active_issue` - Set and get the active issue.
+- `g:vira_async_timer` - Normal time between vim "async" updates. (10000ms)
+- `g:vira_async_timer_init` - Faster initial time between "async" updates. (2000ms)
+  - Lower the number to increase the rate of the inital versions listing.
+  - WARNING: A lower number makes it "jumpy" but gets it over and onto `g:vira_async_timer` much faster.
 - `g:vira_highlight` - Text used when there is no issue.
 - `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
 - `g:vira_menu_height` - Set the height of the menu (default 7).
+  - Height - `g:vira_menu_height > 0` (may also equal 'J')
+  - Tab - `g:vira_menu_height = 0` (may also equal 'T')
 - `g:vira_null_issue` - Text used when there is no issue.
 - `g:vira_report_width` - Set the width of the report (default 0).
+  - Left - `g:vira_report_width > 0` (may also equal 'L')
+  - Right - `g:vira_report_width < 0` (may also equal 'R')
+  - Tab - `g:vira_report_width = 0` (may also equal 'T')
 - `g:vira_version_hide` - Toggle the display of complete versions.
 
 ### Report
@@ -435,7 +444,7 @@ This is an example of a typical jira issue report (except the report looks color
 │ Story Points │ None             │
 │     Priority │ Highest          │
 │    Epic Link │ VIRA-32          │
-│    Component │                  │
+│    Component │ Software         │
 │      Version │ 1.0.0            │
 │     Assignee │ Mike Boiko       │
 │     Reporter │ Mike Boiko       │
