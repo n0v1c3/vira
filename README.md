@@ -1,4 +1,4 @@
-# vira
+# vira - v0.4.2
 
 **Vim JIRA Atlassian**
 
@@ -415,7 +415,7 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `g:vira_active_issue` - Set and get the active issue.
 - `g:vira_async_timer` - Normal time between vim "async" updates. (10000ms)
 - `g:vira_async_timer_init` - Faster initial time between "async" updates. (2000ms)
-  - Lower the number to increase the rate of the inital versions listing.
+  - Lower the number to increase the rate of the initial versions listing.
   - WARNING: A lower number makes it "jumpy" but gets it over and onto `g:vira_async_timer` much faster.
 - `g:vira_highlight` - Text used when there is no issue.
 - `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
@@ -434,21 +434,21 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 This is an example of a typical jira issue report (except the report looks colorized and fancy in vim):
 
 ```
-┌─────────────────────────────────┐
-│            VIRA-134             │
-├──────────────┬──────────────────┤
-│      Created │ 2020-04-06 12:06 │
-│      Updated │ 2020-06-23 01:43 │
-│         Type │ Task             │
-│       Status │ In Progress      │
-│ Story Points │ None             │
-│     Priority │ Highest          │
-│    Epic Link │ VIRA-32          │
-│    Component │ Software         │
-│      Version │ 1.0.0            │
-│     Assignee │ Mike Boiko       │
-│     Reporter │ Mike Boiko       │
-└──────────────┴──────────────────┘
+┌---------------------------------┐
+|            VIRA-134             |
+├--------------┬------------------┤
+|      Created | 2020-04-06 12:06 |
+|      Updated | 2020-06-23 01:43 |
+|         Type | Task             |
+|       Status | In Progress      |
+| Story Points | None             |
+|     Priority | Highest          |
+|    Epic Link | VIRA-32          |
+|    Component | Software         |
+|      Version | 1.0.0            |
+|     Assignee | Mike Boiko       |
+|     Reporter | Mike Boiko       |
+└--------------┴------------------┘
 Summary
 Edit any jira field
 
