@@ -15,6 +15,7 @@ Stay inside vim while following and updating Jira issues along with creating new
 [Contributors](#contributors)
 
 <a name="installation"/>
+
 ## Installation
 
 Example of vim-plug post-update hook to automatically install python dependencies along with vira:
@@ -36,6 +37,7 @@ Plug 'n0v1c3/vira', { 'do': './install.sh', 'branch': 'dev' }
 ```
 
 <a name="configuration"/>
+
 ## Configuration
 
 ### Jira servers (required)
@@ -273,6 +275,7 @@ let g:vira_browser = 'chromium'
 ```
 
 <a name="filters"/>
+
 ## Filters
 
 A list of the important commands, functions and global variables to be used to help configure Vira to work for you.
@@ -360,6 +363,7 @@ let g:vira_browser = 'chromium'
 ```
 
 <a name="menus"/>
+
 ## Menus
 
 A list of the important commands, functions and global variables to be used to help configure Vira to work for you.
@@ -609,6 +613,7 @@ let g:airline_section_z = '%{ViraStatusLine()}'
 ```
 
 <a name="contributors"/>
+
 ## Contributors
 
 A big thank you to [@mikeboiko](https://github.com/mikeboiko) for his active development on vira.
