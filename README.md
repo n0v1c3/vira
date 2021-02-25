@@ -6,6 +6,15 @@ Stay inside vim while following and updating Jira issues along with creating new
 
 ![](https://raw.githubusercontent.com/n0v1c3/viravid/video/vira-demo.gif)
 
+##### Table of Contents
+
+[Installation](#installation)  
+[Configuration](#configuration)  
+[Filters](#filters)  
+[Menus](#menus)  
+[Contributors](#contributors)
+
+<a name="installation"/>
 ## Installation
 
 Example of vim-plug post-update hook to automatically install python dependencies along with vira:
@@ -26,6 +35,7 @@ If you would like to be on board with the active development the `dev` branch ca
 Plug 'n0v1c3/vira', { 'do': './install.sh', 'branch': 'dev' }
 ```
 
+<a name="configuration"/>
 ## Configuration
 
 ### Jira servers (required)
@@ -238,7 +248,8 @@ repo2:
 
 #### Default Project Template
 
-If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file. Refer to the yaml example below:
+If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects
+json/yaml file. Refer to the yaml example below:
 
 ```yaml
 __default__:
@@ -261,20 +272,22 @@ Example setting **custom** default browser using `g:vira_browser`:
 let g:vira_browser = 'chromium'
 ```
 
-## Usage
+<a name="filters"/>
+## Filters
 
 A list of the important commands, functions and global variables to be used to help configure Vira to work for you.
 
 ### Keyboard
 
-It is possible to _select multiple_ items from all menus, if nothing is selected prior to the item will be selected from the current column.
+It is possible to _select multiple_ items from all menus, if nothing is selected prior to the item will be selected
+from the current column.
 
 _NOTE:_ `currentUser` is also connected to the active account and can be used for all user related tasks.
 
 #### New Issues
 
 Similar to the `filter` key, you can define a `newissue` key to set repo-based.
-default configuration for the new-issue fields, see example:
+Default configuration for the new-issue fields, see example:
 
 ```yaml
 vira:
@@ -346,7 +359,8 @@ Example setting **custom** default browser using `g:vira_browser`:
 let g:vira_browser = 'chromium'
 ```
 
-## Usage
+<a name="menus"/>
+## Menus
 
 A list of the important commands, functions and global variables to be used to help configure Vira to work for you.
 
@@ -594,8 +608,11 @@ I am currently using the z section of airline until I figure out the proper way 
 let g:airline_section_z = '%{ViraStatusLine()}'
 ```
 
-## Contributions
+<a name="contributors"/>
+## Contributors
 
 A big thank you to [@mikeboiko](https://github.com/mikeboiko) for his active development on vira.
+
+With growing support from: [@chinwobble](https://github.com/chinwobble), [@jamesl33](https://github.com/jamesl33) and [@maricn](https://github.com/maricn)
 
 All user feedback and contributions are welcome!
