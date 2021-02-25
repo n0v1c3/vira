@@ -38,6 +38,7 @@ Alternatively, manually install the python3 dependencies: >
 CONFIGURATION                               *vira-config*
 
 Config Variables:~
+- `g:vira_active_issue` - Set and get the active issue.
 - `g:vira_config_file_servers` - Set path to your server files.
 - `g:vira_config_file_projects` - Set path to project config files.
 - `g:vira_menu_height` - Set the height of the menu (default 7).
@@ -159,6 +160,7 @@ The acceptable values for the filter key are:
 - `project` - Filter these projects. Can be a single item or list.
 - `assignee` - Filter these assignees. Can be a single item or list.
 - `component` - Filter these components. Can be a single item or list.
+- `epic` - Filter these epics. Can be a single item or list.
 - `fixVersion` - Filter these versions. Can be a single item or list.
 - `issuetype` - Filter these issuetypes. Can be a single item or list.
 - `priority` - Filter these priorities. Can be a single item or list.
@@ -187,6 +189,7 @@ The acceptable values for filter keys are:
 
 - `assignee` - Define assignee.
 - `component` - Define component. Note - these are project specific.
+- `epic` - Define epic. Current project filters apply to list.
 - `fixVersion` - Define fixVersion. Note - these are project specific.
 - `issuetype` - Define issue type. The default is Bug.
 - `priority` - Define priority.
@@ -250,21 +253,28 @@ from the current column.
 
 Note: These keys are only mapped to the Vira windows.
 
+*Menus:*
+- `D` - Unselect and Apply "Delete" all lines within menu.
+- `H` - Toggle special hidden menu items.
 - `s` - Select current line within menu.
 - `S` - Select all lines within menu.
 - `u` - Unselect current line within menu.
 - `U` - Unselect all lines within menu.
-- `<cr>` - Apply selections or current line.
+- `q` - Quit the current menu with no apply.
+- `<cr>` - Apply selections along with current line.
 
+*Reports:*
+- `<cr>` - Edit current `field` cursor is within.
+- `s` - Select `issue` or `website` under cursor.
 ------------------------------------------------------------------------------
 
 COMMANDS                                    *vira-commands*
 
 - `ViraBrowse` - View Jira issue in web-browser.
 - `ViraComment` - Insert a comment for active issue.
-- `ViraEpics` - Get and Set Project(s) epic issues.
 - `ViraFilterAssignees` - Add assignees to filter.
 - `ViraFilterComponents` - Add components to filter.
+- `ViraFilterEpics` - Add and remove epics to current filter.
 - `ViraFilterPriorities` - Add priorities to filter.
 - `ViraFilterProjects` - Add projects to filter.
 - `ViraFilterReset` - Reset filter to default.
@@ -281,10 +291,11 @@ COMMANDS                                    *vira-commands*
 - `ViraEditSummary` - Update the summary of the current issue
 - `ViraSetAssignee` - Select user to assign the current issue.
 - `ViraSetComponent` - Select compnent to appent the current issue.
+- `ViraSetEpic` - Select epic of the current issue.
 - `ViraSetPriority` - Select priority of the current issue.
 - `ViraSetStatus` - Select the status of the current issue.
-- `ViraSetVersion` - Select the version to appent the current issue.
 - `ViraSetType` - Select the issuetype of the current issue.
+- `ViraSetVersion` - Select the version to appent the current issue.
 - `ViraTodo` - Make a TODO note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 

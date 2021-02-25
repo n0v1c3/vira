@@ -65,10 +65,6 @@ syntax match viraDetailsC "│.*"hs=s,he=e-1
 syntax match viraDetailsE "│.*│.*"hs=e,he=e
 syntax match viraDetails "│"
 
-syntax match viraDetails "│.*Created.* │" contains=viraDetailsDates
-syntax match viraDetails "│.*Updated.* │" contains=viraDetailsDates
-syntax match viraDetailsDates "│ .*.-.*.-.* │"hs=s+17,he=e-2 contained
-
 syntax match viraDetails "│.*Type │"
 syntax match viraDetailsTypeBug "Bug  "he=e-2
 syntax match viraDetailsTypeEpic "Epic  "he=e-2
@@ -81,7 +77,6 @@ syntax match viraDetailsStatusDone "Done   "he=e-3
 syntax match viraDetailsStatusInProgress "In Progress   "he=e-3
 syntax match viraDetailsStatusTodo "To Do   "he=e-3
 syntax match viraDetailsStatusBacklog "Backlog   "he=e-3
-" TODO: VIRA-177 [200612] - "Selected for Development" can be the longest string re: style
 syntax match viraDetailsStatusSelected "Selected for Development "he=e-1
 
 syntax match viraDetails "│.*Story Points │"
@@ -147,20 +142,18 @@ highlight default link viraTitleDescription Question
 highlight default link viraTitleFold Statement
 highlight default link viraDetailsTypeAssignee Statement
 highlight default link viraDetailsTypeReporter Statement
-highlight default link viraDetailsDates Statement
 
-highlight viraDetailsDates ctermfg=yellow guifg=yellow
 highlight viraDetailsHigh ctermfg=red guifg=red
 highlight viraDetailsHighest ctermfg=darkred guifg=darkred
 highlight viraDetailsLow ctermfg=darkgreen guifg=darkgreen
 highlight viraDetailsLowest ctermfg=green guifg=green
 highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
-highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
-highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
-highlight viraDetailsStatusInProgress ctermbg=darkyellow ctermfg=black guibg=darkyellow guifg=black
-highlight viraDetailsStatusTodo ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
-highlight viraDetailsStatusBacklog ctermbg=darkgrey ctermfg=white guibg=darkgrey guifg=white
-highlight viraDetailsStatusSelected ctermbg=darkyellow ctermfg=black guibg=darkyellow guifg=black
+highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white cterm=bold gui=bold
+highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white cterm=bold gui=bold
+highlight viraDetailsStatusInProgress ctermbg=darkblue ctermfg=white guibg=darkblue guifg=white cterm=bold gui=bold
+highlight viraDetailsStatusTodo ctermbg=237 ctermfg=black guibg=grey guifg=black cterm=bold gui=bold
+highlight viraDetailsStatusBacklog ctermbg=237 ctermfg=black guibg=grey guifg=black cterm=bold gui=bold
+highlight viraDetailsStatusSelected ctermbg=237 ctermfg=black guibg=grey guifg=black cterm=bold gui=bold
 highlight viraDetailsTypeBug ctermfg=red guifg=red cterm=bold gui=bold
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f  cterm=bold gui=bold
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen  cterm=bold gui=bold

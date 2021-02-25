@@ -7,7 +7,7 @@ from __future__ import print_function, unicode_literals
 from Vira.helper import load_config, run_command, parse_prompt_text
 from jira import JIRA
 from jira.exceptions import JIRAError
-import datetime
+from datetime import datetime
 import json
 import urllib3
 import vim
@@ -40,6 +40,7 @@ class ViraAPI():
             'project': '',
             'reporter': '',
             'status': '',
+            "'Epic Link'": '',
             'statusCategory': ['To Do', 'In Progress'],
             'text': ''
         }
@@ -51,14 +52,44 @@ class ViraAPI():
             'fixVersion': '',
             'issuetype': 'Bug',
             'priority': '',
+            'epics': '',
             'status': '',
         }
 
         self.users = set()
         self.versions = set()
+        self.servers = set()
         self.users_type = ''
+        self.async_count = 0
 
         self.versions_hide(True)
+
+    def _async(self, func):
+        try:
+            func()
+        except:
+            pass
+
+    def _async_vim(self):
+        #  TODO: VIRA-247 [210223] - Clean-up vim variables in python _async
+        try:
+            if len(vim.eval('s:versions')) == 0:
+                vim.command('let s:projects = s:projects[1:]')
+                if len(vim.eval('s:projects')) == 0:
+                    #  TODO: VIRA-247 [210223] - Check for new projects and versions and start PRIORITY ranking for updates
+                    vim.command('let s:vira_async_timer = g:vira_async_timer')
+                    self.get_projects()
+                self.get_versions()
+            else:
+                self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
+                vim.command('let s:versions = s:versions[1:]')
+
+            if self.async_count == 0 and vim.eval('s:vira_async_timer') == 10000:
+                self.users = self.get_users()
+                self.async_count = 1000
+            self.async_count -= 1
+        except:
+            pass
 
     def create_issue(self, input_stripped):
         '''
@@ -121,7 +152,7 @@ class ViraAPI():
         Calculate the offset for the start time of the time tracking
         '''
 
-        earlier = datetime.datetime.now() - datetime.timedelta(seconds=timeSpentSeconds)
+        earlier = datetime.now() - datetime.timedelta(seconds=timeSpentSeconds)
 
         self.jira.add_worklog(
             issue=issue,
@@ -154,15 +185,15 @@ class ViraAPI():
             else:
                 password = self.vira_servers[server]['password']
         except:
-                cert_verify = True
-                server = vim.eval('input("server: ")')
-                vim.command('let g:vira_serv = "' + server + '"')
-                username = vim.eval('input("username: ")')
-                password = vim.eval('inputsecret("password: ")')
+            cert_verify = True
+            server = vim.eval('input("server: ")')
+            vim.command('let g:vira_serv = "' + server + '"')
+            username = vim.eval('input("username: ")')
+            password = vim.eval('inputsecret("password: ")')
 
         # Connect to jira server
         try:
-            if 'https://' not in server and 'HTTPS://' not in server:
+            if 'https://' not in server.lower():
                 server = 'https://' + server
                 vim.command('let g:vira_serv = "' + server + '"')
 
@@ -174,11 +205,13 @@ class ViraAPI():
                 },
                 basic_auth=(username, password),
                 timeout=2,
+                async_=True,
                 max_retries=2)
 
-            # User list update
+            # Initial list updates
             self.users = self.get_users()
-            self.versions = self.get_versions()
+            self.get_projects()
+            self.get_versions()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -192,7 +225,9 @@ class ViraAPI():
                 #  raise e
         except:
             vim.command('let g:vira_serv = ""')
-            vim.command('echo "Could not log into jira! See the README for vira_server.json information"')
+            vim.command(
+                'echo "Could not log into jira! See the README for vira_server.json information"'
+            )
 
     def filter_str(self, filterType):
         '''
@@ -211,9 +246,12 @@ class ViraAPI():
             self.userconfig_filter[filterType]
         ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
-        return str(f"{filterType} in ({selection})").replace("'null'", "Null").replace(
-            "'Unassigned'",
-            "Null").replace(f"text in ({selection})", f"text ~ {selection}")
+        return str(f"{filterType} in ({selection})").replace("'None'", "Null").replace(
+            "'Unassigned'", "Null").replace("'currentUser'", "currentUser()").replace(
+                "'currentUser()'",
+                "currentUser()").replace("'currentuser'", "currentUser()").replace(
+                    "'currentuser()'", "currentUser()").replace("'null'", "Null").replace(
+                        f"text in ({selection})", f"text ~ {selection}")
 
     def get_assign_issue(self):
         '''
@@ -255,6 +293,7 @@ class ViraAPI():
 
         for component in self.jira.project_components(self.userconfig_filter['project']):
             print(component.name)
+        print('None')
 
     def get_component(self):
         '''
@@ -263,13 +302,21 @@ class ViraAPI():
 
         self.get_components()
 
+    def get_epic(self):
+        self.get_epics()
+
     def get_epics(self):
         '''
         Get my issues with JQL
         '''
-
-        for issue in self.query_issues(issuetypes="Epic"):
-            print(issue["key"] + '  -  ' + issue["fields"]['summary'])
+        hold = dict(self.userconfig_filter)
+        project = self.userconfig_filter['project']
+        self.reset_filters()
+        self.userconfig_filter["issuetype"] = "Epic"
+        self.userconfig_filter["project"] = project
+        self.get_issues()
+        print('None')
+        self.userconfig_filter = hold
 
     def get_issue(self, issue):
         '''
@@ -355,15 +402,33 @@ class ViraAPI():
         for priority in self.jira.priorities():
             print(priority)
 
+    def print_projects(self):
+        '''
+        Build a vim pop-up menu for a list of projects
+        '''
+
+        all_projects = self.get_projects()
+        batch_size = 10
+        project_batches = [all_projects[i:i + batch_size]
+                           for i in range(0, len(all_projects), batch_size)]
+
+        for batch in project_batches:
+            projects = self.jira.createmeta(
+                projectKeys=','.join(batch), expand='projects')['projects']
+            [print(p['key'] + ' ~ ' + p['name']) for p in projects]
+
     def get_projects(self):
         '''
         Build a vim pop-up menu for a list of projects
         '''
 
+        # Project filter for version list
+        self.projects = []
         for project in self.jira.projects():
-            projectDesc = self.jira.createmeta(
-                projectKeys=project, expand='projects')['projects'][0]
-            print(str(project) + ' ~ ' + projectDesc['name'])
+            self.projects.append(str(project))
+        vim.command('let s:projects = ' + str(self.projects))
+
+        return self.projects
 
     def get_priority(self):
         '''
@@ -411,7 +476,7 @@ class ViraAPI():
             self.prompt_text = description + self.prompt_text_commented
             return self.prompt_text
 
-        self.prompt_text_commented = f'''
+        self.prompt_text_commented = '''
 # ---------------------------------
 # Please enter text above this line
 # An empty message will abort the operation.
@@ -476,21 +541,28 @@ class ViraAPI():
 {self.prompt_text_commented}'''
         return self.prompt_text
 
+    def format_date(self, date):
+        time = datetime.now().strptime(date, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
+        return str(time)[0:10] + ' ' + str(time)[11:16]
+
     def get_report(self):
         '''
         Print a report for the given issue
         '''
 
+        for customfield in self.jira.fields():
+            if customfield['name'] == 'Epic Link':
+                epicID = customfield['id']
+
         # Get passed issue content
         active_issue = vim.eval("g:vira_active_issue")
         issues = self.jira.search_issues(
             'issue = "' + active_issue + '"',
-            #  fields='*',
             fields=','.join(
                 [
                     'project', 'summary', 'comment', 'component', 'description',
                     'issuetype', 'priority', 'status', 'created', 'updated', 'assignee',
-                    'reporter', 'fixVersion', 'customfield_10106'
+                    'reporter', 'fixVersion', 'customfield_10106', 'labels', epicID
                 ]),
             json_result='True')
         issue = issues['issues'][0]['fields']
@@ -500,10 +572,8 @@ class ViraAPI():
         close_fold = '}}}'
         summary = issue['summary']
         story_points = str(issue.get('customfield_10106', ''))
-        created = issue['created'][0:10] + ' ' + issues['issues'][0]['fields']['created'][
-            11:16]
-        updated = issue['updated'][0:10] + ' ' + issues['issues'][0]['fields']['updated'][
-            11:16]
+        created = self.format_date(issue['created'])
+        updated = self.format_date(issue['updated'])
         issuetype = issue['issuetype']['name']
         status = issue['status']['name']
         priority = issue['priority']['name']
@@ -512,9 +582,12 @@ class ViraAPI():
         reporter = issue['reporter']['displayName']
         component = ', '.join([c['name'] for c in issue['components']])
         version = ', '.join([v['name'] for v in issue['fixVersions']])
+        epics = str(issue.get(epicID))
+        vim.command(f'let s:vira_epic_field = "{epicID}"')
         description = str(issue.get('description'))
 
-        if version != '':  # Prevent no version error for percent
+        # Version percent for single version attacted
+        if len(issue['fixVersions']) == 1 and version != '':
             version += ' | ' + self.version_percent(
                 str(issue['project']['key']), version) + '%'
 
@@ -523,9 +596,9 @@ class ViraAPI():
         for idx, comment in enumerate((issue['comment']['comments'])):
             comments += ''.join(
                 [
-                    comment['author']['displayName'] + ' @ ' + comment['updated'][0:10] +
-                    ' ' + comment['updated'][11:16] + ' {{{2\n' + comment['body'] +
-                    '\n}}}\n'
+                    comment['author']['displayName'] + ' @ ' +
+                    self.format_date(comment['updated']) + ' {{' + '{2\n' +
+                    comment['body'] + '\n}}}\n'
                 ])
         old_count = idx - 3
         old_comment = 'Comment' if old_count == 1 else 'Comments'
@@ -538,7 +611,7 @@ class ViraAPI():
         # Find the length of the longest word [-1]
         words = [
             created, updated, issuetype, status, story_points, priority, component,
-            version, assignee, reporter
+            version, assignee, reporter, epics
         ]
         wordslength = sorted(words, key=len)[-1]
         s = '─'
@@ -546,7 +619,8 @@ class ViraAPI():
 
         active_issue_spacing = int((16 + len(dashlength)) / 2 - len(active_issue) / 2)
         active_issue_spaces = ' '.join([char * (active_issue_spacing) for char in ' '])
-        active_issue_space = ' '.join([char * (len(active_issue) % 2) for char in ' '])
+        active_issue_space = ' '.join(
+            [char * ((len(active_issue) + len(dashlength)) % 2) for char in ' '])
 
         created_spaces = ' '.join(
             [char * (len(dashlength) - len(created)) for char in ' '])
@@ -567,6 +641,7 @@ class ViraAPI():
             [char * (len(dashlength) - len(assignee)) for char in ' '])
         reporter_spaces = ''.join(
             [char * (len(dashlength) - len(reporter)) for char in ' '])
+        epics_spaces = ''.join([char * (len(dashlength) - len(epics)) for char in ' '])
 
         # Create report template and fill with data
         report = '''┌────────────────{dashlength}─┐
@@ -578,18 +653,25 @@ class ViraAPI():
 │       Status │ {status}{status_spaces} │
 │ Story Points │ {story_points}{story_points_spaces} │
 │     Priority │ {priority}{priority_spaces} │
-│    Component │ {component}{component_spaces} │
-│      Version │ {version}{version_spaces} │
+│    Epic Link │ {epics}{epics_spaces} │
+│ Component(s) │ {component}{component_spaces} │
+│   Version(s) │ {version}{version_spaces} │
 │     Assignee │ {assignee}{assignee_spaces} │
 │     Reporter │ {reporter}{reporter_spaces} │
 └──────────────┴─{dashlength}─┘
-Summary
+┌──────────────┐
+│    Summary   │
+└──────────────┘
 {summary}
 
-Description
+┌──────────────┐
+│  Description │
+└──────────────┘
 {description}
 
-Comments
+┌──────────────┐
+│   Comments   │
+└──────────────┘
 {comments}'''
 
         self.set_report_lines(report, description, issue)
@@ -625,6 +707,7 @@ Comments
         try:
             for server in self.vira_servers.keys():
                 print(server)
+            print('Null')
         except:
             self.connect('')
 
@@ -653,6 +736,13 @@ Comments
 
         self.print_versions()
 
+    def new_component(self, name, project):
+        '''
+        New component added to project
+        '''
+
+        self.jira.create_component(name=name, project=project, description=name)
+
     def new_version(self, name, project, description):
         '''
         Get my issues with JQL
@@ -665,6 +755,7 @@ Comments
         Print users
         '''
 
+        print(self.get_current_user() + ' ~ currentUser')
         for user in self.users:
             print(user)
         print('Unassigned')
@@ -693,61 +784,79 @@ Comments
 
         return sorted(self.users)
 
+    def get_current_user(self):
+        query = 'reporter = currentUser() or assignee = currentUser()'
+        issues = self.jira.search_issues(
+            query, fields='assignee, reporter', json_result='True', maxResults=-1)
+
+        issue = issues['issues'][0]['fields']
+        return str(
+            issue['assignee'][self.users_type] if type(issue['assignee']) ==
+            dict else issue['reporter'][self.users_type] if type(issue['reporter']) ==
+            dict else 'Unassigned')
+
     def print_versions(self):
         '''
         Print version list with project filters
         '''
-
-        self.get_versions()
-        wordslength = sorted(self.versions, key=len)[-1]
-        s = ' '
-        dashlength = s.join([char * len(wordslength) for char in s])
-        for version in self.versions:
-            print(
-                version.split('|')[0] +
-                ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
-                '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
-        print('null')
+        try:
+            versions = sorted(self.versions)
+            wordslength = sorted(versions, key=len)[-1]
+            s = ' '
+            dashlength = s.join([char * len(wordslength) for char in s])
+            for version in versions:
+                print(
+                    version.split('|')[0] +
+                    ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
+                    '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
+        except:
+            pass
+        print('None')
 
     def version_percent(self, project, fixVersion):
-        query = 'fixVersion = "' + str(fixVersion) + '" AND project = "' + str(
-            project) + '"'
-        issues = self.jira.search_issues(
-            query, fields='fixVersion', json_result='True', maxResults=1)
+        project = str(project)
+        fixVersion = str(fixVersion)
+        if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
+            query = 'fixVersion = ' + fixVersion + ' AND project = "' + project + '"'
+            issues = self.jira.search_issues(
+                query, fields='fixVersion', json_result='True', maxResults=1)
 
-        try:
-            issue = issues['issues'][0]['fields']['fixVersions'][0]
-            idx = issue['id']
-
-            total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
-            pending = self.jira.version_count_unresolved_issues(idx)
-            fixed = total - pending
-            percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
-            space = ''.join([char * (5 - len(percent)) for char in ' '])
-
-            name = fixVersion
             try:
-                description = issue['description']
+                issue = issues['issues'][0]['fields']['fixVersions'][0]
+                idx = issue['id']
+
+                total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
+                pending = self.jira.version_count_unresolved_issues(idx)
+                fixed = total - pending
+                percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
+                space = ''.join([char * (5 - len(percent)) for char in ' '])
+
+                name = fixVersion
+                try:
+                    description = issue['description']
+                except:
+                    description = 'None'
+                    pass
             except:
-                description = 'None'
+                total = 0
+                pending = 0
+                fixed = total - pending
+                percent = "0"
+                space = ''.join([char * (5 - len(percent)) for char in ' '])
+                name = fixVersion
+                description = ''
                 pass
-        except:
-            total = 0
-            pending = 0
-            fixed = total - pending
-            percent = "0"
-            space = ''.join([char * (5 - len(percent)) for char in ' '])
-            name = fixVersion
-            description = ''
-            pass
 
-        version = str(
-            str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' +
-            str(total) + space + '|' + str(percent) + '%')
+            version = str(
+                str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
+                space + '|' + str(percent) + '%')
 
-        self.versions_hide = vim.eval('g:vira_version_hide')
-        if fixed != total or total == 0 or not int(self.versions_hide) == 1:
-            self.versions.add(str(project) + ' ~ ' + version)
+            self.versions_hide = vim.eval('g:vira_version_hide')
+            if fixed != total or total == 0 or not int(self.versions_hide) == 1:
+                self.versions.add(str(project) + ' ~ ' + str(version.replace('\'', '')))
+
+        else:
+            percent = 0
 
         return percent
 
@@ -756,24 +865,12 @@ Comments
         Build a vim pop-up menu for a list of versions with project filters
         '''
 
-        # Reset version list
-        self.versions = set()
-
-        # Project filter for version list
-        projects = set()
-        if self.userconfig_filter['project'] == '':
-            projects = self.jira.projects()
-        elif isinstance(self.userconfig_filter['project'], str):
-            projects.add(self.userconfig_filter['project'])
-        else:
-            for p in self.userconfig_filter['project']:
-                projects.add(p)
-
         # Loop through each project and all versions within
-        for p in projects:
-            for v in reversed(self.jira.project_versions(p)):
-                self.version_percent(p, v)  # Add and update the version list
-        return self.versions  # Return the version list
+        try:
+            for v in reversed(self.jira.project_versions(vim.eval('s:projects[0]'))):
+                vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
+        except:
+                vim.command('let s:versions = []')
 
     def load_project_config(self, repo):
         '''
@@ -823,6 +920,11 @@ Comments
             if value:
                 self.userconfig_newissue[key] = value
 
+        # Set user-defined issue sort options
+        sort_order = self.vira_projects.get(repo, {}).get('issuesort', 'updated DESC')
+        self.userconfig_issuesort = ', '.join(sort_order) if type(
+            sort_order) == list else sort_order
+
     def query_issues(self):
         '''
         Query issues based on current filters
@@ -834,7 +936,7 @@ Comments
             if filter_str:
                 q.append(filter_str)
 
-        query = ' AND '.join(q) + ' ORDER BY updated DESC'
+        query = ' AND '.join(q) + ' ORDER BY ' + self.userconfig_issuesort
         issues = self.jira.search_issues(
             query,
             fields='summary,comment,status,statusCategory,issuetype,assignee',
@@ -860,6 +962,7 @@ Comments
             'Assignee': 'ViraSetAssignee',
             'Component': 'ViraSetComponent',
             'Priority': 'ViraSetPriority',
+            'Epic Link': 'ViraSetEpic',
             'Status': 'ViraSetStatus',
             'Type': 'ViraSetType',
             'Version': 'ViraSetVersion',
@@ -875,14 +978,15 @@ Comments
                     if field == 'Summary':
                         self.report_lines[idx + 2] = command
                         self.report_lines[idx + 3] = command
+                        self.report_lines[idx + 4] = command
                     continue
 
         description_len = description.count('\n') + 3
-        for x in range(18, 18 + description_len):
+        for x in range(20, 22 + description_len):
             self.report_lines[x] = 'ViraEditDescription'
 
         offset = 2 if len(issue['comment']['comments']) > 4 else 1
-        comment_line = 18 + description_len + offset
+        comment_line = 25 + description_len + offset
         for comment in issue['comment']['comments']:
             comment_len = comment['body'].count('\n') + 3
             for x in range(comment_line, comment_line + comment_len):
