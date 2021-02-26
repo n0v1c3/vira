@@ -54,6 +54,7 @@ let s:vira_set_lookup = {
 augroup ViraPrompt
   autocmd!
   exe 'autocmd BufWinLeave ' . s:vira_prompt_file . ' call vira#_prompt_end()'
+  silent! execute 'setlocal nomodifiable'
 augroup END
 
 " Functions {{{1
