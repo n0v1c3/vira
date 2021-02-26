@@ -98,8 +98,9 @@ function! vira#_msg_error(code, msg) "{{{2
   echohl None
 endfunction
 
-function! vira#_prompt_start(type, ...) abort "{{{2
+silent! function! vira#_prompt_start(type, ...) abort "{{{2
   " Make sure vira has all the required inputs selected
+  silent! execute 'setlocal modifiable'
   if a:type != 'issue' && a:type != 'edit_filter'
     if (vira#_get_active_issue() == g:vira_null_issue)
       echo 'Please select an issue before performing this action'
@@ -228,7 +229,7 @@ function! vira#_load_project_config(...) " {{{2
 
 endfunction
 
-function! vira#_menu(type) abort " {{{2
+silent! function! vira#_menu(type) abort " {{{2
   if a:type != 'servers'
     " Load config from user-defined file
     if (g:vira_load_project_enabled == 1) | call vira#_load_project_config() | endif
@@ -328,7 +329,7 @@ function! vira#_menu(type) abort " {{{2
   else | silent! execute 'set wrap' | endif
 
   silent! execute 'set linebreak'
-  setlocal nomodifiable
+  silent! execute 'setlocal nomodifiable'
 endfunction
 
 function! vira#_quit() "{{{2
