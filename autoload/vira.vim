@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.2'
+let s:vira_version = '0.4.3'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -328,13 +328,13 @@ function! vira#_menu(type) abort " {{{2
   else | silent! execute 'set wrap' | endif
 
   silent! execute 'set linebreak'
+  setlocal nomodifiable
 endfunction
 
 function! vira#_quit() "{{{2
-  let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
     let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
-    if (winnr > 0)
+        if (winnr > 0)
         execute winnr .' wincmd q'
     endif
   endfor
