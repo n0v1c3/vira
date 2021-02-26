@@ -452,9 +452,9 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 This is an example of a typical jira issue report (except the report looks colorized and fancy in vim):
 
 ```
-┌---------------------------------┐
++---------------------------------+
 |            VIRA-134             |
-├--------------┬------------------┤
++--------------+------------------+
 |      Created | 2020-04-06 12:06 |
 |      Updated | 2020-06-23 01:43 |
 |         Type | Task             |
@@ -466,11 +466,15 @@ This is an example of a typical jira issue report (except the report looks color
 |      Version | 1.0.0            |
 |     Assignee | Mike Boiko       |
 |     Reporter | Mike Boiko       |
-└--------------┴------------------┘
-Summary
++--------------+------------------+
++--------------+
+|    Summary   |
++--------------+
 Edit any jira field
 
-Description
++--------------+
+| Descripotion |
++--------------+
 A user should be able to edit any field that
 is shown on a vira issuereport.
 
@@ -482,7 +486,9 @@ The edit command would bring up the vira_prompt
 buffer, in the same manner as creating new
 issues/comments.
 
-Comments
++--------------+
+|   Comments   |
++--------------+
 ...
 ```
 
