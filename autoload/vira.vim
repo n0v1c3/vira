@@ -51,7 +51,7 @@ let s:vira_set_lookup = {
       \}
 
 " AutoCommands {{{1
-silent! augroup ViraPrompt "{{{2
+augroup ViraPrompt "{{{2
   autocmd!
   exe 'autocmd BufWinLeave ' . s:vira_prompt_file . ' call vira#_prompt_end()'
 augroup END
@@ -106,8 +106,6 @@ silent! function! vira#_prompt_start(type, ...) abort "{{{2
       return
     endif
   endif
-
-  execute 'setlocal modifiable'
 
   " Used for comment id
   if a:0 > 0
@@ -231,7 +229,6 @@ function! vira#_load_project_config(...) " {{{2
 endfunction
 
 function! vira#_menu(type) abort " {{{2
-  execute 'setlocal modifiable'
   if a:type != 'servers'
     " Load config from user-defined file
     if (g:vira_load_project_enabled == 1) | call vira#_load_project_config() | endif
@@ -331,8 +328,9 @@ function! vira#_menu(type) abort " {{{2
   if type == 'menu' | silent execute 'set nowrap'
   else | silent! execute 'set wrap' | endif
 
-  silent! execute 'set linebreak'
   execute 'setlocal nomodifiable'
+
+  silent! execute 'set linebreak'
 endfunction
 
 function! vira#_quit() "{{{2

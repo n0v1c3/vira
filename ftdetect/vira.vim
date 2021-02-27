@@ -28,13 +28,9 @@ augroup Vira
   autocmd Filetype vira_menu setlocal winfixheight
 
   " Report
-  " autocmd BufEnter vira_report setlocal winfixwidth
   autocmd Filetype vira_report setlocal nonumber
-  " autocmd Filetype vira_report setlocal conceallevel=3
   autocmd Filetype vira_report setlocal norelativenumber
   autocmd Filetype vira_report nnoremap <silent> <buffer> <cr> :call vira#_edit_report()<cr>
-  " autocmd Filetype vira_report nnoremap <silent> <buffer> j :set syntax=vira_report<cr>gj
-  " autocmd Filetype vira_report nnoremap <silent> <buffer> k :set syntax=vira_report<cr>gk
   autocmd Filetype vira_report noremap <silent> <buffer> j gj
   autocmd Filetype vira_report noremap <silent> <buffer> k gk
 
