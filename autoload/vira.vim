@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.2'
+let s:vira_version = '0.4.3'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -51,13 +51,13 @@ let s:vira_set_lookup = {
       \}
 
 " AutoCommands {{{1
-augroup ViraPrompt
+augroup ViraPrompt "{{{2
   autocmd!
   exe 'autocmd BufWinLeave ' . s:vira_prompt_file . ' call vira#_prompt_end()'
 augroup END
 
 " Functions {{{1
-function! vira#_async() abort
+function! vira#_async() abort "{{{2
   try
     python3 Vira.api._async(Vira.api._async_vim)
   endtry
@@ -98,7 +98,7 @@ function! vira#_msg_error(code, msg) "{{{2
   echohl None
 endfunction
 
-function! vira#_prompt_start(type, ...) abort "{{{2
+silent! function! vira#_prompt_start(type, ...) abort "{{{2
   " Make sure vira has all the required inputs selected
   if a:type != 'issue' && a:type != 'edit_filter'
     if (vira#_get_active_issue() == g:vira_null_issue)
@@ -278,15 +278,16 @@ function! vira#_menu(type) abort " {{{2
     if (winnr <= 0)
       if g:vira_report_width == 'l' || g:vira_report_width == 'L' || g:vira_report_width > 0
         autocmd BufEnter vira_report wincmd L
+      elseif g:vira_report_width == 't' || g:vira_report_width == 'T' || g:vira_report_width == '0'
+        autocmd BufEnter vira_report wincmd T
       elseif g:vira_report_width == 'h' || g:vira_report_width == 'H' || g:vira_report_width < 0
         autocmd BufEnter vira_report wincmd H
-      elseif g:vira_report_width == 't' || g:vira_report_width == 'T' || g:vira_report_width == '0'
-        autocmd BufEnter vira_report silent! wincmd T
       endif
+
       autocmd BufEnter vira_report setlocal winfixwidth
       silent! execute 'vertical resize ' . g:vira_report_width
       silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_' . type)
-      else | call execute(winnr . ' windo e') | endif
+    else | call execute(winnr . ' windo e') | endif
   else " Menus
     if (winnr <= 0)
       if g:vira_menu_height == 'j' || g:vira_menu_height == 'J' | let g:vira_menu_height = 10 | endif
@@ -327,15 +328,16 @@ function! vira#_menu(type) abort " {{{2
   if type == 'menu' | silent execute 'set nowrap'
   else | silent! execute 'set wrap' | endif
 
+  execute 'setlocal nomodifiable'
+
   silent! execute 'set linebreak'
 endfunction
 
 function! vira#_quit() "{{{2
-  let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
     let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
     if (winnr > 0)
-        execute winnr .' wincmd q'
+        execute winnr . ' wincmd q'
     endif
   endfor
   silent! call vira#_resize()
@@ -575,7 +577,7 @@ function! vira#_set() "{{{2
 
     " TODO: VIRA-239 [201027] - Flip menu selects for nice user highlights
     " Grab proper user id for `currentUser` lookup
-    silent! let currentUser = split(getline('.'),' \~ ')[0]
+    let currentUser = split(getline('.'),' \~ ')[0]
 
     " GLOBAL
     if variable[:1] == 'g:'
