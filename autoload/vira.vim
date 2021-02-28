@@ -334,10 +334,11 @@ function! vira#_menu(type) abort " {{{2
 endfunction
 
 function! vira#_quit() "{{{2
+  let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
     let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
     if (winnr > 0)
-        execute winnr . ' wincmd q'
+        silent! execute winnr . ' wincmd q'
     endif
   endfor
   silent! call vira#_resize()
@@ -364,8 +365,8 @@ function! vira#_resize() " {{{2
   let vira_windows = ['menu', 'report']
   for vira_window in vira_windows
     let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
-      if (vira_window == 'report') | execute "normal! h:vnew\<cr>:q\<cr>l"
-      else | execute "normal! h:new\<cr>:q\<cr>l"
+      if (vira_window == 'report') | silent! execute "normal! h:vnew\<cr>:q\<cr>l"
+      else | silent! execute "normal! h:new\<cr>:q\<cr>l"
       endif
   endfor
 endfunction
