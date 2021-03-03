@@ -276,18 +276,16 @@ function! vira#_menu(type) abort " {{{2
   silent! let winnr = bufwinnr(s:vira_root_dir . '/vira_' . type . '$')
   if type == 'report'
     if (winnr <= 0)
-      if g:vira_report_width == 't' || g:vira_report_width == 'T'
-        autocmd BufEnter vira_report wincmd T
+      if g:vira_report_width == 'l' || g:vira_report_width == 'L'
+        autocmd BufEnter vira_report wincmd L
+      elseif g:vira_report_width == 'h' || g:vira_report_width == 'H'
+        autocmd BufEnter vira_report wincmd H
+      elseif g:vira_report_width == 't' || g:vira_report_width == 'T'
+        autocmd BufEnter vira_report silent! wincmd T
       else
-        if g:vira_report_width == 'h' || g:vira_report_width == 'H' || g:vira_report_width < 0
-          autocmd BufEnter vira_report wincmd H
-        else
-          autocmd BufEnter vira_report wincmd L
-        endif
-      autocmd BufEnter vira_report setlocal winfixwidth
-      silent! execute 'vertical resize ' . g:vira_report_width
+        silent! execute 'vertical resize ' . g:vira_report_width
       endif
-
+      autocmd BufEnter vira_report setlocal winfixwidth
       silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_' . type)
     else | call execute(winnr . ' windo e') | endif
   else " Menus
