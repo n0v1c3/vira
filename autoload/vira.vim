@@ -328,8 +328,6 @@ function! vira#_menu(type) abort " {{{2
   if type == 'menu' | silent execute 'set nowrap'
   else | silent! execute 'set wrap' | endif
 
-  execute 'setlocal nomodifiable'
-
   silent! execute 'set linebreak'
 endfunction
 
