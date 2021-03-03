@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.4'
+let s:vira_version = '0.4.5'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -327,8 +327,6 @@ function! vira#_menu(type) abort " {{{2
   " Ensure wrap and linebreak are enabled
   if type == 'menu' | silent execute 'set nowrap'
   else | silent! execute 'set wrap' | endif
-
-  execute 'setlocal nomodifiable'
 
   silent! execute 'set linebreak'
 endfunction

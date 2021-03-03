@@ -1,4 +1,4 @@
-# vira - v0.4.4
+# vira - v0.4.5
 
 **Vim JIRA Atlassian**
 
