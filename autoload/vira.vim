@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.3'
+let s:vira_version = '0.4.4'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -321,7 +321,7 @@ function! vira#_menu(type) abort " {{{2
       silent! execute '%s/\^M//g' | call histdel("search", -1)
       silent! 1,2d x
       silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
-      silent! normal! zCGVzOgg
+      silent! normal zCGVzOgg
   endif
 
   " Ensure wrap and linebreak are enabled
