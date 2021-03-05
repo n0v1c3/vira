@@ -33,7 +33,7 @@ let s:vira_set_lookup = {
       \'assignees': 'assignee',
       \'components': 'component',
       \'issues': 'g:vira_active_issue',
-      \'issuetypes': 'issuetlpe',
+      \'issuetypes': 'issuetype',
       \'priority': 'priorities',
       \'priorities': 'priority',
       \'projects': 'project',
