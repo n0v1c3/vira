@@ -966,7 +966,6 @@ class ViraAPI():
             'Status': 'ViraSetStatus',
             'Type': 'ViraSetType',
             'Version': 'ViraSetVersion',
-            'Summary': 'ViraEditSummary',
         }
 
         self.report_lines = {}
@@ -975,14 +974,13 @@ class ViraAPI():
             for field, command in writable_fields.items():
                 if field in line:
                     self.report_lines[idx + 1] = command
-                    if field == 'Summary':
-                        self.report_lines[idx + 2] = command
-                        self.report_lines[idx + 3] = command
-                        self.report_lines[idx + 4] = command
                     continue
 
+        for x in range(16, 21):
+            self.report_lines[x] = 'ViraEditSummary'
+
         description_len = description.count('\n') + 3
-        for x in range(20, 22 + description_len):
+        for x in range(21, 23 + description_len):
             self.report_lines[x] = 'ViraEditDescription'
 
         offset = 2 if len(issue['comment']['comments']) > 4 else 1
