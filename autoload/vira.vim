@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.6'
+let s:vira_version = '0.4.7'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -158,7 +158,7 @@ function! vira#_connect() abort "{{{2
   python3 import vim
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
-  call vira#_async()
+  " call vira#_async()
 endfunction
 
 function! vira#_edit_report() abort "{{{2

@@ -1,4 +1,4 @@
-# VIRA 0.4.6
+# VIRA 0.4.7
 
 **Vim JIRA Atlassian**
 
