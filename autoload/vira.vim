@@ -158,7 +158,7 @@ function! vira#_connect() abort "{{{2
   python3 import vim
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
-  call vira#_async()
+  " call vira#_async()
 endfunction
 
 function! vira#_edit_report() abort "{{{2
