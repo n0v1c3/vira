@@ -11,12 +11,12 @@ from datetime import datetime
 import json
 import urllib3
 import vim
+import sqlite3
 
 class ViraAPI():
     '''
     This class gets imported by __init__.py
     '''
-
     def __init__(self):
         '''
         Initialize vira
@@ -25,11 +25,16 @@ class ViraAPI():
         # Load user-defined config files
         file_servers = vim.eval('g:vira_config_file_servers')
         file_projects = vim.eval('g:vira_config_file_projects')
+        file_db = vim.eval('g:vira_config_file_db')
+
         try:
             self.vira_servers = load_config(file_servers)
             self.vira_projects = load_config(file_projects)
         except:
             print(f'Could not load {file_servers} or {file_projects}')
+
+        # Create the database file
+        self.vira_db = file_db
 
         self.userconfig_filter_default = {
             'assignee': '',
@@ -60,17 +65,64 @@ class ViraAPI():
         self.versions = set()
         self.servers = set()
         self.users_type = ''
+
         self.async_count = 0
 
         self.versions_hide(True)
 
+    def db_create(self):
+        '''
+        Create the database file in the vira dir
+        '''
+        try:
+            self.con = sqlite3.connect(self.vira_db)
+            self.cur = self.con.cursor()
+            self.cur.execute("CREATE TABLE vira(server text, project text, description text, version text, issue text, status test)")
+            self.con.commit()
+            #  con.close()
+        except OSError as e:
+            raise e
+
+    def db_con(self):
+        '''
+        Create the database file in the vira dir
+        '''
+        try:
+            self.con = sqlite3.connect(self.vira_db)
+            self.cur = self.con.cursor()
+            #  con.close()
+        except OSError as e:
+            raise e
+
+    def db_update(self, server, project, description, version, issue, status):
+        '''
+        Create the database file in the vira dir
+        '''
+
+        try:
+            #  con = sqlite3.connect(self.vira_db)
+            self.cur.execute("DELETE FROM vira WHERE server = '" + server + "' AND issue = '" + issue + "'")
+            self.cur.execute("INSERT INTO vira VALUES ('server', 'project', 'description', 'version', 'issue', 'status')")
+            self.con.commit()
+            #  con.close()
+        except OSError as e:
+            raise e
+
     def _async(self, func):
+        '''
+        Initialize vira
+        '''
+
         try:
             func()
         except:
             pass
 
     def _async_vim(self):
+        '''
+        Initialize vira
+        '''
+
         #  TODO: VIRA-247 [210223] - Clean-up vim variables in python _async
         try:
             if len(vim.eval('s:versions')) == 0:
@@ -82,12 +134,15 @@ class ViraAPI():
                 self.get_versions()
             else:
                 self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
+                vim.eval('echo s:versions[0]')
+                #  self.db_update(self.server, str(vim.eval('s:projects[0]')), "description", str(vim.eval('s:version[0]')), "issue", "status")
                 vim.command('let s:versions = s:versions[1:]')
 
             if self.async_count == 0 and vim.eval('s:vira_async_timer') == 10000:
                 self.users = self.get_users()
                 self.async_count = 1000
             self.async_count -= 1
+
         except:
             pass
 
@@ -303,6 +358,10 @@ class ViraAPI():
         self.get_components()
 
     def get_epic(self):
+        '''
+        Initialize vira
+        '''
+
         self.get_epics()
 
     def get_epics(self):
@@ -542,6 +601,10 @@ class ViraAPI():
         return self.prompt_text
 
     def format_date(self, date):
+        '''
+        Initialize vira
+        '''
+
         time = datetime.now().strptime(date, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
         return str(time)[0:10] + ' ' + str(time)[11:16]
 
@@ -785,6 +848,10 @@ class ViraAPI():
         return sorted(self.users)
 
     def get_current_user(self):
+        '''
+        Initialize vira
+        '''
+
         query = 'reporter = currentUser() or assignee = currentUser()'
         issues = self.jira.search_issues(
             query, fields='assignee, reporter', json_result='True', maxResults=-1)
@@ -814,6 +881,10 @@ class ViraAPI():
         print('None')
 
     def version_percent(self, project, fixVersion):
+        '''
+        Initialize vira
+        '''
+
         project = str(project)
         fixVersion = str(fixVersion)
         if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
@@ -825,8 +896,10 @@ class ViraAPI():
                 issue = issues['issues'][0]['fields']['fixVersions'][0]
                 idx = issue['id']
 
-                total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
-                pending = self.jira.version_count_unresolved_issues(idx)
+                #  total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
+                #  pending = self.jira.version_count_unresolved_issues(idx)
+                total = 2
+                pending = 1
                 fixed = total - pending
                 percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
                 space = ''.join([char * (5 - len(percent)) for char in ' '])
@@ -907,6 +980,10 @@ class ViraAPI():
         server = self.vira_projects.get(repo, {}).get('server')
         if server:
             vim.command(f'let g:vira_serv = "{server}"')
+
+        # Set user-defined filters for current project
+        #  for issue in self.vira_db.execute('SELECT * FROM ' + vira_table):
+            #  self.vira_db.insert(issue)
 
         # Set user-defined filters for current project
         for key in self.userconfig_filter.keys():

@@ -23,7 +23,6 @@ let s:vira_highlight = ''
 let s:projects = []
 let s:versions = []
 
-let s:vira_async_timer = g:vira_async_init_timer
 let s:vira_async_debug = 0
 
 let s:vira_todo_header = 'TODO'
@@ -62,7 +61,7 @@ function! vira#_async() abort "{{{2
     python3 Vira.api._async(Vira.api._async_vim)
   endtry
   if s:vira_async_debug | echo s:versions | endif
-  call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
+  call timer_start(g:vira_async_timer, { -> execute('call vira#_async()', '') })
 endfunction
 
 function! vira#_browse(url) "{{{2
@@ -150,15 +149,26 @@ function! vira#_connect() abort "{{{2
 
   " TODO: VIRA-222 [200930] - remove extra inputs
   if (g:vira_serv == 'Null')
-      let g:vira_serv = input("server: ")
-      let g:vira_serv = input("server: ")
+    let g:vira_serv = input("server: ")
+    let g:vira_serv = input("server: ")
   endif
 
   " Neovim requires this when trying to run vira from a brand new empty buffer
   python3 import vim
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
-  " call vira#_async()
+
+  call vira#_db_con()
+  call vira#_async()
+endfunction
+
+function! vira#_db_con()
+  " Create and connect to the issue database
+  if (!exists(g:vira_config_file_db))
+    python3 Vira.api.db_create()
+  else
+    python3 Vira.api.db_con()
+  endif
 endfunction
 
 function! vira#_edit_report() abort "{{{2
