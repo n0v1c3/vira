@@ -91,7 +91,7 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute("DELETE FROM vira WHERE server IS '" + str(server) + "' AND issue IS '" + str(issue) + "'")
+            cur.execute("DELETE FROM vira WHERE server IS '" + str(server) + "' AND project IS '" + str(project) + "' AND version IS '" + str(version) + "'")
             cur.execute("INSERT INTO vira VALUES ('" + str(server) + "', '" + str(project) + "', '" + str(description) + "', '" + str(version) + "', '" + str(issue) + "', '" + str(status) + "')")
             con.commit()
             con.close()
