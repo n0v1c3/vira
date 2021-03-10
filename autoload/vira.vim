@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.7'
+let s:vira_version = '0.4.8'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -158,17 +158,10 @@ function! vira#_connect() abort "{{{2
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
 
-  call vira#_db_con()
-  call vira#_async()
-endfunction
-
-function! vira#_db_con()
-  " Create and connect to the issue database
-  if (!exists(g:vira_config_file_db))
+  if (!filereadable(g:vira_config_file_db))
     python3 Vira.api.db_create()
-  else
-    python3 Vira.api.db_con()
   endif
+  call vira#_async()
 endfunction
 
 function! vira#_edit_report() abort "{{{2

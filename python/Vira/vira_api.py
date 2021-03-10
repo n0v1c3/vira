@@ -75,22 +75,11 @@ class ViraAPI():
         Create the database file in the vira dir
         '''
         try:
-            self.con = sqlite3.connect(self.vira_db)
-            self.cur = self.con.cursor()
-            self.cur.execute("CREATE TABLE vira(server text, project text, description text, version text, issue text, status test)")
-            self.con.commit()
-            #  con.close()
-        except OSError as e:
-            raise e
-
-    def db_con(self):
-        '''
-        Create the database file in the vira dir
-        '''
-        try:
-            self.con = sqlite3.connect(self.vira_db)
-            self.cur = self.con.cursor()
-            #  con.close()
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('''CREATE TABLE vira (server text, project text, description text, version text, issue text, status test)''')
+            con.commit()
+            con.close()
         except OSError as e:
             raise e
 
@@ -100,11 +89,12 @@ class ViraAPI():
         '''
 
         try:
-            #  con = sqlite3.connect(self.vira_db)
-            self.cur.execute("DELETE FROM vira WHERE server = '" + server + "' AND issue = '" + issue + "'")
-            self.cur.execute("INSERT INTO vira VALUES ('server', 'project', 'description', 'version', 'issue', 'status')")
-            self.con.commit()
-            #  con.close()
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute("DELETE FROM vira WHERE server IS '" + str(server) + "' AND issue IS '" + str(issue) + "'")
+            cur.execute("INSERT INTO vira VALUES ('" + str(server) + "', '" + str(project) + "', '" + str(description) + "', '" + str(version) + "', '" + str(issue) + "', '" + str(status) + "')")
+            con.commit()
+            con.close()
         except OSError as e:
             raise e
 
@@ -129,13 +119,13 @@ class ViraAPI():
                 vim.command('let s:projects = s:projects[1:]')
                 if len(vim.eval('s:projects')) == 0:
                     #  TODO: VIRA-247 [210223] - Check for new projects and versions and start PRIORITY ranking for updates
-                    vim.command('let s:vira_async_timer = g:vira_async_timer')
+                    #  vim.command('let s:vira_async_timer = g:vira_async_timer')
                     self.get_projects()
                 self.get_versions()
             else:
                 self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
-                vim.eval('echo s:versions[0]')
-                #  self.db_update(self.server, str(vim.eval('s:projects[0]')), "description", str(vim.eval('s:version[0]')), "issue", "status")
+                self.db_update('server', str(vim.eval('s:projects[0]')), 'description', str(vim.eval('s:versions[0]')), 'issue', 'status')
+                #  vim.command('echo s:versions[0]')
                 vim.command('let s:versions = s:versions[1:]')
 
             if self.async_count == 0 and vim.eval('s:vira_async_timer') == 10000:
