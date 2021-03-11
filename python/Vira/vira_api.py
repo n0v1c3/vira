@@ -77,7 +77,12 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('''CREATE TABLE vira (server text, project text, description text, version text, issue text, status test)''')
+            cur.execute('''CREATE TABLE issues (name text, description text, server_id int, project_id int, version_id int, status_id int)''')
+            cur.execute('''CREATE TABLE projects (name text, description text, server_id int)''')
+            cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
+            cur.execute('''CREATE TABLE statuses (name text, description text, server_id int)''')
+            cur.execute('''CREATE TABLE users (name text, description text, server_id int)''')
+            cur.execute('''CREATE TABLE versions (name text, project_id int, description text)''')
             con.commit()
             con.close()
         except OSError as e:
@@ -91,12 +96,32 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute("DELETE FROM vira WHERE server IS '" + str(server) + "' AND project IS '" + str(project) + "' AND version IS '" + str(version) + "'")
-            cur.execute("INSERT INTO vira VALUES ('" + str(server) + "', '" + str(project) + "', '" + str(description) + "', '" + str(version) + "', '" + str(issue) + "', '" + str(status) + "')")
+            try:
+                cur.execute("DELETE FROM projects WHERE server_id = 1 AND name IS '" + str(project) + "'")
+            except:
+                pass
+            try:
+                cur.execute("DELETE FROM versions WHERE server_id = 1 AND name IS '" + str(version) + "'")
+            except:
+                pass
+            try:
+                cur.execute("DELETE FROM servers WHERE name IS '" + str(server) + "'")
+            except:
+                pass
+
+            cur.execute("INSERT INTO servers VALUES ('" + str(server) + "', '" + str(server) + "', '" + str(server) + "')")
+            cur.execute("INSERT INTO projects VALUES ('" + str(project) + "', '" + str(project) + "', 1)")
+            cur.execute("INSERT INTO versions VALUES ('" + str(version) + "', '" + str(version) + "', 1)")
             con.commit()
             con.close()
         except OSError as e:
             raise e
+
+    def next_issue(self, project, version):
+        try:
+            self.db_update(str(vim.eval('g:vira_serv')), str(vim.eval('s:projects[0]')), 'description', str(vim.eval('s:versions[0]')), 'issue', 'status')
+        except:
+            pass
 
     def _async(self, func):
         '''
@@ -124,7 +149,7 @@ class ViraAPI():
                 self.get_versions()
             else:
                 self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
-                self.db_update('server', str(vim.eval('s:projects[0]')), 'description', str(vim.eval('s:versions[0]')), 'issue', 'status')
+                self.next_issue(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 #  vim.command('echo s:versions[0]')
                 vim.command('let s:versions = s:versions[1:]')
 
