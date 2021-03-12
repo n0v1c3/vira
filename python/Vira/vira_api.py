@@ -77,12 +77,12 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('''CREATE TABLE issues (name text, description text, server_id int, project_id int, version_id int, status_id int)''')
-            cur.execute('''CREATE TABLE projects (name text, description text, server_id int)''')
+            cur.execute('''CREATE TABLE issues (project_id int, version_id int, name text, description text, status_id int)''')
+            cur.execute('''CREATE TABLE projects (server_id text, name text, description text)''')
             cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
-            cur.execute('''CREATE TABLE statuses (name text, description text, server_id int)''')
-            cur.execute('''CREATE TABLE users (name text, description text, server_id int)''')
-            cur.execute('''CREATE TABLE versions (name text, project_id int, description text)''')
+            cur.execute('''CREATE TABLE statuses (server_id text, name text, description text)''')
+            cur.execute('''CREATE TABLE users (server_id text, name text, description text)''')
+            cur.execute('''CREATE TABLE versions (server_id text, project_id int, name text, description text)''')
             con.commit()
             con.close()
         except OSError as e:
@@ -97,11 +97,11 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             try:
-                cur.execute("DELETE FROM projects WHERE server_id = 1 AND name IS '" + str(project) + "'")
+                cur.execute("DELETE FROM projects WHERE server_id IS '" + str(server) + "' AND name IS '" + str(project) + "'")
             except:
                 pass
             try:
-                cur.execute("DELETE FROM versions WHERE server_id = 1 AND name IS '" + str(version) + "'")
+                cur.execute("DELETE FROM versions WHERE server_id IS '" + str(server) + "' AND name IS '" + str(version) + "'")
             except:
                 pass
             try:
@@ -110,12 +110,27 @@ class ViraAPI():
                 pass
 
             cur.execute("INSERT INTO servers VALUES ('" + str(server) + "', '" + str(server) + "', '" + str(server) + "')")
-            cur.execute("INSERT INTO projects VALUES ('" + str(project) + "', '" + str(project) + "', 1)")
-            cur.execute("INSERT INTO versions VALUES ('" + str(version) + "', '" + str(version) + "', 1)")
+            cur.execute("INSERT INTO projects VALUES ('" + str(server) + "', '" + str(project) + "', '" + str(project) + "')")
+            cur.execute("INSERT INTO versions VALUES ('" + str(server) + "', '" + str(project) + "', '" + str(version) + "', '" + str(version) + "')")
             con.commit()
             con.close()
         except OSError as e:
             raise e
+
+    def db_version_menu(self):
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            t = ('"' + str(vim.eval('g:vira_serv')) + '"',)
+            cur.execute('SELECT * FROM versions WHERE server_id=?', t)
+            versions = cur.fetchone()
+            #  vim.command('echo "' + str(versions) + '"')
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        #  return versions
 
     def next_issue(self, project, version):
         try:
@@ -913,6 +928,7 @@ class ViraAPI():
 
                 #  total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
                 #  pending = self.jira.version_count_unresolved_issues(idx)
+                self.db_version_menu()
                 total = 2
                 pending = 1
                 fixed = total - pending
