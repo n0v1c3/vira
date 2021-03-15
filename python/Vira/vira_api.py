@@ -81,7 +81,7 @@ class ViraAPI():
                     self.get_projects()
                 self.get_versions()
             else:
-                self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
+                #  self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 vim.command('let s:versions = s:versions[1:]')
 
             if self.async_count == 0 and vim.eval('s:vira_async_timer') == 10000:
@@ -587,9 +587,9 @@ class ViraAPI():
         description = str(issue.get('description'))
 
         # Version percent for single version attacted
-        if len(issue['fixVersions']) == 1 and version != '':
-            version += ' | ' + self.version_percent(
-                str(issue['project']['key']), version) + '%'
+        #  if len(issue['fixVersions']) == 1 and version != '':
+            #  version += ' | ' + self.version_percent(
+                #  str(issue['project']['key']), version) + '%'
 
         comments = ''
         idx = 0

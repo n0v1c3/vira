@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.7'
+let s:vira_version = '0.4.8'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -57,13 +57,13 @@ augroup ViraPrompt "{{{2
 augroup END
 
 " Functions {{{1
-function! vira#_async() abort "{{{2
-  try
-    python3 Vira.api._async(Vira.api._async_vim)
-  endtry
-  if s:vira_async_debug | echo s:versions | endif
-  call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
-endfunction
+" function! vira#_async() abort "{{{2
+  " try
+    " python3 Vira.api._async(Vira.api._async_vim)
+  " endtry
+  " if s:vira_async_debug | echo s:versions | endif
+  " call timer_start(s:vira_async_timer, { -> execute('call vira#_async()', '') })
+" endfunction
 
 function! vira#_browse(url) "{{{2
   " Confirm an issue has been selected
