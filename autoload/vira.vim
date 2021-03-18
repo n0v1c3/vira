@@ -155,12 +155,10 @@ function! vira#_connect() abort "{{{2
 
   " Neovim requires this when trying to run vira from a brand new empty buffer
   python3 import vim
+
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
   let s:vira_connected = 1
 
-  if (!filereadable(g:vira_config_file_db))
-    python3 Vira.api.db_create()
-  endif
   call vira#_async()
 endfunction
 

@@ -70,119 +70,6 @@ class ViraAPI():
 
         self.versions_hide(True)
 
-    def db_create(self):
-        '''
-        Create the database file in the vira dir
-        '''
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            cur.execute('''CREATE TABLE issues (project_id int, version_id int, name text, description text, status_id int)''')
-            cur.execute('''CREATE TABLE projects (server_id int, name text, description text)''')
-            cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
-            cur.execute('''CREATE TABLE statuses (server_id int, name text, description text)''')
-            cur.execute('''CREATE TABLE users (server_id int, name text, description text)''')
-            cur.execute('''CREATE TABLE versions (server_id int, project_id int, name text, description text)''')
-            con.commit()
-            con.close()
-        except OSError as e:
-            raise e
-
-    def db_update(self, server, project, description, version, issue, status):
-        '''
-        Create the database file in the vira dir
-        '''
-
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-
-            server_id = self.db_server_id()
-            #  vim.command('echo "TEST"')
-            try:
-                cur.execute('DELETE FROM servers WHERE name IS "' + str(vim.eval('g:vira_serv')) + '"')
-            except:
-                pass
-
-            try:
-                cur.execute("DELETE FROM projects WHERE server_id = " + server_id + " AND name IS '" + str(project) + "'")
-                #  vim.command('echo "' + str(project) + '"')
-            except:
-                pass
-
-            try:
-                cur.execute("DELETE FROM versions WHERE project_id = " + int(project_id))
-            except:
-                pass
-
-            #  vim.command('echo "' + str(project) + '"')
-            #  vim.command('echo "' + str(server_id) + '"')
-            cur.execute("INSERT INTO servers VALUES ('" + str(vim.eval('g:vira_serv')) + "', '" + str(vim.eval('g:vira_serv')) + "', '" + str(vim.eval('g:vira_serv')) + "')")
-            #  cur.execute("INSERT INTO projects VALUES (" + server_id + ", '" + str(project) + "', '" + str(project) + "')")
-            #  cur.execute("INSERT INTO versions VALUES (" + str(server) + ", " + str(server) + ", '" + str(version) + "', '" + str(description) + "')")
-            #  vim.command('echo "' + str(server[0]) + '"')
-            con.commit()
-            con.close()
-        except OSError as e:
-            raise e
-
-    def db_version_menu(self):
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            t = (str(vim.eval('g:vira_serv')),)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=?', t)
-            cur.execute('SELECT rowid, * FROM versions WHERE server_id=?', db_server_id())
-            versions = cur.fetchone()
-            #  vim.command('echo "' + str(versions) + '"')
-            con.commit()
-            con.close()
-        except OSError as e:
-            raise e
-
-        return versions
-
-    def db_server_id(self):
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            #  t = (str(vim.eval('g:vira_serv')),)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=?', t)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=1)
-            #  cur.execute('SELECT rowid FROM servers WHERE name IS "?"', (str(vim.eval('g:vira_serv')),))
-            cur.execute('SELECT rowid FROM servers WHERE name=?', (str(vim.eval('g:vira_serv')),))
-            server_id = cur.fetchone()
-            con.commit()
-            con.close()
-        except OSError as e:
-            raise e
-
-        return int(server_id[0])
-
-    def db_project_id(self, project):
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            #  t = (str(vim.eval('g:vira_serv')),)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=?', t)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=1)
-            #  cur.execute('SELECT rowid FROM servers WHERE name IS "?"', (str(vim.eval('g:vira_serv')),))
-            cur.execute('SELECT rowid FROM projects WHERE name=?', (str(project),))
-            project_id = cur.fetchone()
-            #  vim.command('echo "' + str(project_id) + '"')
-            con.commit()
-            con.close()
-        except OSError as e:
-            raise e
-
-        return int(project_id)
-
-    def next_issue(self, project_id, version_id):
-        try:
-            self.db_update(self.db_server_id(), 1, 'description', 1, 'issue', 'status')
-        except:
-            pass
-
     def _async(self, func):
         '''
         Initialize vira
@@ -218,6 +105,155 @@ class ViraAPI():
                 self.async_count = 1000
             self.async_count -= 1
 
+        except:
+            pass
+
+    def _get_serv(self):
+        return str(self._vira_eval('g:vira_serv'))
+
+    def _vira_eval(self, evalVal):
+        return str(vim.eval(evalVal))
+
+    def db_create(self):
+        '''
+        Create the database file in the vira dir
+        '''
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('''CREATE TABLE issues (project_id int, version_id int, name text, description text, status_id int)''')
+            cur.execute('''CREATE TABLE projects (server_id int, name text, description text)''')
+            cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
+            cur.execute('''CREATE TABLE statuses (server_id int, name text, description text)''')
+            cur.execute('''CREATE TABLE users (server_id int, name text, description text)''')
+            cur.execute('''CREATE TABLE versions (server_id int, project_id int, name text, description text)''')
+            con.commit()
+            con.close()
+        except:
+            pass
+
+        # Add new servers to the database
+        self.db_insert_server()
+
+    def db_insert_server(self):
+        '''
+        Update server details in the databas as required
+        '''
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            # Remove existing server if found
+            try:
+                #  TODO [210317] - `db_insert_server` or `update` should be using the `rowid` for `DELETE`
+                #  cur.execute('DELETE FROM servers WHERE rowid IS ' + self.db_get_server())
+                if self.db_select_server(cur) < 0:
+                    #  self._vira_eval()
+                    cur.execute("INSERT INTO servers VALUES ('" + self._get_serv() + "', '" + self._get_serv() + "', '" + self._get_serv() + "')")
+            except:
+                pass
+            con.commit()
+            con.close()
+        except:
+            pass
+
+    def db_select_server(self, cur):
+        '''
+        Select current server `rowid`
+        '''
+        try:
+            rowid = cur.execute('SELECT rowid FROM servers WHERE name IS "?"', (self._get_serv(),))
+        except:
+            rowid = -1
+            pass
+        print(rowid)
+        return int(rowid)
+
+    def db_update(self, server, project, description, version, issue, status):
+        '''
+        Create the database file in the vira dir
+        '''
+
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+
+            server_id = self.db_server_id()
+            #  vim.command('echo "TEST"')
+            try:
+                cur.execute("DELETE FROM projects WHERE server_id = " + server_id + " AND name IS '" + str(project) + "'")
+                #  vim.command('echo "' + str(project) + '"')
+            except:
+                pass
+
+            try:
+                cur.execute("DELETE FROM versions WHERE project_id = " + int(project_id))
+            except:
+                pass
+
+            #  vim.command('echo "' + str(project) + '"')
+            #  vim.command('echo "' + str(server_id) + '"')
+            #  cur.execute("INSERT INTO projects VALUES (" + server_id + ", '" + str(project) + "', '" + str(project) + "')")
+            #  cur.execute("INSERT INTO versions VALUES (" + str(server) + ", " + str(server) + ", '" + str(version) + "', '" + str(description) + "')")
+            #  vim.command('echo "' + str(server[0]) + '"')
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+    def db_version_menu(self):
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            t = (self._get_serv(),)
+            #  cur.execute('SELECT * FROM versions WHERE server_id=?', t)
+            cur.execute('SELECT rowid, * FROM versions WHERE server_id=?', db_server_id())
+            versions = cur.fetchone()
+            #  vim.command('echo "' + str(versions) + '"')
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        return versions
+
+    def db_server_id(self):
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            #  t = (self._get_serv(),)
+            #  cur.execute('SELECT * FROM versions WHERE server_id=?', t)
+            #  cur.execute('SELECT * FROM versions WHERE server_id=1)
+            #  cur.execute('SELECT rowid FROM servers WHERE name IS "?"', (str(vim.eval('g:vira_serv')),))
+            cur.execute('SELECT rowid FROM servers WHERE name=?', (self._get_serv(),))
+            server_id = cur.fetchone()
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        return int(server_id[0])
+
+    def db_project_id(self, project):
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            #  t = (str(vim.eval('g:vira_serv')),)
+            #  cur.execute('SELECT * FROM versions WHERE server_id=?', t)
+            #  cur.execute('SELECT * FROM versions WHERE server_id=1)
+            #  cur.execute('SELECT rowid FROM servers WHERE name IS "?"', (str(vim.eval('g:vira_serv')),))
+            cur.execute('SELECT rowid FROM projects WHERE name=?', (str(project),))
+            project_id = cur.fetchone()
+            #  vim.command('echo "' + str(project_id) + '"')
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        return int(project_id)
+
+    def next_issue(self, project_id, version_id):
+        try:
+            self.db_update(self.db_server_id(), 1, 'description', 1, 'issue', 'status')
         except:
             pass
 
@@ -342,6 +378,7 @@ class ViraAPI():
             self.users = self.get_users()
             self.get_projects()
             self.get_versions()
+            self.db_create()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -370,18 +407,9 @@ class ViraAPI():
         if self.userconfig_filter.get(filterType, '') == '':
             return
 
-        selection = str(self.userconfig_filter[filterType]).strip('[]') if type(
-            self.userconfig_filter[filterType]
-        ) == list else self.userconfig_filter[filterType] if type(
-            self.userconfig_filter[filterType]
-        ) == tuple else "'" + self.userconfig_filter[filterType] + "'"
+        selection = str(self.userconfig_filter[filterType]).strip('[]') if type(self.userconfig_filter[filterType]) == list else self.userconfig_filter[filterType] if type(self.userconfig_filter[filterType]) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
-        return str(f"{filterType} in ({selection})").replace("'None'", "Null").replace(
-            "'Unassigned'", "Null").replace("'currentUser'", "currentUser()").replace(
-                "'currentUser()'",
-                "currentUser()").replace("'currentuser'", "currentUser()").replace(
-                    "'currentuser()'", "currentUser()").replace("'null'", "Null").replace(
-                        f"text in ({selection})", f"text ~ {selection}")
+        return str(f"{filterType} in ({selection})").replace("'None'", "Null").replace("'Unassigned'", "Null").replace("'currentUser'", "currentUser()").replace("'currentUser()'", "currentUser()").replace("'currentuser'", "currentUser()").replace("'currentuser()'", "currentUser()").replace("'null'", "Null").replace(f"text in ({selection})", f"text ~ {selection}")
 
     def get_assign_issue(self):
         '''
