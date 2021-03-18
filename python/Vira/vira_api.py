@@ -146,7 +146,7 @@ class ViraAPI():
             try:
                 #  TODO [210317] - `db_insert_server` or `update` should be using the `rowid` for `DELETE`
                 #  cur.execute('DELETE FROM servers WHERE rowid IS ' + self.db_get_server())
-                if self.db_select_server(cur) < 0:
+                if self.db_select_server() < 0:
                     #  self._vira_eval()
                     cur.execute("INSERT INTO servers VALUES ('" + self._get_serv() + "', '" + self._get_serv() + "', '" + self._get_serv() + "')")
             except:
@@ -156,12 +156,17 @@ class ViraAPI():
         except:
             pass
 
-    def db_select_server(self, cur):
+    def db_select_server(self):
         '''
         Select current server `rowid`
         '''
         try:
-            rowid = cur.execute('SELECT rowid FROM servers WHERE name IS "?"', (self._get_serv(),))
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT rowid FROM servers WHERE name=?', (self._get_serv(),))
+            rowid = cur.fetchone()[0]
+            con.commit()
+            con.close()
         except:
             rowid = -1
             pass
