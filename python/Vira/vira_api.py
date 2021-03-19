@@ -89,7 +89,6 @@ class ViraAPI():
         try:
             if len(vim.eval('s:versions')) == 0:
                 vim.command('let s:projects = s:projects[1:]')
-                self.db_insert_project(str(vim.eval('s:projects[0]')))
                 if len(vim.eval('s:projects')) == 0:
                     #  TODO: VIRA-247 [210223] - Check for new projects and versions and start PRIORITY ranking for updates
                     #  vim.command('let s:vira_async_timer = g:vira_async_timer')
@@ -148,8 +147,7 @@ class ViraAPI():
                 #  TODO [210317] - `db_insert_server` or `update` should be using the `rowid` for `DELETE`
                 #                - Look at the `project` db functions
                 #  cur.execute('DELETE FROM servers WHERE rowid IS ' + self.db_get_server())
-                if self.db_select_server() < 0:
-                    #  self._vira_eval()
+                if self.db_select_server() is None:
                     cur.execute("INSERT INTO servers VALUES ('" + self._get_serv() + "', '" + self._get_serv() + "', '" + self._get_serv() + "')")
             except:
                 pass
@@ -165,14 +163,14 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('SELECT rowid FROM servers WHERE name=?', (self._get_serv(),))
-            rowid = cur.fetchone()[0]
+            cur.execute('SELECT rowid, * FROM servers WHERE name=?', (self._get_serv(),))
+            row = cur.fetchone()
             con.commit()
             con.close()
         except:
-            rowid = -1
+            row = -1
             pass
-        return int(rowid)
+        return row
 
     def db_insert_project(self, project):
         '''
@@ -182,17 +180,17 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             try:
-                project = self.db_select_project(project)
+                project = self.db_select_project(project)[0]
                 cur.execute('''
                             UPDATE projects
                             SET description = "''' + str(project) + '''"
                             WHERE
-                                server_id = ''' + str(self.db_select_server()) + '''
+                                server_id = ''' + str(self.db_select_server()[0]) + '''
                             AND
                                 name IS "''' + str(project) + '"')
             except:
                 try:
-                    cur.execute("INSERT OR REPLACE INTO projects VALUES (" + str(self.db_select_server()) + ", '" + str(project) + "', '" + str(project) + "')")
+                    cur.execute("INSERT OR REPLACE INTO projects VALUES (" + str(self.db_select_server()[0]) + ", '" + str(project) + "', '" + str(project) + "')")
                 except:
                     self.db_create()
                     pass
@@ -209,13 +207,13 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('SELECT rowid FROM projects WHERE server_id=' + str(self.db_select_server()) + ' AND name="' + str(project) + '"')
-            rowid = cur.fetchone()[0]
+            cur.execute('SELECT rowid, * FROM projects WHERE server_id=' + str(self.db_select_server()[0]) + ' AND name="' + str(project) + '"')
+            row = cur.fetchone()
             con.commit()
             con.close()
         except OSError as e:
             raise e
-        return int(rowid)
+        return row
 
     def db_insert_version(self, project, version):
         '''
@@ -225,8 +223,8 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             try:
-                project = self.db_select_project(str(project))
-                version = self.db_select_version(str(project), str(version))
+                project = self.db_select_project(str(project))[0]
+                version = self.db_select_version(str(project), str(version))[1]
                 cur.execute('''
                             UPDATE versions
                             SET description = "''' + str(version) + '''"
@@ -253,13 +251,13 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('SELECT rowid FROM versions WHERE project_id=' + str(project) + ' AND name="' + str(version) + '"')
-            rowid = cur.fetchone()[0]
+            cur.execute('SELECT rowid, * FROM versions WHERE project_id=' + str(project) + ' AND name="' + str(version) + '"')
+            row = cur.fetchone()
             con.commit()
             con.close()
         except OSError as e:
             raise e
-        return int(rowid)
+        return row
 
     def db_insert_issue(self, project, version, name, summary, status):
         '''
@@ -269,9 +267,12 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             try:
-                project = self.db_select_project(str(project))
-                version = self.db_select_version(str(project), str(version))
-                issue = self.db_select_issue(str(project), str(version), str(name), str(summary), str(status))
+                # Confirm `db`'s and row of the issue
+                project = self.db_select_project(str(project))[0]
+                version = self.db_select_version(str(project), str(version))[0]
+                issue = self.db_select_issue(str(project), str(version), str(name))
+                #  TODO: VIRA-253 [210319] - Create summary `db` with id links
+                # If found update summary and status_id
                 cur.execute('''
                             UPDATE issues
                             SET summary = "''' + str(summary) + '''"
@@ -279,7 +280,7 @@ class ViraAPI():
                             WHERE
                                 project_id = ''' + str(project) + '''
                             AND
-                                version_id IS "''' + str(version) + '''"
+                                version_id = ''' + str(version) + '''
                             AND
                                 name IS "''' + str(name) + '"')
             except:
@@ -294,20 +295,20 @@ class ViraAPI():
         except:
             pass
 
-    def db_select_issue(self, project, version, name, summary, status):
+    def db_select_issue(self, project, version, name):
         '''
         Select current server `rowid`
         '''
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('SELECT rowid FROM versions WHERE project_id=' + str(project) + ' AND name="' + str(version) + '"')
-            rowid = cur.fetchone()[0]
+            cur.execute('SELECT rowid, * FROM issues WHERE project_id=' + str(project) + ' AND version_id=' + str(version) + ' AND name IS"' + str(name) + '"')
+            row = cur.fetchone()
             con.commit()
             con.close()
         except OSError as e:
             raise e
-        return int(rowid)
+        return row
 
     def create_issue(self, input_stripped):
         '''
