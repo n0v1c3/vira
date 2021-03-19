@@ -96,6 +96,7 @@ class ViraAPI():
                     self.get_projects()
                 self.get_versions()
             else:
+                self.db_insert_version(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 #  self.next_issue(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 #  vim.command('echo s:versions[0]')
@@ -127,7 +128,7 @@ class ViraAPI():
             cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
             #  cur.execute('''CREATE TABLE statuses (server_id int, name text, description text)''')
             #  cur.execute('''CREATE TABLE users (server_id int, name text, description text)''')
-            #  cur.execute('''CREATE TABLE versions (server_id int, project_id int, name text, description text)''')
+            cur.execute('''CREATE TABLE versions (project_id int, name text, description text)''')
             con.commit()
             con.close()
         except:
@@ -207,6 +208,46 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             cur.execute('SELECT rowid FROM projects WHERE server_id=' + str(self.db_select_server()) + ' AND name="' + str(project) + '"')
+            rowid = cur.fetchone()[0]
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+        return int(rowid)
+
+    def db_insert_version(self, project, version):
+        '''
+        Update server details in the databas as required
+        '''
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            try:
+                project = self.db_select_project(str(project))
+                version = self.db_select_version(str(project), str(version))
+                cur.execute('''
+                            UPDATE versions
+                            SET description = "''' + str(version) + '''"
+                            WHERE
+                                project_id = ''' + str(project) + '''
+                            AND
+                                name IS "''' + str(version) + '"')
+            except:
+                cur.execute("INSERT OR REPLACE INTO versions VALUES (" + str(project) + ", '" + str(version) + "', '" + str(version) + "')")
+                pass
+            con.commit()
+            con.close()
+        except:
+            pass
+
+    def db_select_version(self, project, version):
+        '''
+        Select current server `rowid`
+        '''
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT rowid FROM versions WHERE project_id=' + str(project) + ' AND name="' + str(version) + '"')
             rowid = cur.fetchone()[0]
             con.commit()
             con.close()
