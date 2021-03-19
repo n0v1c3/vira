@@ -89,6 +89,7 @@ class ViraAPI():
         try:
             if len(vim.eval('s:versions')) == 0:
                 vim.command('let s:projects = s:projects[1:]')
+                self.db_insert_project(str(vim.eval('s:projects[0]')))
                 if len(vim.eval('s:projects')) == 0:
                     #  TODO: VIRA-247 [210223] - Check for new projects and versions and start PRIORITY ranking for updates
                     #  vim.command('let s:vira_async_timer = g:vira_async_timer')
@@ -96,7 +97,7 @@ class ViraAPI():
                 self.get_versions()
             else:
                 self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
-                self.next_issue(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
+                #  self.next_issue(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
                 #  vim.command('echo s:versions[0]')
                 vim.command('let s:versions = s:versions[1:]')
 
@@ -121,12 +122,12 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('''CREATE TABLE issues (project_id int, version_id int, name text, description text, status_id int)''')
+            #  cur.execute('''CREATE TABLE issues (project_id int, version_id int, name text, description text, status_id int)''')
             cur.execute('''CREATE TABLE projects (server_id int, name text, description text)''')
             cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
-            cur.execute('''CREATE TABLE statuses (server_id int, name text, description text)''')
-            cur.execute('''CREATE TABLE users (server_id int, name text, description text)''')
-            cur.execute('''CREATE TABLE versions (server_id int, project_id int, name text, description text)''')
+            #  cur.execute('''CREATE TABLE statuses (server_id int, name text, description text)''')
+            #  cur.execute('''CREATE TABLE users (server_id int, name text, description text)''')
+            #  cur.execute('''CREATE TABLE versions (server_id int, project_id int, name text, description text)''')
             con.commit()
             con.close()
         except:
@@ -145,6 +146,7 @@ class ViraAPI():
             # Remove existing server if found
             try:
                 #  TODO [210317] - `db_insert_server` or `update` should be using the `rowid` for `DELETE`
+                #                - Look at the `project` db functions
                 #  cur.execute('DELETE FROM servers WHERE rowid IS ' + self.db_get_server())
                 if self.db_select_server() < 0:
                     #  self._vira_eval()
@@ -170,95 +172,51 @@ class ViraAPI():
         except:
             rowid = -1
             pass
-        print(rowid)
         return int(rowid)
 
-    def db_update(self, server, project, description, version, issue, status):
+    def db_insert_project(self, project):
         '''
-        Create the database file in the vira dir
+        Update server details in the databas as required
         '''
-
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-
-            server_id = self.db_server_id()
-            #  vim.command('echo "TEST"')
             try:
-                cur.execute("DELETE FROM projects WHERE server_id = " + server_id + " AND name IS '" + str(project) + "'")
-                #  vim.command('echo "' + str(project) + '"')
+                project = self.db_select_project(project)
+                cur.execute('''
+                            UPDATE projects
+                            SET description = "''' + str(project) + '''"
+                            WHERE
+                                server_id = ''' + str(self.db_select_server()) + '''
+                            AND
+                                name IS "''' + str(project) + '"')
             except:
+                cur.execute("INSERT OR REPLACE INTO projects VALUES (" + str(self.db_select_server()) + ", '" + str(project) + "', '" + str(project) + "')")
+                #  print(str(self.db_select_server()) + ' - ' + str(project))
                 pass
-
-            try:
-                cur.execute("DELETE FROM versions WHERE project_id = " + int(project_id))
-            except:
-                pass
-
-            #  vim.command('echo "' + str(project) + '"')
-            #  vim.command('echo "' + str(server_id) + '"')
-            #  cur.execute("INSERT INTO projects VALUES (" + server_id + ", '" + str(project) + "', '" + str(project) + "')")
-            #  cur.execute("INSERT INTO versions VALUES (" + str(server) + ", " + str(server) + ", '" + str(version) + "', '" + str(description) + "')")
-            #  vim.command('echo "' + str(server[0]) + '"')
             con.commit()
             con.close()
-        except OSError as e:
-            raise e
+        except:
+            pass
 
-    def db_version_menu(self):
+    def db_select_project(self, project):
+        '''
+        Select current server `rowid`
+        '''
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            t = (self._get_serv(),)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=?', t)
-            cur.execute('SELECT rowid, * FROM versions WHERE server_id=?', db_server_id())
-            versions = cur.fetchone()
-            #  vim.command('echo "' + str(versions) + '"')
+            cur.execute('SELECT rowid FROM projects WHERE server_id=' + str(self.db_select_server()) + ' AND name="' + str(project) + '"')
+            rowid = cur.fetchone()[0]
             con.commit()
             con.close()
         except OSError as e:
             raise e
+        return int(rowid)
 
-        return versions
-
-    def db_server_id(self):
+    def next_issue(self, project, version):
         try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            #  t = (self._get_serv(),)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=?', t)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=1)
-            #  cur.execute('SELECT rowid FROM servers WHERE name IS "?"', (str(vim.eval('g:vira_serv')),))
-            cur.execute('SELECT rowid FROM servers WHERE name=?', (self._get_serv(),))
-            server_id = cur.fetchone()
-            con.commit()
-            con.close()
-        except OSError as e:
-            raise e
-
-        return int(server_id[0])
-
-    def db_project_id(self, project):
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            #  t = (str(vim.eval('g:vira_serv')),)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=?', t)
-            #  cur.execute('SELECT * FROM versions WHERE server_id=1)
-            #  cur.execute('SELECT rowid FROM servers WHERE name IS "?"', (str(vim.eval('g:vira_serv')),))
-            cur.execute('SELECT rowid FROM projects WHERE name=?', (str(project),))
-            project_id = cur.fetchone()
-            #  vim.command('echo "' + str(project_id) + '"')
-            con.commit()
-            con.close()
-        except OSError as e:
-            raise e
-
-        return int(project_id)
-
-    def next_issue(self, project_id, version_id):
-        try:
-            self.db_update(self.db_server_id(), 1, 'description', 1, 'issue', 'status')
+            print('next_issue')
         except:
             pass
 
@@ -1006,7 +964,6 @@ class ViraAPI():
 
                 #  total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
                 #  pending = self.jira.version_count_unresolved_issues(idx)
-                self.db_version_menu()
                 total = 2
                 pending = 1
                 fixed = total - pending
