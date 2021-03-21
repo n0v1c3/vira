@@ -35,6 +35,7 @@ class ViraAPI():
 
         # Create the database file
         self.vira_db = file_db
+        self.issue_count = 0
 
         self.userconfig_filter_default = {
             'assignee': '',
@@ -85,27 +86,41 @@ class ViraAPI():
         Initialize vira
         '''
 
-        #  TODO: VIRA-247 [210223] - Clean-up vim variables in python _async
+        #  TODO: VIRA-247 [21023] - Clean-up vim variables in python _async
         try:
-            if len(vim.eval('s:versions')) == 0:
-                vim.command('let s:projects = s:projects[1:]')
-                if len(vim.eval('s:projects')) == 0:
-                    #  TODO: VIRA-247 [210223] - Check for new projects and versions and start PRIORITY ranking for updates
-                    #  vim.command('let s:vira_async_timer = g:vira_async_timer')
-                    self.get_projects()
-                self.get_versions()
+            if self.issue_count == 0:
+                self.issue_count = 1
+
+            #  vim.command('let s:projects = s:projects[1:]')
+            #  if len(vim.eval('s:versions')) == 0:
+                #  #  self.db_insert_issue(str(vim.eval('s:projects[0]')), '', str(key), str(summary), str(status))
+                #  vim.command('let s:projects = s:projects[1:]')
+                #  #  self.issue_count = 1
+                #  self.get_versions()
+
+            if len(vim.eval('s:projects')) == 0:
+                self.get_projects()
+
             else:
-                self.db_insert_issue(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')), 'VIRA', 'n0v1c3', 1)
-                self.version_percent(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')))
-                #  vim.command('echo s:versions[0]')
-                vim.command('let s:versions = s:versions[1:]')
+                key = str(str(vim.eval('s:projects[0]')) + '-' + str(self.issue_count))
+                #  print(str(key))
+                issue = self.db_jql_issue(str(key))
+                #  vim.command('echo "' + str(issue) + '"')
+                key = str(issue['key'])
+                summary = str(issue['fields']['summary'])
+                #  vim.command('echo "' + str(key) + '"')
+                status = str(issue['fields']['status']['statusCategory']['name'])
+                #  vim.command('echo "' + str(status) + '"')
+                if str(status) == 'Done':
+                    status = 1
+                else:
+                    status = 0
 
-            if self.async_count == 0 and vim.eval('s:vira_async_timer') == 10000:
-                self.users = self.get_users()
-                self.async_count = 1000
-            self.async_count -= 1
-
+                #  print(str(vim.eval('s:projects[0]')) + ' - ' + 'None' + ' - ' + str(key) + ' - ' + str(summary) + ' - ' + str(status))
+                self.issue_count = self.issue_count + 1
+                self.db_insert_issue(str(vim.eval('s:projects[0]')), 'None', str(key), str(summary), str(status))
         except:
+            self.get_projects()
             pass
 
     def _get_serv(self):
@@ -131,6 +146,18 @@ class ViraAPI():
             con.close()
         except:
             pass
+
+    def db_jql_issue(self, issue):
+        '''
+        Query issues based on current filters
+        '''
+        issues = self.jira.search_issues(
+            'issue = ' + str(issue),
+            fields='summary,comment,status,statusCategory,issuetype,assignee',
+            json_result='True',
+            maxResults=1)
+
+        return issues['issues'][0]
 
     def db_insert_server(self):
         '''
@@ -251,16 +278,21 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
+            #  print(project + ' - ' + version)
             try:
                 # Confirm `db`'s and row of the issue
                 project_id = self.db_select_project(str(project))[0]
-                version_id = self.db_select_version(str(project_id), str(version))[0]
+                if str(version) is 'None':
+                    version_id = '1'
+                else:
+                    version_id = self.db_select_version(str(project_id), str(version))[0]
                 issue = self.db_select_issue(str(project_id), str(version_id), str(name))
                 #  TODO: VIRA-253 [210319] - Create summary `db` with id links
                 # If found update summary and status_id
                 cur.execute("UPDATE issues SET summary = '" + str(summary) + "' AND status_id = " + str(status) + " WHERE rowid = " + str(issue[0]))
             except:
                 try:
+                    version_id = 0
                     cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status) + ")")
                 except:
                     self.db_insert_version(project, version)
