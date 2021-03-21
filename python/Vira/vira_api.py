@@ -35,7 +35,8 @@ class ViraAPI():
 
         # Create the database file
         self.vira_db = file_db
-        self.issue_count = 0
+        self.issue_count = 1
+        self.issue_keys = ['', '']
 
         self.userconfig_filter_default = {
             'assignee': '',
@@ -88,8 +89,8 @@ class ViraAPI():
 
         #  TODO: VIRA-247 [21023] - Clean-up vim variables in python _async
         try:
-            if self.issue_count == 0:
-                self.issue_count = 1
+            #  if len(vim.eval('s:projects')) == 0:
+                #  self.get_projects()
 
             #  vim.command('let s:projects = s:projects[1:]')
             #  if len(vim.eval('s:versions')) == 0:
@@ -98,15 +99,17 @@ class ViraAPI():
                 #  #  self.issue_count = 1
                 #  self.get_versions()
 
-            if len(vim.eval('s:projects')) == 0:
-                self.get_projects()
+            #  else:
+            #  print(self.issue_key)
+            self.issue_keys[1] = str(str(vim.eval('s:projects[0]')) + '-' + str(self.issue_count))
+            #  print(str(self.issue_keys[0]) + ' - ' + str(self.issue_keys[1]))
+            self.issue_count = self.issue_count + 1
 
-            else:
-                key = str(str(vim.eval('s:projects[0]')) + '-' + str(self.issue_count))
-                #  print(str(key))
-                issue = self.db_jql_issue(str(key))
-                #  vim.command('echo "' + str(issue) + '"')
-                key = str(issue['key'])
+            issue = self.db_jql_issue(str(self.issue_keys[1]))
+            #  vim.command('echo "' + str(issue) + '"')
+            issue_key = str(issue['key'])
+            #  print(issue_key)
+            if (str(self.issue_keys[0]) != str(issue_key)):
                 summary = str(issue['fields']['summary'])
                 #  vim.command('echo "' + str(key) + '"')
                 status = str(issue['fields']['status']['statusCategory']['name'])
@@ -116,11 +119,14 @@ class ViraAPI():
                 else:
                     status = 0
 
-                #  print(str(vim.eval('s:projects[0]')) + ' - ' + 'None' + ' - ' + str(key) + ' - ' + str(summary) + ' - ' + str(status))
-                self.issue_count = self.issue_count + 1
-                self.db_insert_issue(str(vim.eval('s:projects[0]')), 'None', str(key), str(summary), str(status))
+                print(str(vim.eval('s:projects[0]')) + ' - ' + 'None' + ' - ' + str(issue_key) + ' - ' + str(summary) + ' - ' + str(status))
+                self.db_insert_issue(str(vim.eval('s:projects[0]')), 'None', str(issue_key), str(summary), str(status))
+            self.issue_keys[0] = self.issue_keys[1]
         except:
-            self.get_projects()
+            vim.command('let s:projects = s:projects[1:]')
+            if len(vim.eval('s:projects')) == 0:
+                self.get_projects()
+            self.issue_count = 1
             pass
 
     def _get_serv(self):
