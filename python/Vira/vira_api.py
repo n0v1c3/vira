@@ -56,6 +56,8 @@ class ViraAPI():
             'status': '',
         }
 
+        self.userconfig_issuesort = 'updated DESC'
+
         self.users = set()
         self.versions = set()
         self.servers = set()
