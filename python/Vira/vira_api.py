@@ -779,7 +779,7 @@ class ViraAPI():
             user = str(issue['fields']['reporter']['displayName']
                       ) + ' ~ ' + issue['fields']['reporter'][self.users_type]
             self.users.add(user)
-            if type(issue['fields']['assignee']) == dict:
+            if 'assignee' in issue['fields'] and type(issue['fields']['assignee']) == dict:
                 user = str(issue['fields']['assignee']['displayName']
                           ) + ' ~ ' + issue['fields']['assignee'][self.users_type]
             self.users.add(user)
