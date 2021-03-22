@@ -89,37 +89,16 @@ class ViraAPI():
 
         #  TODO: VIRA-247 [21023] - Clean-up vim variables in python _async
         try:
-            #  if len(vim.eval('s:projects')) == 0:
-                #  self.get_projects()
-
-            #  vim.command('let s:projects = s:projects[1:]')
-            #  if len(vim.eval('s:versions')) == 0:
-                #  #  self.db_insert_issue(str(vim.eval('s:projects[0]')), '', str(key), str(summary), str(status))
-                #  vim.command('let s:projects = s:projects[1:]')
-                #  #  self.issue_count = 1
-                #  self.get_versions()
-
-            #  else:
-            #  print(self.issue_key)
             self.issue_keys[1] = str(str(vim.eval('s:projects[0]')) + '-' + str(self.issue_count))
-            #  print(str(self.issue_keys[0]) + ' - ' + str(self.issue_keys[1]))
             self.issue_count = self.issue_count + 1
 
             issue = self.db_jql_issue(str(self.issue_keys[1]))
-            #  vim.command('echo "' + str(issue) + '"')
             issue_key = str(issue['key'])
-            #  print(issue_key)
             if (str(self.issue_keys[0]) != str(issue_key)):
                 summary = str(issue['fields']['summary'])
-                #  vim.command('echo "' + str(key) + '"')
-                status = str(issue['fields']['status']['statusCategory']['name'])
-                #  vim.command('echo "' + str(status) + '"')
-                if str(status) == 'Done':
-                    status = 1
-                else:
-                    status = 0
+                status = 1 if str(issue['fields']['status']['statusCategory']['name']) == 'Done' else 0
 
-                print(str(vim.eval('s:projects[0]')) + ' - ' + 'None' + ' - ' + str(issue_key) + ' - ' + str(summary) + ' - ' + str(status))
+                #  print(str(vim.eval('s:projects[0]')) + ' - ' + 'None' + ' - ' + str(issue_key) + ' - ' + str(summary) + ' - ' + str(status))
                 self.db_insert_issue(str(vim.eval('s:projects[0]')), 'None', str(issue_key), str(summary), str(status))
             self.issue_keys[0] = self.issue_keys[1]
         except:
@@ -227,7 +206,7 @@ class ViraAPI():
     def db_select_project(self, project):
         '''
         Select current server `rowid`
-        '''
+       '''
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
@@ -288,17 +267,18 @@ class ViraAPI():
             try:
                 # Confirm `db`'s and row of the issue
                 project_id = self.db_select_project(str(project))[0]
-                if str(version) is 'None':
-                    version_id = '1'
+                if str(version) == 'None':
+                    version_id = 0
                 else:
-                    version_id = self.db_select_version(str(project_id), str(version))[0]
+                    try:
+                        version_id = self.db_select_version(str(project_id), str(version))[0]
+                    except:
+                        version_id = 0
                 issue = self.db_select_issue(str(project_id), str(version_id), str(name))
                 #  TODO: VIRA-253 [210319] - Create summary `db` with id links
-                # If found update summary and status_id
                 cur.execute("UPDATE issues SET summary = '" + str(summary) + "' AND status_id = " + str(status) + " WHERE rowid = " + str(issue[0]))
             except:
                 try:
-                    version_id = 0
                     cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status) + ")")
                 except:
                     self.db_insert_version(project, version)
