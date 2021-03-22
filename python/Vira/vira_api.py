@@ -276,7 +276,7 @@ class ViraAPI():
                         version_id = 0
                 issue = self.db_select_issue(str(project_id), str(version_id), str(name))
                 #  TODO: VIRA-253 [210319] - Create summary `db` with id links
-                cur.execute("UPDATE issues SET summary = '" + str(summary) + "' AND status_id = " + str(status) + " WHERE rowid = " + str(issue[0]))
+                cur.execute("UPDATE issues SET summary = '" + str(summary) + "', status_id = " + str(status) + " WHERE rowid IS " + str(issue[0]))
             except:
                 try:
                     cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status) + ")")
