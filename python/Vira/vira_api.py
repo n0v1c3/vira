@@ -98,13 +98,16 @@ class ViraAPI():
                 summary = str(issue['fields']['summary'])
                 status = 1 if str(issue['fields']['status']['statusCategory']['name']) == 'Done' else 0
 
-                #  print(str(vim.eval('s:projects[0]')) + ' - ' + 'None' + ' - ' + str(issue_key) + ' - ' + str(summary) + ' - ' + str(status))
-                self.db_insert_issue(str(vim.eval('s:projects[0]')), 'None', str(issue_key), str(summary), str(status))
+                #  print(str(vim.eval('s:projects[0]')) + ' - ' + str(vim.eval('s:versions[0]')) + ' - ' + str(issue_key) + ' - ' + str(summary) + ' - ' + str(status))
+                self.db_insert_issue(str(vim.eval('s:projects[0]')), str(vim.eval('s:versions[0]')), str(issue_key), str(summary), str(status))
             self.issue_keys[0] = self.issue_keys[1]
         except:
-            vim.command('let s:projects = s:projects[1:]')
-            if len(vim.eval('s:projects')) == 0:
-                self.get_projects()
+            vim.command('let s:versions = s:versions[1:]')
+            if len(vim.eval('s:versions')) == 0:
+                vim.command('let s:projects = s:projects[1:]')
+                if len(vim.eval('s:projects')) == 0:
+                    self.get_projects()
+                self.get_versions()
             self.issue_count = 1
             pass
 
@@ -279,7 +282,7 @@ class ViraAPI():
                 cur.execute("UPDATE issues SET summary = '" + str(summary) + "', status_id = " + str(status) + " WHERE rowid IS " + str(issue[0]))
             except:
                 try:
-                    cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status) + ")")
+                    cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status) + ")")
                 except:
                     self.db_insert_version(project, version)
                     pass
