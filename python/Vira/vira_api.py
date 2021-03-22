@@ -902,8 +902,8 @@ class ViraAPI():
                 repo = repo.split('/')[-1]
             if not self.vira_projects.get(repo):
                 repo = '__default__'
-            if not self.vira_projects.get('__default__'):
-                return
+                if not self.vira_projects.get('__default__'):
+                    return
 
         # Set server
         server = self.vira_projects.get(repo, {}).get('server')
