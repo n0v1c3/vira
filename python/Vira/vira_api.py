@@ -304,6 +304,22 @@ class ViraAPI():
             raise e
         return row
 
+    def db_count(self, project):
+        '''
+        Select current server `rowid`
+        '''
+        try:
+            project_id = self.db_select_project(str(project))[0]
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT COUNT(*) FROM issues WHERE project_id IS "' + str(project_id) + '"')
+            count = cur.fetchone()
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+        return int(count[0])
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
