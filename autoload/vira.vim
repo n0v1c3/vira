@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.8'
+let s:vira_version = '0.4.9'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
