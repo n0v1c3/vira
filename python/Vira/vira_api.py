@@ -188,7 +188,7 @@ class ViraAPI():
             cur = con.cursor()
             try:
                 # Confirm `project db row` exists
-                project_id = self.db_select_project(project)[0]
+                project_id = str(self.db_select_project(str(project))[0])
 
                 # Update `project db row`
                 cur.execute("UPDATE projects SET description = '" + str(project) + "' WHERE rowid = " + project_id)
@@ -199,6 +199,7 @@ class ViraAPI():
                 except:
                     # No `database` found
                     self.db_insert_server()
+                    self.db_insert_project(str(project))
                     pass
                 pass
             con.commit()
@@ -221,7 +222,7 @@ class ViraAPI():
             raise e
         return row
 
-    def db_insert_version(self, project, version):
+    def db_insert_version(self, project, version, description):
         '''
         Update server details in the databas as required
         '''
@@ -229,14 +230,23 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             try:
-                project_id = self.db_select_project(str(project))[0]
-                version = self.db_select_version(str(project), str(version))[1]
-                cur.execute("UPDATE versions SET description = '" + str(version) + "' WHERE project_id = " + str(project_id) + " AND name IS '" + str(version) + "'")
+                # Confirm `project db row` exists
+                try:
+                    project_id = str(self.db_select_project(str(project))[0])
+                except:
+                    #  TODO: VIRA-253 [210326] - Return `insert` on `select`
+                    self.db_insert_project(str(project))
+                    project_id = str(self.db_select_project(str(project))[0])
+                    pass
+
+                version_id = str(self.db_select_version(str(project_id), str(version))[0])
+
+                # Update `project db row`
+                cur.execute("UPDATE versions SET name='" + str(version) + "', description='" + str(description) + "' WHERE rowid = " + version_id)
             except:
                 try:
-                    cur.execute("INSERT OR REPLACE INTO versions VALUES (" + str(project_id) + ", '" + str(version) + "', '" + str(version) + "')")
+                    cur.execute("INSERT OR REPLACE INTO versions VALUES (" + str(project_id) + ", '" + str(version) + "', '" + str(description) + "')")
                 except:
-                    self.db_insert_project(project)
                     pass
                 pass
             con.commit()
@@ -266,26 +276,31 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            #  print(project + ' - ' + version)
             try:
-                # Confirm `db`'s and row of the issue
+                self.db_insert_project(str(project))
                 project_id = self.db_select_project(str(project))[0]
+            except OSError as e:
+                raise e
+
+            try:
+                #  TODO: VIRA-253 [210326] - Version descriptions
+                version_description = str(version) + ' - Description'
+                self.db_insert_version(str(project), str(version), str(version_description))
+                version_id = self.db_select_version(str(project_id), str(version))[0]
                 if str(version) == 'None':
                     version_id = 0
-                else:
-                    try:
-                        version_id = self.db_select_version(str(project_id), str(version))[0]
-                    except:
-                        version_id = 0
-                issue = self.db_select_issue(str(project_id), str(version_id), str(name))
-                #  TODO: VIRA-253 [210319] - Create summary `db` with id links
-                cur.execute("UPDATE issues SET summary = '" + str(summary) + "', status_id = " + str(status) + " WHERE rowid IS " + str(issue[0]))
             except:
-                try:
-                    cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status) + ")")
-                except:
-                    self.db_insert_version(project, version)
-                    pass
+                version_id = 0
+                pass
+
+            try:
+                issue = self.db_select_issue(str(project_id), str(version_id), str(name))
+                cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status) + " WHERE rowid IS " + str(issue[0]))
+                #  TODO: VIRA-253 [210326] - If there is a real update print a message
+            except:
+                #  TODO: VIRA-253 [210319] - Create summary `db` with id links
+                cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status) + ")")
+                print('New issue added: ' + str(name))
                 pass
             con.commit()
             con.close()
