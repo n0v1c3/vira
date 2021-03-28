@@ -90,7 +90,6 @@ class ViraAPI():
         #  TODO: VIRA-247 [21023] - Clean-up vim variables in python _async
         try:
             self.issue_keys[1] = str(str(vim.eval('s:projects[0]')) + '-' + str(self.issue_count))
-            #  self.issue_keys[1] = str('VIRA') + '-' + str(self.issue_count)
             self.issue_count = self.issue_count + 1
 
             issue = self.db_jql_issue(str(self.issue_keys[1]))
@@ -108,7 +107,15 @@ class ViraAPI():
 
                 status = str(issue['fields']['status']['statusCategory']['name'])
 
-                #  vim.command('echo "' + str(issue_key) + ' ' + str(version) + ' ' + str(status) + '"')
+                user_name = str(issue['fields']['reporter']['name'])
+                user_displayName = str(issue['fields']['reporter']['displayName'])
+                self.db_insert_user(user_displayName, user_name)
+                if type(issue['fields']['assignee']) == dict:
+                    user_name = str(issue['fields']['assignee']['name'])
+                    user_displayName = str(issue['fields']['assignee']['displayName'])
+                    self.db_insert_user(user_displayName, user_name)
+
+                #  vim.command('echo "' + str(issue_key) + ' - ' + str(version) + ' - ' + str(status) + '"')
 
                 self.db_insert_issue(str(vim.eval('s:projects[0]')), str(version), str(issue_key), str(summary), str(status))
             self.issue_keys[0] = self.issue_keys[1]
@@ -137,7 +144,7 @@ class ViraAPI():
             cur.execute('''CREATE TABLE projects (server_id int, name text, description text)''')
             cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
             cur.execute('''CREATE TABLE statuses (project_id int, name text, description text)''')
-            #  cur.execute('''CREATE TABLE users (server_id int, name text, description text)''')
+            cur.execute('''CREATE TABLE users (server_id int, name text, jira_id text)''')
             cur.execute('''CREATE TABLE versions (project_id int, name text, description text)''')
             con.commit()
             con.close()
@@ -150,7 +157,7 @@ class ViraAPI():
         '''
         issues = self.jira.search_issues(
             'issue = ' + str(issue),
-            fields='fixVersions,summary,comment,status,statusCategory,issuetype,assignee',
+            fields='fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
             json_result='True',
             maxResults=1)
 
@@ -315,6 +322,56 @@ class ViraAPI():
             raise e
         return row
 
+    def db_insert_user(self, name, jira_id):
+        '''
+        Update server details in the databas as required
+        '''
+        #  TODO: VIRA-253 [210328] - This should be a more `global` test
+        try:
+            server_id = self.db_select_server()[0]
+        except:
+            try:
+                server_id = self.db_insert_server()[0]
+            except OSError as e:
+                raise e
+            pass
+
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            # Confirm `project db row` exists
+            try:
+                user_id = str(self.db_select_user(str(jira_id))[0])
+                # Update `project db row`
+                cur.execute("UPDATE users SET name = '" + str(name) + "' WHERE rowid = " + str(user_id))
+            except:
+                # Add a new `project` into the `project db`
+                cur.execute("INSERT OR REPLACE INTO users VALUES (" + str(server_id) + ", '" + str(name) + "', '" + str(jira_id) + "')")
+                pass
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        return self.db_select_user(str(jira_id))
+
+    def db_select_user(self, jira_id):
+        '''
+        Select current server `rowid`
+        '''
+        try:
+            server_id = self.db_select_server()[0]
+
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT rowid, * FROM users WHERE server_id=' + str(server_id) + ' AND jira_id IS "' + str(jira_id) + '"')
+            row = cur.fetchone()
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+        return row
+
     def db_insert_issue(self, project, version, name, summary, status):
         '''
         Update server details in the databas as required
@@ -359,7 +416,7 @@ class ViraAPI():
             except:
                 #  TODO: VIRA-253 [210319] - Create summary `db` with id links
                 cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status_id) + ")")
-                print('New issue added: ' + str(name))
+                #  print('New issue added: ' + str(name))
                 pass
 
             con.commit()
