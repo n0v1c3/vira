@@ -105,19 +105,17 @@ class ViraAPI():
                     version = str(issue['fields']['fixVersions'][0]['name'])
                 except:
                     version = 'None'
-                status = 1 if str(issue['fields']['status']['statusCategory']['name']) == 'Done' else 0
+
+                status = str(issue['fields']['status']['statusCategory']['name'])
 
                 #  vim.command('echo "' + str(issue_key) + ' ' + str(version) + ' ' + str(status) + '"')
 
                 self.db_insert_issue(str(vim.eval('s:projects[0]')), str(version), str(issue_key), str(summary), str(status))
             self.issue_keys[0] = self.issue_keys[1]
         except:
-            #  vim.command('let s:versions = s:versions[1:]')
-            #  if len(vim.eval('s:versions')) == 0:
             vim.command('let s:projects = s:projects[1:]')
             if len(vim.eval('s:projects')) == 0:
                 self.get_projects()
-                #  self.get_versions()
             self.issue_count = 1
             pass
 
@@ -138,7 +136,7 @@ class ViraAPI():
             cur.execute('''CREATE TABLE issues (project_id int, version_id int, name text, summary text, status_id int)''')
             cur.execute('''CREATE TABLE projects (server_id int, name text, description text)''')
             cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
-            #  cur.execute('''CREATE TABLE statuses (server_id int, name text, description text)''')
+            cur.execute('''CREATE TABLE statuses (project_id int, name text, description text)''')
             #  cur.execute('''CREATE TABLE users (server_id int, name text, description text)''')
             cur.execute('''CREATE TABLE versions (project_id int, name text, description text)''')
             con.commit()
@@ -280,6 +278,43 @@ class ViraAPI():
             raise e
         return row
 
+    def db_insert_status(self, project, status, description):
+        '''
+        Update server details in the databas as required
+        '''
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            # Confirm `project db row` exists
+            project_id = self.db_select_project(str(project))[0]
+            try:
+                status_id = str(self.db_select_status(str(project_id), str(status))[0])
+                # Update `project db row`
+                cur.execute("UPDATE statuses SET description = '" + str(description) + "' WHERE rowid = " + status_id)
+            except:
+                # Add a new `project` into the `project db`
+                cur.execute("INSERT OR REPLACE INTO statuses VALUES (" + str(project_id) + ", '" + str(status) + "', '" + str(description) + "')")
+                pass
+            con.commit()
+            con.close()
+        except:
+            pass
+
+    def db_select_status(self, project, status):
+        '''
+        Select current server `rowid`
+       '''
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT rowid, * FROM statuses WHERE project_id=' + str(project) + ' AND name IS "' + str(status) + '"')
+            row = cur.fetchone()
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+        return row
+
     def db_insert_issue(self, project, version, name, summary, status):
         '''
         Update server details in the databas as required
@@ -308,15 +343,22 @@ class ViraAPI():
                 version_id = 0
                 pass
 
+            try:
+                self.db_insert_status(str(project), str(status), str(str(status) + ' - Description'))
+                status_id = self.db_select_status(str(project), str(status))[0]
+            except:
+                status_id = 0
+                pass
+
             # Issue insert or update
             try:
                 issue = self.db_select_issue(str(project_id), str(version_id), str(name))
-                cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status) + " WHERE rowid IS " + str(issue[0]))
+                cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status_id) + " WHERE rowid IS " + str(issue[0]))
                 #  TODO: VIRA-253 [210326] - If there is a real update print a message
                 #  print('Issue updated: ' + str(name))
             except:
                 #  TODO: VIRA-253 [210319] - Create summary `db` with id links
-                cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status) + ")")
+                cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", '" + str(name) + "', '" + str(summary) + "', " + str(status_id) + ")")
                 print('New issue added: ' + str(name))
                 pass
 
@@ -476,7 +518,6 @@ class ViraAPI():
             # Initial list updates
             self.users = self.get_users()
             self.get_projects()
-            self.get_versions()
 
             vim.command('echo "Connection to jira server was successful"')
         except JIRAError as e:
@@ -1133,18 +1174,6 @@ class ViraAPI():
             percent = 0
 
         return percent
-
-    def get_versions(self):
-        '''
-        Build a vim pop-up menu for a list of versions with project filters
-        '''
-
-        # Loop through each project and all versions within
-        try:
-            for v in reversed(self.jira.project_versions(vim.eval('s:projects[0]'))):
-                vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
-        except:
-                vim.command('let s:versions = []')
 
     def load_project_config(self, repo):
         '''
