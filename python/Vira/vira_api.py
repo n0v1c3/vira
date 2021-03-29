@@ -97,6 +97,8 @@ class ViraAPI():
 
             # Check if at the end of the list with a repeat in the search results
             if (str(self.issue_keys[0]) != str(issue_key)):
+                issueType = str(issue['fields']['issuetype']['name'])
+
                 summary = str(issue['fields']['summary'])
 
                 #  TODO: VIRA-253 [210327] - Handle multiple versions
@@ -133,7 +135,7 @@ class ViraAPI():
 
                 #  vim.command('echo "' + str(issue_key) + ' - ' + str(version) + ' - ' + str(status) + '"')
 
-                self.db_insert_issue(str(vim.eval('s:projects[0]')), str(version), str(self.issue_count), str(summary), str(status), str(created), str(updated))
+                self.db_insert_issue(str(vim.eval('s:projects[0]')), str(version), str(self.issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
 
             self.issue_keys[0] = self.issue_keys[1]
         except:
@@ -163,6 +165,7 @@ class ViraAPI():
             cur.execute('''CREATE TABLE projects (server_id int, name text, description text)''')
             cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
             cur.execute('''CREATE TABLE statuses (project_id int, name text, description text)''')
+            cur.execute('''CREATE TABLE types (project_id int, name text)''')
             cur.execute('''CREATE TABLE users (server_id int, name text, jira_id text)''')
             cur.execute('''CREATE TABLE versions (project_id int, name text, description text)''')
             con.commit()
@@ -354,6 +357,42 @@ class ViraAPI():
             raise e
         return row
 
+    def db_insert_type(self, project, name):
+        '''
+        Update server details in the databas as required
+        '''
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            try:
+                rowid = str(self.db_select_type(str(project), str(name))[0])
+                cur.execute("UPDATE types SET name = '" + str(name) + "' WHERE rowid = " + str(rowid))
+            except:
+                project_id = self.db_select_project(str(project))[0]
+                cur.execute("INSERT OR REPLACE INTO types VALUES (" + str(project_id) + ", '" + str(name) + "')")
+                pass
+            con.commit()
+            con.close()
+        except:
+            pass
+
+        return self.db_select_type(project, name)
+
+    def db_select_type(self, project, name):
+        '''
+        Select current server `rowid`
+        '''
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT rowid, * FROM types WHERE project_id=' + str(self.db_select_project(project)[0]) + ' AND name IS "' + str(name) + '"')
+            row = cur.fetchone()
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+        return row
+
     def db_insert_user(self, name, jira_id):
         '''
         Update server details in the databas as required
@@ -397,11 +436,12 @@ class ViraAPI():
             raise e
         return row
 
-    def db_insert_issue(self, project, version, identifier, summary, status, created, updated):
+    def db_insert_issue(self, project, version, identifier, issueType, summary, status, created, updated):
         '''
         Update server details in the databas as required
         '''
         try:
+
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
 
@@ -414,6 +454,8 @@ class ViraAPI():
                 except OSError as e:
                     raise e
                 pass
+
+            self.db_insert_type(str(project), str(issueType))
 
             # Version attempt
             if str(version) != 'None':
