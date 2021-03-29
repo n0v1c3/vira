@@ -8,7 +8,6 @@ from Vira.helper import load_config, run_command, parse_prompt_text
 from jira import JIRA
 from jira.exceptions import JIRAError
 from datetime import datetime
-from multiprocessing import Process
 import json
 import urllib3
 import vim
@@ -108,6 +107,16 @@ class ViraAPI():
 
                 status = str(issue['fields']['status']['statusCategory']['name'])
 
+                created = str(issue['fields']['created'])
+                created = datetime.now().strptime(created, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
+                created = str(created).replace(' ', '').replace('-', '').replace(':', '')
+                created = str(created)[0:19]
+
+                updated = str(issue['fields']['updated'])
+                updated = datetime.now().strptime(updated, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
+                updated = str(updated).replace(' ', '').replace('-', '').replace(':', '')
+                updated = str(updated)[0:19]
+
                 try:
                     user_name = str(issue['fields']['reporter']['name'])
                     user_displayName = str(issue['fields']['reporter']['displayName'])
@@ -115,7 +124,7 @@ class ViraAPI():
                 except:
                     pass
                 try:
-                    if type(issue['fields']['assignee']) == dict:
+                    if 'assignee' in issue['fields'] and type(issue['fields']['assignee']) == dict:
                         user_name = str(issue['fields']['assignee']['name'])
                         user_displayName = str(issue['fields']['assignee']['displayName'])
                         self.db_insert_user(user_displayName, user_name)
@@ -124,7 +133,7 @@ class ViraAPI():
 
                 #  vim.command('echo "' + str(issue_key) + ' - ' + str(version) + ' - ' + str(status) + '"')
 
-                self.db_insert_issue(str(vim.eval('s:projects[0]')), str(version), str(self.issue_count), str(summary), str(status))
+                self.db_insert_issue(str(vim.eval('s:projects[0]')), str(version), str(self.issue_count), str(summary), str(status), str(created), str(updated))
 
             self.issue_keys[0] = self.issue_keys[1]
         except:
@@ -150,7 +159,7 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             #  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
-            cur.execute('''CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int)''')
+            cur.execute('''CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)''')
             cur.execute('''CREATE TABLE projects (server_id int, name text, description text)''')
             cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
             cur.execute('''CREATE TABLE statuses (project_id int, name text, description text)''')
@@ -167,7 +176,7 @@ class ViraAPI():
         '''
         issues = self.jira.search_issues(
             'issue = ' + str(issue),
-            fields='fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
+            fields='updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
             json_result='True',
             maxResults=1)
 
@@ -388,7 +397,7 @@ class ViraAPI():
             raise e
         return row
 
-    def db_insert_issue(self, project, version, identifier, summary, status):
+    def db_insert_issue(self, project, version, identifier, summary, status, created, updated):
         '''
         Update server details in the databas as required
         '''
@@ -431,16 +440,19 @@ class ViraAPI():
             # Issue insert or update
             try:
                 issue = self.db_select_issue(str(project_id), str(version_id), str(identifier))
-                cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status_id) + " WHERE rowid IS " + str(issue[0]))
+                cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status_id) + ", updated=" + str(updated) + " WHERE rowid IS " + str(issue[0]))
                 #  TODO: VIRA-253 [210326] - If there is a real update print a message
                 #  - Should show only `identifier` and `field` that has been updated
                 #  - This should be fine with a planed timer and sync with the jql search
                 #  - Using it to confirm right now
-                print('Issue updated - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status))
+                print('Issue updated - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
             except:
-                #  TODO: VIRA-253 [210319] - Create summary `db` with id links
-                cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", " + str(identifier) + ", '" + str(summary) + "', " + str(status_id) + ")")
-                print('New issue added - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status))
+                try:
+                    #  TODO: VIRA-253 [210319] - Create summary `db` with id links
+                    cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", " + str(identifier) + ", '" + str(summary) + "', " + str(status_id) + ", " + str(created) + ", " + str(updated) + ")")
+                    print('New issue added - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(created))
+                except OSError as e:
+                    raise e
                 pass
 
             con.commit()
@@ -931,7 +943,7 @@ class ViraAPI():
         '''
 
         time = datetime.now().strptime(date, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
-        return str(time)[0:10] + ' ' + str(time)[11:16]
+        return str(time)[0:10] + ' ' + str(time)[11:19]
 
     def get_report(self):
         '''
