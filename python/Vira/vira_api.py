@@ -134,7 +134,6 @@ class ViraAPI():
                     pass
 
                 #  vim.command('echo "' + str(issue_key) + ' - ' + str(version) + ' - ' + str(status) + '"')
-
                 self.db_insert_issue(str(vim.eval('s:projects[0]')), str(version), str(self.issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
 
             self.issue_keys[0] = self.issue_keys[1]
@@ -326,17 +325,29 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             # Confirm `project db row` exists
-            project_id = self.db_select_project(str(project))[0]
+            try:
+                project_id = self.db_select_project(str(project))[0]
+            except:
+                project_id = project
+                pass
+
             try:
                 status_id = str(self.db_select_status(str(project_id), str(status))[0])
-                # Update `project db row`
-                cur.execute("UPDATE statuses SET description = '" + str(description) + "' WHERE rowid = " + status_id)
             except:
-                # Add a new `project` into the `project db`
-                cur.execute("INSERT OR REPLACE INTO statuses VALUES (" + str(project_id) + ", '" + str(status) + "', '" + str(description) + "')")
+                status_id = status
                 pass
+
+            try:
+                cur.execute("UPDATE statuses SET description = '" + str(description) + "' WHERE rowid = " + str(status_id))
+            except:
+                cur.execute("INSERT OR REPLACE INTO statuses VALUES (" + str(project_id) + ", '" + str(status) + "', '" + str(description) + "')")
+                # self.db_update('statuses')
+                # self.db_insert_status(project, status, description)
+                pass
+
             con.commit()
             con.close()
+
         except:
             pass
 
@@ -470,10 +481,10 @@ class ViraAPI():
                 version_id = 0
 
             try:
-                status_id = self.db_select_status(str(project), str(status))[0]
+                status_id = self.db_select_status(str(project_id), str(status))[0]
             except:
                 try:
-                    status_id = self.db_insert_status(str(project), str(status), str(str(status) + ' - Description'))
+                    status_id = self.db_insert_status(str(project_id), str(status), str(str(status) + ' - Description'))[0]
                 except:
                     status_id = 0
                     pass
@@ -519,15 +530,34 @@ class ViraAPI():
             raise e
         return row
 
-    def db_count(self, project):
+    def db_count_issue_version(self, project, version):
         '''
         Select current server `rowid`
         '''
         try:
             project_id = self.db_select_project(str(project))[0]
+            version_id = self.db_select_version(str(project_id), str(version))[0]
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('SELECT COUNT(*) FROM issues WHERE project_id IS "' + str(project_id) + '"')
+            cur.execute('SELECT COUNT(*) FROM issues WHERE project_id IS "' + str(project_id) + '" AND version_id IS "' + str(version_id) + '"')
+            count = cur.fetchone()
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+        return int(count[0])
+
+    def db_count_issue_version_status(self, project, version, status):
+        '''
+        Select current server `rowid`
+        '''
+        try:
+            project_id = self.db_select_project(str(project))[0]
+            version_id = self.db_select_version(str(project_id), str(version))[0]
+            status_id = self.db_select_status(str(project_id), str(status))[0]
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT COUNT(*) FROM issues WHERE project_id IS "' + str(project_id) + '" AND version_id IS "' + str(version_id) + '" AND status_id IS "' + str(status_id) + '"')
             count = cur.fetchone()
             con.commit()
             con.close()
@@ -1263,40 +1293,30 @@ class ViraAPI():
         '''
         Initialize vira
         '''
-
-        project = str(project)
-        fixVersion = str(fixVersion)
         if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
-            query = 'fixVersion = ' + fixVersion + ' AND project = "' + project + '"'
-            issues = self.jira.search_issues(
-                query, fields='fixVersion', json_result='True', maxResults=1)
-
+            name = fixVersion[2]
             try:
-                issue = issues['issues'][0]['fields']['fixVersions'][0]
-                idx = issue['id']
-
-                #  total = self.jira.version_count_related_issues(idx)['issuesFixedCount']
-                #  pending = self.jira.version_count_unresolved_issues(idx)
-                total = 2
-                pending = 1
-                fixed = total - pending
+                project = self.db_select_project(str(project))
+                fixVersion = str(self.db_select_version(str(project[0]), fixVersion)[2])
+                total = self.db_count_issue_version(str(project[2]), fixVersion)
+                fixed = self.db_count_issue_version_status(str(project[2]), fixVersion, 'Done')
                 percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
                 space = ''.join([char * (5 - len(percent)) for char in ' '])
 
-                name = fixVersion
-                try:
-                    description = issue['description']
-                except:
-                    description = 'None'
-                    pass
+                #  TODO: VIRA-253 [210329] - add description to the version db
+                # try:
+                    #  description = issue['description']
+                #  except:
+                description = 'None'
+                    #  pass
+
             except:
                 total = 0
                 pending = 0
                 fixed = total - pending
                 percent = "0"
                 space = ''.join([char * (5 - len(percent)) for char in ' '])
-                name = fixVersion
-                description = ''
+                description = 'None'
                 pass
 
             version = str(
