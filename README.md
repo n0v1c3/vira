@@ -1,4 +1,4 @@
-# VIRA 0.4.8
+# VIRA 0.4.9
 
 **Vim JIRA Atlassian**
 
@@ -139,7 +139,7 @@ In order for vira to use the previous yaml example, set the following variable i
 
 Note: Vira will only load the vira_projects.json/yaml configuration automatically once per vim session. You can, however, manually switch servers and filters as many times as you want after that. See Usage section.
 
-#### Filters
+#### Filter Config
 
 Default repo filters can be defined under a `filter` key as such:
 
@@ -624,6 +624,10 @@ let g:airline_section_z = '%{ViraStatusLine()}'
 
 A big thank you to [@mikeboiko](https://github.com/mikeboiko) for his active development on vira.
 
-With growing support from: [@chinwobble](https://github.com/chinwobble), [@jamesl33](https://github.com/jamesl33) and [@maricn](https://github.com/maricn)
+With growing support from:
+[@chinwobble](https://github.com/chinwobble),
+[@jamesl33](https://github.com/jamesl33),
+[@kkonopko](https://github.com/kkonopko),
+and [@maricn](https://github.com/maricn)
 
 All user feedback and contributions are welcome!

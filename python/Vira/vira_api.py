@@ -63,6 +63,8 @@ class ViraAPI():
             'status': '',
         }
 
+        self.userconfig_issuesort = 'updated DESC'
+
         self.users = set()
         self.versions = set()
         self.servers = set()
@@ -1058,7 +1060,7 @@ class ViraAPI():
         vim.command(f'let s:vira_epic_field = "{epicID}"')
         description = str(issue.get('description'))
 
-        # Version percent for single version attacted
+        #  Version percent for single version attacted
         if len(issue['fixVersions']) == 1 and version != '':
             version += ' | ' + self.version_percent(
                 str(issue['project']['key']), version) + '%'
@@ -1249,7 +1251,7 @@ class ViraAPI():
             user = str(issue['fields']['reporter']['displayName']
                       ) + ' ~ ' + issue['fields']['reporter'][self.users_type]
             self.users.add(user)
-            if type(issue['fields']['assignee']) == dict:
+            if 'assignee' in issue['fields'] and type(issue['fields']['assignee']) == dict:
                 user = str(issue['fields']['assignee']['displayName']
                           ) + ' ~ ' + issue['fields']['assignee'][self.users_type]
             self.users.add(user)
@@ -1360,8 +1362,8 @@ class ViraAPI():
                 repo = repo.split('/')[-1]
             if not self.vira_projects.get(repo):
                 repo = '__default__'
-            if not self.vira_projects.get('__default__'):
-                return
+                if not self.vira_projects.get('__default__'):
+                    return
 
         # Set server
         server = self.vira_projects.get(repo, {}).get('server')
