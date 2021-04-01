@@ -1277,18 +1277,30 @@ class ViraAPI():
         '''
         Print version list with project filters
         '''
+
         try:
-            versions = sorted(self.versions)
-            wordslength = sorted(versions, key=len)[-1]
-            s = ' '
-            dashlength = s.join([char * len(wordslength) for char in s])
-            for version in versions:
-                print(
-                    version.split('|')[0] +
-                    ''.join([char * (len(dashlength) - len(version)) for char in ' ']) +
-                    '   ' + version.split('|')[1] + ' ' + version.split('|')[2])
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT rowid, * FROM projects WHERE server_id=' + str(self.db_select_server(str(self._get_serv()))[0]))
+            projects = cur.fetchall()
+            for project in projects:
+                try:
+                    cur.execute('SELECT rowid, * FROM versions WHERE project_id=' + str(project[0]))
+                    versions = cur.fetchall()
+                    for version in versions:
+                        print(project[2] + ' ~ ' + version[2] + ' ~ ' + version[3])
+                except:
+                    pass
+            con.commit()
+            con.close()
+
+            #  wordslength = sorted(versions, key=len)[-1]
+            #  s = ' '
+            #  dashlength = s.join([char * len(wordslength) for char in s])
+
         except:
             pass
+
         print('None')
 
     def version_percent(self, project, fixVersion):
