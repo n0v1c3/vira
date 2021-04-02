@@ -265,7 +265,7 @@ function! vira#_menu(type) abort " {{{2
       return
     endif
     let type = 'menu'
-    if a:type == 'versions' || a:type == 'projects' | let printer = 'print_'
+    if a:type == 'projects' | let printer = 'print_'
     else | let printer = 'get_' | endif
     let list = execute('python3 Vira.api.' . printer . a:type . '()')
 

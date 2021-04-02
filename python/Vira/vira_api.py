@@ -66,7 +66,6 @@ class ViraAPI():
         self.userconfig_issuesort = 'updated DESC'
 
         self.users = set()
-        self.versions = set()
         self.servers = set()
         self.users_type = ''
 
@@ -162,13 +161,17 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             #  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
-            cur.execute('''CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)''')
-            cur.execute('''CREATE TABLE projects (server_id int, name text, description text)''')
-            cur.execute('''CREATE TABLE servers (name text, description text, address text)''')
-            cur.execute('''CREATE TABLE statuses (project_id int, name text, description text)''')
-            cur.execute('''CREATE TABLE types (project_id int, name text)''')
-            cur.execute('''CREATE TABLE users (server_id int, name text, jira_id text)''')
-            cur.execute('''CREATE TABLE versions (project_id int, name text, description text)''')
+            #  cur.execute("CREATE TABLE vira (version int)")
+            cur.execute("CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
+            cur.execute("CREATE TABLE projects (server_id int, name text, description text)")
+            cur.execute("CREATE TABLE servers (name text, description text, address text)")
+            cur.execute("CREATE TABLE statuses (project_id int, name text, description text)")
+            #  cur.execute("CREATE TABLE todos (issue_id int, user_id int, description text, filename text, date int)")
+            #  cur.execute("CREATE TABLE comments (issue_id int, user_id int, count int, description text, date int)")
+            #  cur.execute("CREATE TABLE summaries (issue_id int, user_id int, description text, date int)")
+            cur.execute("CREATE TABLE types (project_id int, name text)")
+            cur.execute("CREATE TABLE users (server_id int, name text, jira_id text)")
+            cur.execute("CREATE TABLE versions (project_id int, name text, description text)")
             con.commit()
             con.close()
         except:
@@ -642,7 +645,6 @@ class ViraAPI():
         '''
 
         self.users = set()
-        self.versions = set()
         self.users_type = ''
 
         try:
@@ -1203,12 +1205,40 @@ class ViraAPI():
 
         self.get_statuses()
 
-    def get_version(self):
+    def get_versions(self):
         '''
         Get my issues with JQL
         '''
 
-        self.print_versions()
+        try:
+            versions = set()
+
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT rowid, * FROM projects WHERE server_id=' + str(self.db_select_server(str(self._get_serv()))[0]))
+            projects = cur.fetchall()
+            for project in projects:
+                try:
+                    cur.execute('SELECT rowid, * FROM versions WHERE project_id=' + str(project[0]))
+                    fixVersions = cur.fetchall()
+                    for fixVersion in fixVersions:
+                        print(project[2] + " ~ " + fixVersion[2] + ' ~ ' + fixVersion[3] + ' ~ ' + self.version_percent(str(project[2]), fixVersion[2]) + '%')
+                except:
+                    pass
+                print(project[2] + ' ~ None ~ ' + project[2] + ' none versioned issues ~ ' + self.version_percent(str(project[2]), 'Null') + '%')
+            con.commit()
+            con.close()
+
+            #  self.versions_hide = vim.eval('g:vira_version_hide')
+            #  wordslength = sorted(versions, key=len)[-1]
+            #  s = ' '
+            #  dashlength = s.join([char * len(wordslength) for char in s])
+            #  for version in versions:
+                #  print(str(version[0]) + " ~ " + str(version[1]) + ' ~ ' + str(version[2]) + ' ~ ' + str(version[3]) + '%')
+        except:
+            pass
+
+        #  print('None')
 
     def new_component(self, name, project):
         '''
@@ -1273,36 +1303,6 @@ class ViraAPI():
             dict else issue['reporter'][self.users_type] if type(issue['reporter']) ==
             dict else 'Unassigned')
 
-    def print_versions(self):
-        '''
-        Print version list with project filters
-        '''
-
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            cur.execute('SELECT rowid, * FROM projects WHERE server_id=' + str(self.db_select_server(str(self._get_serv()))[0]))
-            projects = cur.fetchall()
-            for project in projects:
-                try:
-                    cur.execute('SELECT rowid, * FROM versions WHERE project_id=' + str(project[0]))
-                    versions = cur.fetchall()
-                    for version in versions:
-                        print(project[2] + ' ~ ' + version[2] + ' ~ ' + version[3])
-                except:
-                    pass
-            con.commit()
-            con.close()
-
-            #  wordslength = sorted(versions, key=len)[-1]
-            #  s = ' '
-            #  dashlength = s.join([char * len(wordslength) for char in s])
-
-        except:
-            pass
-
-        print('None')
-
     def version_percent(self, project, fixVersion):
         '''
         Initialize vira
@@ -1311,7 +1311,11 @@ class ViraAPI():
             name = fixVersion[2]
             try:
                 project = self.db_select_project(str(project))
-                fixVersion = str(self.db_select_version(str(project[0]), fixVersion)[2])
+                try:
+                    fixVersion = str(self.db_select_version(str(project[0]), fixVersion)[2])
+                except:
+                    fixVersion = str(self.db_select_version(str(project[0]), fixVersion[2])[2])
+                    pass
                 total = self.db_count_issue_version(str(project[2]), fixVersion)
                 fixed = self.db_count_issue_version_status(str(project[2]), fixVersion, 'Done')
                 percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
@@ -1336,10 +1340,6 @@ class ViraAPI():
             version = str(
                 str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
                 space + '|' + str(percent) + '%')
-
-            self.versions_hide = vim.eval('g:vira_version_hide')
-            if fixed != total or total == 0 or not int(self.versions_hide) == 1:
-                self.versions.add(str(project) + ' ~ ' + str(version.replace('\'', '')))
 
         else:
             percent = 0
