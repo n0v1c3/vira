@@ -38,6 +38,7 @@ class ViraAPI():
         self.db_serv = []
         self.issue_count = 1
         self.issue_keys = ['', '']
+        self.updatedDate = 0
 
         self.userconfig_filter_default = {
             'assignee': '',
@@ -92,59 +93,10 @@ class ViraAPI():
         #  TODO: VIRA-247 [21023] - Clean-up vim variables in python _async
         #  - UPDATES must be taken into account
         try:
-            self.issue_keys[1] = str(str(vim.eval('s:projects[0]')) + '-' + str(self.issue_count))
-
-            issue = self.db_jql_issue(str(self.issue_keys[1]))
-            issue_key = str(issue['key'])
-
-            # Check if at the end of the list with a repeat in the search results
-            if (str(self.issue_keys[0]) != str(issue_key)):
-                issueType = str(issue['fields']['issuetype']['name'])
-
-                summary = str(issue['fields']['summary'])
-
-                #  TODO: VIRA-253 [210327] - Handle multiple versions
-                try:
-                    version = str(issue['fields']['fixVersions'][0]['name'])
-                except:
-                    version = 'None'
-
-                status = str(issue['fields']['status']['statusCategory']['name'])
-
-                created = str(issue['fields']['created'])
-                created = datetime.now().strptime(created, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
-                created = str(created).replace(' ', '').replace('-', '').replace(':', '')
-                created = str(created)[0:19]
-
-                updated = str(issue['fields']['updated'])
-                updated = datetime.now().strptime(updated, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
-                updated = str(updated).replace(' ', '').replace('-', '').replace(':', '')
-                updated = str(updated)[0:19]
-
-                try:
-                    user_name = str(issue['fields']['reporter']['name'])
-                    user_displayName = str(issue['fields']['reporter']['displayName'])
-                    self.db_insert_user(user_displayName, user_name)
-                except:
-                    pass
-                try:
-                    if 'assignee' in issue['fields'] and type(issue['fields']['assignee']) == dict:
-                        user_name = str(issue['fields']['assignee']['name'])
-                        user_displayName = str(issue['fields']['assignee']['displayName'])
-                        self.db_insert_user(user_displayName, user_name)
-                except:
-                    pass
-
-                #  vim.command('echo "' + str(issue_key) + ' - ' + str(version) + ' - ' + str(status) + '"')
-                self.db_insert_issue(str(vim.eval('s:projects[0]')), str(version), str(self.issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
-
-            self.issue_keys[0] = self.issue_keys[1]
-            self.issue_count = self.issue_count + 1
+            self.db_jql_update(self.updatedDate)
         except:
-            vim.command('let s:projects = s:projects[1:]')
-            if len(vim.eval('s:projects')) == 0:
-                self.get_projects()
-            self.issue_count = 1
+            #  TODO: VIRA-253 [210405] - Longer wait time between updates once the list is "clean"
+            self.updatedDate = 0
             pass
 
     def _get_serv(self):
@@ -193,17 +145,68 @@ class ViraAPI():
                 pass
             pass
 
-    def db_jql_issue(self, issue):
+    def db_jql_update(self, updatedDate):
         '''
         Query issues based on current filters
         '''
-        issues = self.jira.search_issues(
-            'issue = ' + str(issue),
-            fields='updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
-            json_result='True',
-            maxResults=1)
 
-        return issues['issues'][0]
+        updatedDate = str(updatedDate)
+        updatedDate = '"' + updatedDate + '"' if updatedDate != str(0) else updatedDate
+        try:
+            issues = self.jira.search_issues(
+                'updatedDate >= ' + str(updatedDate) + ' ORDER BY updatedDate ASC',
+                fields='project,updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
+                json_result='True',
+                maxResults=50)
+        except JIRAError as e:
+            raise e
+
+        for issue in issues['issues']:
+            key = str(issue['key'])
+
+            issue_count = key.split('-')[1]
+
+            project = key.replace('-', '')
+            project = "".join(filter(lambda x: not x.isdigit(), project))
+
+            issueType = str(issue['fields']['issuetype']['name'])
+
+            summary = str(issue['fields']['summary'])
+
+            #  TODO: VIRA-253 [210327] - Handle multiple versions
+            try:
+                version = str(issue['fields']['fixVersions'][0]['name'])
+            except:
+                version = 'None'
+                pass
+
+            status = str(issue['fields']['status']['statusCategory']['name'])
+
+            created = str(issue['fields']['created'])
+            created = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())[:-9]
+            created = str(created).replace(' ', '').replace('-', '').replace(':', '')
+            created = str(created)[0:19]
+
+            updated = str(issue['fields']['updated'])
+            self.updatedDate = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())[:-9]
+            updated = str(self.updatedDate).replace(' ', '').replace('-', '').replace(':', '')
+            updated = str(created)[0:19]
+
+            try:
+                user_name = str(issue['fields']['reporter']['name'])
+                user_displayName = str(issue['fields']['reporter']['displayName'])
+                self.db_insert_user(user_displayName, user_name)
+            except:
+                pass
+            try:
+                if 'assignee' in issue['fields'] and type(issue['fields']['assignee']) == dict:
+                    user_name = str(issue['fields']['assignee']['name'])
+                    user_displayName = str(issue['fields']['assignee']['displayName'])
+                    self.db_insert_user(user_displayName, user_name)
+            except:
+                pass
+            #  vim.command('echo "' + str(key) + ' - ' + str(version) + ' - ' + str(status) + '"')
+            self.db_insert_issue(str(project), str(version), str(issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
 
     def db_insert_server(self, name):
         '''
@@ -500,7 +503,7 @@ class ViraAPI():
 
             # Issue insert or update
             try:
-                issue = self.db_select_issue(str(project_id), str(version_id), str(identifier))
+                issue = self.db_select_issue(str(project_id), str(identifier))
                 try:
                     cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status_id) + " WHERE updated < " + str(updated) + " AND rowid IS " + str(issue[0]))
                     print('Issue updated - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
@@ -526,14 +529,14 @@ class ViraAPI():
 
         #  return self.db_select_issue(project, version, identifier)
 
-    def db_select_issue(self, project, version, identifier):
+    def db_select_issue(self, project, identifier):
         '''
         Select current server `rowid`
         '''
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('SELECT rowid, * FROM issues WHERE project_id=' + str(project) + ' AND version_id=' + str(version) + ' AND identifier=' + str(identifier))
+            cur.execute('SELECT rowid, * FROM issues WHERE project_id=' + str(project) + ' AND identifier=' + str(identifier))
             row = cur.fetchone()
             con.commit()
             con.close()
@@ -1427,6 +1430,7 @@ class ViraAPI():
         query = ' AND '.join(q) + ' ORDER BY ' + self.userconfig_issuesort
         issues = self.jira.search_issues(
             query,
+            #  fields='updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
             fields='summary,comment,status,statusCategory,issuetype,assignee',
             json_result='True',
             maxResults=vim.eval('g:vira_issue_limit'))
