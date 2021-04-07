@@ -93,6 +93,9 @@ class ViraAPI():
         except:
             pass
 
+    def _has_field(self, issue, field):
+        return field in issue and type(issue[field]) == dict
+
     def create_issue(self, input_stripped):
         '''
         Create new issue in jira
@@ -342,8 +345,8 @@ class ViraAPI():
         for issue in self.query_issues():
             fields = issue['fields']
 
-            user = str(fields['assignee']['displayName']) if type(
-                fields['assignee']) == dict else 'Unassigned'
+            user = str(fields['assignee']['displayName']) if self._has_field(
+                fields, 'assignee') else 'Unassigned'
             user_length = len(user) if len(user) > user_length else user_length
 
             key_length = len(
@@ -579,8 +582,8 @@ class ViraAPI():
         issuetype = issue['issuetype']['name']
         status = issue['status']['name']
         priority = issue['priority']['name']
-        assignee = issue['assignee']['displayName'] if type(
-            issue['assignee']) == dict else 'Unassigned'
+        assignee = issue['assignee']['displayName'] if self._has_field(
+            issue, 'assignee') else 'Unassigned'
         reporter = issue['reporter']['displayName']
         component = ', '.join([c['name'] for c in issue['components']])
         version = ', '.join([v['name'] for v in issue['fixVersions']])
@@ -757,7 +760,12 @@ class ViraAPI():
         Print users
         '''
 
-        print(self.get_current_user() + ' ~ currentUser')
+        current_user = \
+            self.get_current_user('assignee') or \
+            self.get_current_user('reporter')
+        if current_user:
+            print(current_user + ' ~ currentUser')
+
         for user in self.users:
             print(user)
         print('Unassigned')
@@ -779,23 +787,21 @@ class ViraAPI():
             user = str(issue['fields']['reporter']['displayName']
                       ) + ' ~ ' + issue['fields']['reporter'][self.users_type]
             self.users.add(user)
-            if 'assignee' in issue['fields'] and type(issue['fields']['assignee']) == dict:
+            if self._has_field(issue['fields'], 'assignee'):
                 user = str(issue['fields']['assignee']['displayName']
                           ) + ' ~ ' + issue['fields']['assignee'][self.users_type]
             self.users.add(user)
 
         return sorted(self.users)
 
-    def get_current_user(self):
-        query = 'reporter = currentUser() or assignee = currentUser()'
+    def get_current_user(self, role):
+        query = role + ' = currentUser()'
         issues = self.jira.search_issues(
-            query, fields='assignee, reporter', json_result='True', maxResults=-1)
+            query, fields=role, json_result='True', maxResults=-1)
 
         issue = issues['issues'][0]['fields']
-        return str(
-            issue['assignee'][self.users_type] if type(issue['assignee']) ==
-            dict else issue['reporter'][self.users_type] if type(issue['reporter']) ==
-            dict else 'Unassigned')
+        if self._has_field(issue, role):
+            return issue[role][self.users_type] 
 
     def print_versions(self):
         '''
