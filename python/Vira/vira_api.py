@@ -136,16 +136,14 @@ class ViraAPI():
         server = str(server)
         try:
             self.db_serv = self.db_select_server(server)
+            if self.db_serv is None:
+                self.db_serv = self.db_insert_server(server)
         except:
             try:
+                self.db_create()
                 self.db_serv = self.db_insert_server(server)
-            except:
-                try:
-                    self.db_create()
-                    self.db_serv = self.db_insert_server(server)
-                except OSError as e:
-                    raise e
-                pass
+            except OSError as e:
+                raise e
             pass
 
     def db_insert_vira(self):
@@ -743,7 +741,7 @@ class ViraAPI():
 
             # Get last updated date from server convert from int to date format
             update = self.db_select_server(server)[4]
-            update = str(int(update))
+            update = str(update)
             self.updated_date = update
             if self.updated_date != str(0):
                 self.updated_date = update[0:4] + '-' + update[4:6] + '-' + update[6:8] + ' ' + update[8:10] + ':' + update[10:12]
@@ -751,7 +749,7 @@ class ViraAPI():
             self.users = self.get_users()
             self.get_projects()
             vim.command('call vira#_async()')
-            #  vim.command('echo "Connection to ' + self._get_serv() + ' server was successful"')
+            vim.command('echo "Connection to ' + self._get_serv() + ' server was successful"')
         except JIRAError as e:
             if 'CAPTCHA' in str(e):
                 vim.command(
@@ -760,12 +758,13 @@ class ViraAPI():
             else:
                 #  vim.command('echo "' + str(e) + '"')
                 vim.command('let g:vira_serv = ""')
-                #  raise e
+                raise e
         except:
             vim.command('let g:vira_serv = ""')
             vim.command(
                 'echo "Could not log into jira! See the README for vira_server.json information"'
             )
+            pass
 
     def filter_str(self, filterType):
         '''
