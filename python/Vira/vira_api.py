@@ -566,7 +566,6 @@ class ViraAPI():
         except:
             pass
 
-<<<<<<< HEAD
         #  return self.db_select_issue(project, version, identifier)
 
     def db_select_issue(self, project, identifier):
