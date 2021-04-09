@@ -93,7 +93,7 @@ class ViraAPI():
         #  TODO: VIRA-247 [21023] - Clean-up vim variables in python _async
         #  - UPDATES must be taken into account
         try:
-            self.db_jql_update(self.updatedDate)
+            self.db_jql_update()
         except:
             #  TODO: VIRA-253 [210405] - Longer wait time between updates once the list is "clean"
             self.updatedDate = 0
@@ -113,10 +113,11 @@ class ViraAPI():
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
             #  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
-            #  cur.execute("CREATE TABLE vira (version int)")
+            cur.execute("CREATE TABLE vira (version text, description text)")
+
             cur.execute("CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
             cur.execute("CREATE TABLE projects (server_id int, name text, description text)")
-            cur.execute("CREATE TABLE servers (name text, description text, address text)")
+            cur.execute("CREATE TABLE servers (name text, description text, address text, issue_updated int)")
             cur.execute("CREATE TABLE statuses (project_id int, name text, description text)")
             #  cur.execute("CREATE TABLE todos (issue_id int, user_id int, description text, filename text, date int)")
             #  cur.execute("CREATE TABLE comments (issue_id int, user_id int, count int, description text, date int)")
@@ -128,6 +129,8 @@ class ViraAPI():
             con.close()
         except:
             pass
+
+        self.db_insert_vira()
 
     def db_connect(self, server):
         server = str(server)
@@ -145,19 +148,56 @@ class ViraAPI():
                 pass
             pass
 
-    def db_jql_update(self, updatedDate):
+    def db_insert_vira(self):
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute("INSERT INTO vira VALUES ('" + str('0.4.10') + "', '" + str('Database upgrade') + "')")
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        return self.db_select_vira()
+
+    def db_update_server(self, updated):
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute("UPDATE servers SET issue_updated = " + str(updated) + " WHERE name IS '" + str(self._get_serv()) + "'")
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        return self.db_select_vira()
+
+    def db_select_vira(self):
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT rowid, * FROM vira WHERE rowid=?', (1,))
+            row = cur.fetchone()
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        return row
+
+    def db_jql_update(self):
         '''
         Query issues based on current filters
         '''
 
-        updatedDate = str(updatedDate)
+        updatedDate = str(self.updatedDate)
         updatedDate = '"' + updatedDate + '"' if updatedDate != str(0) else updatedDate
         try:
             issues = self.jira.search_issues(
                 'updatedDate >= ' + str(updatedDate) + ' ORDER BY updatedDate ASC',
                 fields='project,updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
                 json_result='True',
-                maxResults=50)
+                maxResults=100)
         except JIRAError as e:
             raise e
 
@@ -190,6 +230,7 @@ class ViraAPI():
             updated = str(issue['fields']['updated'])
             self.updatedDate = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())[:-9]
             updated = str(self.updatedDate).replace(' ', '').replace('-', '').replace(':', '')
+            self.db_update_server(updated)
             updated = str(created)[0:19]
 
             try:
@@ -215,7 +256,7 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute("INSERT INTO servers VALUES ('" + str(name) + "', '" + str(name) + "', '" + str(name) + "')")
+            cur.execute("INSERT INTO servers VALUES ('" + str(name) + "', '" + str(name) + "', '" + str(name) + "', 0)")
             con.commit()
             con.close()
         except OSError as e:
@@ -352,8 +393,6 @@ class ViraAPI():
                 cur.execute("UPDATE statuses SET description = '" + str(description) + "' WHERE rowid = " + str(status_id))
             except:
                 cur.execute("INSERT OR REPLACE INTO statuses VALUES (" + str(project_id) + ", '" + str(status) + "', '" + str(description) + "')")
-                # self.db_update('statuses')
-                # self.db_insert_status(project, status, description)
                 pass
 
             con.commit()
@@ -462,7 +501,6 @@ class ViraAPI():
         Update server details in the databas as required
         '''
         try:
-
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
 
@@ -510,6 +548,7 @@ class ViraAPI():
                 except OSError as e:
                     raise e
                 #  TODO: VIRA-253 [210326] - If there is a real update print a message
+                #  - Move these to our `ViraStatusLine`
                 #  - Should show only `identifier` and `field` that has been updated
                 #  - This should be fine with a planed timer and sync with the jql search
                 #  - Using it to confirm right now
@@ -697,6 +736,13 @@ class ViraAPI():
 
             # Initial list updates (will create `db` if required)
             self.db_connect(server)
+
+            # Get last updated date from server convert from int to date format
+            update = self.db_select_server(server)[4]
+            update = str(update)
+            self.updatedDate = update
+            if self.updatedDate != str(0):
+                self.updatedDate = update[0:4] + '-' + update[4:6] + '-' + update[6:8] + ' ' + update[8:10] + ':' + update[10:12]
 
             self.users = self.get_users()
             self.get_projects()
