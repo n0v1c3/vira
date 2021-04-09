@@ -224,16 +224,14 @@ class ViraAPI():
         status = str(issue['fields']['status']['statusCategory']['name'])
 
         created = str(issue['fields']['created'])
-        created = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())[:-9]
+        created = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())[0:16]
         created = str(created).replace(' ', '').replace('-', '').replace(':', '')
         created = str(created)[0:19]
 
         updated = str(issue['fields']['updated'])
-        self.updated_date = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())[:-9]
+        self.updated_date = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())[0:16]
         updated = str(self.updated_date).replace(' ', '').replace('-', '').replace(':', '')
-        updated = str(int(updated))
-        self.db_update_server(str(int(updated)))
-        updated = str(created)[0:19]
+        self.db_update_server(updated)
 
         try:
             user_name = str(issue['fields']['reporter']['name'])
@@ -745,7 +743,7 @@ class ViraAPI():
 
             # Get last updated date from server convert from int to date format
             update = self.db_select_server(server)[4]
-            update = str(update)
+            update = str(int(update))
             self.updated_date = update
             if self.updated_date != str(0):
                 self.updated_date = update[0:4] + '-' + update[4:6] + '-' + update[6:8] + ' ' + update[8:10] + ':' + update[10:12]
