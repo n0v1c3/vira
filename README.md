@@ -431,8 +431,11 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 ### Config Variables
 
 - `g:vira_active_issue` - Set and get the active issue.
-- `g:vira_async_timer` - Normal time between vim "async" updates. (10000ms)
-- `g:vira_async_timer_init` - Faster initial time between "async" updates. (2000ms)
+- `g:vira_async_fast` - Delay between new updates pulled. (0ms)
+- - Only applies to the delay between updating the `db` from each indvidual "issue" in the `JQL` result.
+- `g:vira_async_sleep` - Time between checks for new updates from Jira. (60000ms)
+- - Only applies when duplicate search results are found.
+- `g:vira_async_timer` - Time between db updates with new issues pulled. (250ms)
   - Lower the number to increase the rate of the initial versions listing.
   - WARNING: A lower number makes it "jumpy" but gets it over and onto `g:vira_async_timer` much faster.
 - `g:vira_highlight` - Text used when there is no issue.

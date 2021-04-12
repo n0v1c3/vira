@@ -35,10 +35,9 @@ class ViraAPI():
         # Create the database file
         self.vira_db = file_db
         self.db_serv = []
-        self.issue_count = 1
-        self.issue_keys = ['', '']
         self.updated_date = 0
         self.update_issues = []
+        self.last_issues = []
 
         self.userconfig_filter_default = {
             'assignee': '',
@@ -71,8 +70,6 @@ class ViraAPI():
         self.servers = set()
         self.users_type = ''
 
-        self.async_count = 0
-
         self.versions_hide(True)
 
     def _async(self, func):
@@ -97,6 +94,12 @@ class ViraAPI():
             self.update_issues = self.update_issues[1:]
         except:
             self.update_issues = self.db_jql_update()
+            if self.last_issues == self.update_issues:
+                self.update_issues = []
+                vim.command('let g:vira_async_timer = g:vira_async_sleep')
+            else:
+                self.last_issues = self.update_issues
+                vim.command('let g:vira_async_timer = g:vira_async_fast')
             pass
 
     def _get_serv(self):
@@ -194,7 +197,7 @@ class ViraAPI():
                 'updatedDate >= ' + str(updated_date) + ' ORDER BY updatedDate ASC',
                 fields='project,updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
                 json_result='True',
-                maxResults=100)
+                maxResults=1000)
         except JIRAError as e:
             raise e
 
@@ -543,7 +546,7 @@ class ViraAPI():
                 issue = self.db_select_issue(str(project_id), str(identifier))
                 try:
                     cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status_id) + " WHERE updated < " + str(updated) + " AND rowid IS " + str(issue[0]))
-                    print('Issue updated - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
+                    #  print('Issue updated - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
                 except OSError as e:
                     raise e
                 #  TODO: VIRA-253 [210326] - If there is a real update print a message
@@ -555,7 +558,7 @@ class ViraAPI():
                 try:
                     #  TODO: VIRA-253 [210319] - Create summary `db` with id links
                     cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", " + str(identifier) + ", '" + str(summary) + "', " + str(status_id) + ", " + str(created) + ", " + str(updated) + ")")
-                    print('New issue added - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(created))
+                    #  print('New issue added - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(created))
                 except OSError as e:
                     raise e
                 pass
