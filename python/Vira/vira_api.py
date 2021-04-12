@@ -748,7 +748,10 @@ class ViraAPI():
 
             self.users = self.get_users()
             self.get_projects()
-            vim.command('call vira#_async()')
+
+            self.update_issues = []
+            #  vim.command('call vira#_async()')
+
             vim.command('echo "Connection to ' + self._get_serv() + ' server was successful"')
         except JIRAError as e:
             if 'CAPTCHA' in str(e):

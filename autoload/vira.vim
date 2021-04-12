@@ -23,7 +23,7 @@ let s:vira_highlight = ''
 let s:projects = []
 let s:versions = []
 
-let s:vira_async_debug = 0
+let s:vira_async_reset = 0
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -57,10 +57,10 @@ augroup END
 
 " Functions {{{1
 function! vira#_async() abort "{{{2
+  " Connect to jira server if not connected already
   try
     python3 Vira.api._async(Vira.api._async_vim)
   endtry
-  if s:vira_async_debug | echo s:versions | endif
   call timer_start(g:vira_async_timer, { -> execute('call vira#_async()', '') })
 endfunction
 
@@ -142,21 +142,15 @@ function! vira#_check_project(type) abort "{{{2
 endfunction
 
 function! vira#_connect() abort "{{{2
-  " Connect to jira server if not connected already
-  if (!exists('g:vira_serv') || g:vira_serv == '' || s:vira_connected == 1)
-    return
-  endif
-
-  " TODO: VIRA-222 [200930] - remove extra inputs
+  " Manually type server if not found
   if (g:vira_serv == 'Null')
     let g:vira_serv = input("server: ")
-    let g:vira_serv = input("server: ")
   endif
 
-  " Neovim requires this when trying to run vira from a brand new empty buffer
-  python3 import vim
-
+  " Connect to python and start or reset async updates
   python3 Vira.api.connect(vim.eval("g:vira_serv"))
+  if s:vira_connected == 1 | let s:vira_async_reset = 1
+  else | call vira#_async() | endif
   let s:vira_connected = 1
 endfunction
 
@@ -183,6 +177,9 @@ function! vira#_get_version() "{{{2
 endfunction
 
 function! vira#_init_python() "{{{2
+  " Neovim requires this when trying to run vira from a brand new empty buffer
+  python3 import vim
+
   " Load Vira python code and read user-configuration files
   silent! python3 import sys
   silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
@@ -221,7 +218,6 @@ function! vira#_load_project_config(...) " {{{2
 
   " Handle changing servers
   if old_server != get(g:, 'vira_serv', '')
-    let s:vira_connected = 0
     call vira#_connect()
   endif
 
@@ -582,9 +578,7 @@ function! vira#_set() "{{{2
         execute 'let ' . variable . ' = "' . value . '"'
         if variable == 'g:vira_serv'
             " Reset connection and clear filters before selecting new server
-            call vira#_reset_filters()
             python3 Vira.api.userconfig_filter["project"] = ""
-            let s:vira_connected = 0
             call vira#_connect()
         endif
 
