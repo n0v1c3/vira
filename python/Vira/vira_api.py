@@ -197,7 +197,7 @@ class ViraAPI():
                 'updatedDate >= ' + str(updated_date) + ' ORDER BY updatedDate ASC',
                 fields='project,updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
                 json_result='True',
-                maxResults=1000)
+                maxResults=vim.eval('g:vira_jql_max_results'))
         except JIRAError as e:
             raise e
 

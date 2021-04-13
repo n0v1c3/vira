@@ -28,12 +28,25 @@ let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
 let g:vira_updated_issue = get(g:, 'vira_updated_issue', g:vira_null_issue)
 let g:vira_load_project_enabled = 1
 let g:vira_report_width = get(g:, 'vira_report_width', 0)
-let g:vira_menu_height = get(g:, 'vira_menu_height', 7)
+
+let g:vira_menu_height = get(g:, 'vira_menu_height', 9)
+if (g:vira_menu_height % 2 == 0)
+  let g:vira_menu_height = g:vira_menu_height + 1
+endif
+if (g:vira_menu_height < 5)
+  let g:vira_menu_height = 5
+endif
+
 let g:vira_issue_limit = get(g:, 'vira_issue_limit', 50)
 let g:vira_version_hide = get(g:, 'vira_version_hide', 1)
 let g:vira_async_fast = get(g:, 'vira_async_fast', 0)
 let g:vira_async_sleep = get(g:, 'vira_async_sleep', 60000)
 let g:vira_async_timer = get(g:, 'vira_async_timer', g:vira_async_fast)
+
+let g:vira_jql_max_results = get(g:, 'vira_jql_max_results', 1000)
+if (g:vira_jql_max_results < 100)
+  let g:vira_jql_max_results = 100
+endif
 
 " Report mapping {{{2
 let g:vira_report_position = get(g:, 'vira_report_position', 'L')

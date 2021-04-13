@@ -461,7 +461,11 @@ function! vira#_getter() "{{{2
         return expand('<cWORD>')
     elseif type == 'versions' || type == 'version'
       if line == 'None' | return line | endif
-      return lineSplit[1]
+      let lineSplit = split(line,' │ ')
+      let project = lineSplit[0][4:]
+      let issue = lineSplit[1]
+      return project . ' │ ' . issue
+      " return '│ ' . lineSplit[0][2:len(lineSplit[0])-2] . ' │ ' . lineSplit[1]
     elseif type == 'assignees' || type == 'reporters'
       if line == 'Unassigned' | return line | endif
       return lineSplit[1]
