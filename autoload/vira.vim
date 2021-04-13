@@ -24,6 +24,7 @@ let s:projects = []
 let s:versions = []
 
 let s:vira_async_reset = 0
+let s:vira_updated_issue = ''
 
 let s:vira_todo_header = 'TODO'
 let s:vira_prompt_file = s:vira_root_dir . '/.vira_prompt'
@@ -59,7 +60,7 @@ augroup END
 function! vira#_async() abort "{{{2
   " Connect to jira server if not connected already
   try
-    python3 Vira.api._async(Vira.api._async_vim)
+    python3 Vira.api._async(Vira.api._async_db)
   endtry
   call timer_start(g:vira_async_timer, { -> execute('call vira#_async()', '') })
 endfunction
@@ -169,7 +170,15 @@ function! vira#_get_active_issue() "{{{2
 endfunction
 
 function! vira#_get_statusline() "{{{2
-  return g:vira_active_issue
+  if get(g:, 'vira_serv', '') != ''
+    if g:vira_updated_issue == g:vira_active_issue
+      return g:vira_active_issue
+    else
+      return '^ ' . g:vira_updated_issue . ' | ' . g:vira_active_issue
+    endif
+  else
+    return ''
+  endif
 endfunction
 
 function! vira#_get_version() "{{{2

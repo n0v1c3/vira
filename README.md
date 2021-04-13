@@ -615,10 +615,10 @@ nnoremap <silent> <leader>vgp :execute 'Git push -u origin ' . ViraStatusLine()<
 
 #### airline
 
-I am currently using the z section of airline until I figure out the proper way to do it.
+I am currently using the `a` section of airline until I figure out the proper way to do it.
 
 ```
-let g:airline_section_z = '%{ViraStatusLine()}'
+let g:airline_section_a = '%{ViraStatusLine()}'
 ```
 
 <a name="contributors"/>

@@ -25,6 +25,7 @@ let g:vira_config_file_db = get(g:, 'vira_config_file_db', $HOME.'/.config/vira/
 " Config variables {{{2
 let g:vira_null_issue = get(g:, 'vira_null_issue', 'None')
 let g:vira_active_issue = get(g:, 'vira_active_issue', g:vira_null_issue)
+let g:vira_updated_issue = get(g:, 'vira_updated_issue', g:vira_null_issue)
 let g:vira_load_project_enabled = 1
 let g:vira_report_width = get(g:, 'vira_report_width', 0)
 let g:vira_menu_height = get(g:, 'vira_menu_height', 7)

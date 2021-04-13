@@ -82,7 +82,7 @@ class ViraAPI():
         except:
             pass
 
-    def _async_vim(self):
+    def _async_db(self):
         '''
         Initialize vira
         '''
@@ -563,6 +563,7 @@ class ViraAPI():
                     raise e
                 pass
 
+            vim.command('let g:vira_updated_issue = "' + str(project) + '-' + str(identifier) + '"')
             con.commit()
             con.close()
         except:
@@ -753,7 +754,6 @@ class ViraAPI():
             self.get_projects()
 
             self.update_issues = []
-            #  vim.command('call vira#_async()')
 
             vim.command('echo "Connection to ' + self._get_serv() + ' server was successful"')
         except JIRAError as e:
