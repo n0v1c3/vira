@@ -710,9 +710,11 @@ class ViraAPI():
         '''
 
         try:
-            for server in self.vira_servers.keys():
-                print(server)
-            print('Null')
+            if self.vira_servers.keys():
+                for server in self.vira_servers.keys():
+                    print(server)
+            else:
+                print('Null')
         except:
             self.connect('')
 
