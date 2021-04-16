@@ -108,32 +108,49 @@ class ViraAPI():
     def _vira_eval(self, evalVal):
         return str(vim.eval(evalVal))
 
-    def db_create(self):
+    def db_create(self, table):
         '''
         Create the database file in the vira dir
         '''
+
+        table = str(table)
+
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            #  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
-            cur.execute("CREATE TABLE vira (version text, description text)")
+            if table is 'issue':
+                self.updated_date = 0
+                self.update_issues = []
+                self.last_issues = []
+                vim.command('let g:vira_async_sleep = 0')
+                vim.command('let g:vira_updated_issue = ""')
+                try:
+                    cur.execute('DROP TABLE ' + table + 's')
+                except:
+                    pass
+                cur.execute("CREATE TABLE " + table + "s (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
+                self.db_update_server(0)
+            else:
+                #  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
+                cur.execute("CREATE TABLE vira (version text, description text)")
 
-            cur.execute("CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
-            cur.execute("CREATE TABLE projects (server_id int, name text, description text)")
-            cur.execute("CREATE TABLE servers (name text, description text, address text, issue_updated int)")
-            cur.execute("CREATE TABLE statuses (project_id int, name text, description text)")
-            #  cur.execute("CREATE TABLE todos (issue_id int, user_id int, description text, filename text, date int)")
-            #  cur.execute("CREATE TABLE comments (issue_id int, user_id int, count int, description text, date int)")
-            #  cur.execute("CREATE TABLE summaries (issue_id int, user_id int, description text, date int)")
-            cur.execute("CREATE TABLE types (project_id int, name text)")
-            cur.execute("CREATE TABLE users (server_id int, name text, jira_id text)")
-            cur.execute("CREATE TABLE versions (project_id int, name text, description text)")
+                cur.execute("CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
+                cur.execute("CREATE TABLE projects (server_id int, name text, description text)")
+                cur.execute("CREATE TABLE servers (name text, description text, address text, issue_updated int)")
+                cur.execute("CREATE TABLE statuses (project_id int, name text, description text)")
+                #  cur.execute("CREATE TABLE todos (issue_id int, user_id int, description text, filename text, date int)")
+                #  cur.execute("CREATE TABLE comments (issue_id int, user_id int, count int, description text, date int)")
+                #  cur.execute("CREATE TABLE summaries (issue_id int, user_id int, description text, date int)")
+                cur.execute("CREATE TABLE types (project_id int, name text)")
+                cur.execute("CREATE TABLE users (server_id int, name text, jira_id text)")
+                cur.execute("CREATE TABLE versions (project_id int, name text, description text)")
+
+                self.db_insert_vira()
+
             con.commit()
             con.close()
         except:
             pass
-
-        self.db_insert_vira()
 
     def db_connect(self, server):
         server = str(server)
@@ -143,7 +160,7 @@ class ViraAPI():
                 self.db_serv = self.db_insert_server(server)
         except:
             try:
-                self.db_create()
+                self.db_create('')
                 self.db_serv = self.db_insert_server(server)
             except OSError as e:
                 raise e
@@ -153,7 +170,9 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute("INSERT INTO vira VALUES ('" + str('0.4.10') + "', '" + str('Database upgrade') + "')")
+            cur.execute('INSERT INTO vira(version,description) VALUES (?,?)',
+                        (str(vim.eval('s:vira_version')),
+                         str('Stay inside vim while following and updating Jira issues along with creating new issues on the go.')))
             con.commit()
             con.close()
         except OSError as e:
@@ -247,7 +266,7 @@ class ViraAPI():
                 self.db_insert_user(user_displayName, user_name)
         except:
             pass
-        #  vim.command('echo "' + str(key) + ' - ' + str(version) + ' - ' + str(status) + '"')
+        #  vim.command('echo "' + str(key) + ' - ' + str(version) + ' - ' + str(summary) + '"')
         self.db_insert_issue(str(project), str(version), str(issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
 
     def db_insert_server(self, name):
@@ -257,7 +276,7 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute("INSERT INTO servers VALUES ('" + str(name) + "', '" + str(name) + "', '" + str(name) + "', 0)")
+            cur.execute('INSERT INTO servers(name, description, issue_updated) VALUES (?,?,?)', (str(name), str(name), str(0)))
             con.commit()
             con.close()
         except OSError as e:
@@ -297,7 +316,8 @@ class ViraAPI():
                 cur.execute("UPDATE projects SET description = '" + str(project) + "' WHERE rowid = " + project_id)
             except:
                 try:
-                    cur.execute("INSERT OR REPLACE INTO projects VALUES (" + str(self.db_serv[0]) + ", '" + str(project) + "', '" + str(project) + "')")
+                    cur.execute('INSERT OR REPLACE INTO projects(server_id,name,description) VALUES (?,?,?)', (
+                        str(self.db_serv[0]), str(project), str(project)))
                 except OSError as e:
                     raise e
                 pass
@@ -345,7 +365,8 @@ class ViraAPI():
                 cur.execute("UPDATE versions SET name='" + str(version) + "', description='" + str(description) + "' WHERE rowid = " + version_id)
             except:
                 try:
-                    cur.execute("INSERT OR REPLACE INTO versions VALUES (" + str(project_id) + ", '" + str(version) + "', '" + str(description) + "')")
+                    cur.execute('INSERT OR REPLACE INTO versions(project_id,version,description) VALUES (?,?,?)', (
+                        str(project_id), str(version), str(description)))
                 except:
                     pass
                 pass
@@ -394,7 +415,8 @@ class ViraAPI():
             try:
                 cur.execute("UPDATE statuses SET description = '" + str(description) + "' WHERE rowid = " + str(status_id))
             except:
-                cur.execute("INSERT OR REPLACE INTO statuses VALUES (" + str(project_id) + ", '" + str(status) + "', '" + str(description) + "')")
+                cur.execute('INSERT OR REPLACE INTO statuses(project_id,status,description) VALUES (?,?,?)', (
+                    str(project_id), str(status), str(description)))
                 pass
 
             con.commit()
@@ -432,7 +454,8 @@ class ViraAPI():
                 cur.execute("UPDATE types SET name = '" + str(name) + "' WHERE rowid = " + str(rowid))
             except:
                 project_id = self.db_select_project(str(project))[0]
-                cur.execute("INSERT OR REPLACE INTO types VALUES (" + str(project_id) + ", '" + str(name) + "')")
+                cur.execute('INSERT OR REPLACE INTO types (project_id,name) VALUES (?,?)', (
+                    str(project_id), str(name)))
                 pass
             con.commit()
             con.close()
@@ -468,7 +491,8 @@ class ViraAPI():
         except:
             try:
                 server_id = self.db_serv[0]
-                cur.execute("INSERT OR REPLACE INTO users VALUES (" + str(server_id) + ", '" + str(name) + "', '" + str(jira_id) + "')")
+                cur.execute('INSERT OR REPLACE INTO users(server_id,name,jira_id) VALUES (?,?,?)', (
+                    str(server_id), str(name), str(jira_id)))
                 row = cur.fetchone()
             except:
                 try:
@@ -500,13 +524,14 @@ class ViraAPI():
 
     def db_insert_issue(self, project, version, identifier, issueType, summary, status, created, updated):
         '''
-        Update server details in the databas as required
+        Create or update an issue
+        :param con:
+        :param issue:
+        :return:
         '''
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
 
-            # Project ID
+        # Project ID
+        try:
             try:
                 project_id = self.db_select_project(str(project))[0]
             except:
@@ -541,35 +566,36 @@ class ViraAPI():
                     pass
                 pass
 
-            # Issue insert or update
             try:
-                issue = self.db_select_issue(str(project_id), str(identifier))
+                con = sqlite3.connect(self.vira_db)
+                cur = con.cursor()
                 try:
+                    issue = self.db_select_issue(str(project_id), str(identifier))
                     cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status_id) + " WHERE updated < " + str(updated) + " AND rowid IS " + str(issue[0]))
                     #  print('Issue updated - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
-                except OSError as e:
-                    raise e
-                #  TODO: VIRA-253 [210326] - If there is a real update print a message
-                #  - Move these to our `ViraStatusLine`
-                #  - Should show only `identifier` and `field` that has been updated
-                #  - This should be fine with a planed timer and sync with the jql search
-                #  - Using it to confirm right now
-            except:
-                try:
-                    #  TODO: VIRA-253 [210319] - Create summary `db` with id links
-                    cur.execute("INSERT OR REPLACE INTO issues VALUES (" + str(project_id) + ", " + str(version_id) + ", " + str(identifier) + ", '" + str(summary) + "', " + str(status_id) + ", " + str(created) + ", " + str(updated) + ")")
-                    #  print('New issue added - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(created))
-                except OSError as e:
-                    raise e
-                pass
-
-            vim.command('let g:vira_updated_issue = "' + str(project) + '-' + str(identifier) + '"')
-            con.commit()
-            con.close()
+                except:
+                    try:
+                        cur.execute('INSERT INTO issues(project_id,version_id,identifier,summary,status_id,created,updated) VALUES(?,?,?,?,?,?,?)',
+                                    (str(project_id), str(version_id), str(identifier), str(summary), str(status_id), str(created), str(updated)))
+                    except:
+                        self.db_create('issue')
+                        raise OSError
+                    pass
+                vim.command('let g:vira_updated_issue = "' + str(project) + '-' + str(identifier) + '"')
+                con.commit()
+                con.close()
+            except OSError as e:
+                raise e
         except:
             pass
-
-        #  return self.db_select_issue(project, version, identifier)
+        # Issue insert or update
+        #  TODO: VIRA-253 [210326] - If there is a real update print a message
+        #  - Move these to our `ViraStatusLine`
+        #  - Should show only `identifier` and `field` that has been updated
+        #  - This should be fine with a planed timer and sync with the jql search
+        #  - Using it to confirm right now
+                #  TODO: VIRA-253 [210319] - Create summary `db` with id links
+                #  print('New issue added - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(created))
 
     def db_select_issue(self, project, identifier):
         '''
