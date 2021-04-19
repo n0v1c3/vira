@@ -38,6 +38,7 @@ class ViraAPI():
         self.updated_date = 0
         self.update_issues = []
         self.last_issues = []
+        self.jql_start_at = 0
 
         self.userconfig_filter_default = {
             'assignee': '',
@@ -93,14 +94,17 @@ class ViraAPI():
             self.db_update_issue(self.update_issues[0])
             self.update_issues = self.update_issues[1:]
         except:
+            self.last_issues = self.update_issues
             self.update_issues = self.db_jql_update()
             if self.last_issues == self.update_issues:
                 self.update_issues = []
+                self.jql_start_at = 0
                 vim.command('let g:vira_async_timer = g:vira_async_sleep')
             else:
-                self.last_issues = self.update_issues
+                self.jql_start_at = self.jql_start_at + 1
                 vim.command('let g:vira_async_timer = g:vira_async_fast')
             pass
+            self.db_update_server()
 
     def _get_serv(self):
         return str(self._vira_eval('g:vira_serv'))
@@ -129,14 +133,14 @@ class ViraAPI():
                 except:
                     pass
                 cur.execute("CREATE TABLE " + table + "s (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
-                self.db_update_server(0)
+                self.db_update_server()
             else:
                 #  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
                 cur.execute("CREATE TABLE vira (version text, description text)")
 
                 cur.execute("CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
                 cur.execute("CREATE TABLE projects (server_id int, name text, description text)")
-                cur.execute("CREATE TABLE servers (name text, description text, address text, issue_updated int)")
+                cur.execute("CREATE TABLE servers (name text, description text, address text, jql_start_at int)")
                 cur.execute("CREATE TABLE statuses (project_id int, name text, description text)")
                 #  cur.execute("CREATE TABLE todos (issue_id int, user_id int, description text, filename text, date int)")
                 #  cur.execute("CREATE TABLE comments (issue_id int, user_id int, count int, description text, date int)")
@@ -165,6 +169,7 @@ class ViraAPI():
             except OSError as e:
                 raise e
             pass
+        self.jql_start_at = self.db_serv[4]
 
     def db_insert_vira(self):
         try:
@@ -180,17 +185,17 @@ class ViraAPI():
 
         return self.db_select_vira()
 
-    def db_update_server(self, updated):
+    def db_update_server(self):
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute("UPDATE servers SET issue_updated = " + str(updated) + " WHERE name IS '" + str(self._get_serv()) + "'")
+            cur.execute("UPDATE servers SET jql_start_at = " + str(self.jql_start_at) + " WHERE name IS '" + str(self._get_serv() + "'"))
             con.commit()
             con.close()
         except OSError as e:
             raise e
 
-        return self.db_select_vira()
+        return self.db_select_server()
 
     def db_select_vira(self):
         try:
@@ -209,17 +214,18 @@ class ViraAPI():
         '''
         Query issues based on current filters
         '''
-        updated_date = str(self.updated_date)
-        updated_date = '"' + updated_date + '"' if updated_date != str(0) else updated_date
+        #  updated_date = str(self.updated_date)
+        #  updated_date = '"' + updated_date + '"' if updated_date != str(0) else updated_date
         try:
             issues = self.jira.search_issues(
-                'updatedDate >= ' + str(updated_date) + ' ORDER BY updatedDate ASC',
+                #  'updatedDate >= ' + str(updated_date) + ' ORDER BY updatedDate ASC',
+                'updatedDate >= 0 ORDER BY updatedDate ASC',
                 fields='project,updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
                 json_result='True',
+                startAt=int(vim.eval('g:vira_jql_max_results')) * self.jql_start_at,
                 maxResults=vim.eval('g:vira_jql_max_results'))
         except JIRAError as e:
             raise e
-
         return issues['issues']
 
     def db_update_issue(self, issue):
@@ -251,7 +257,7 @@ class ViraAPI():
         updated = str(issue['fields']['updated'])
         self.updated_date = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())[0:16]
         updated = str(self.updated_date).replace(' ', '').replace('-', '').replace(':', '')
-        self.db_update_server(updated)
+        #  self.db_update_server(updated)
 
         try:
             user_name = str(issue['fields']['reporter']['name'])
@@ -276,7 +282,7 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('INSERT INTO servers(name, description, issue_updated) VALUES (?,?,?)', (str(name), str(name), str(0)))
+            cur.execute('INSERT INTO servers(name, description, jql_start_at) VALUES (?,?,?)', (str(name), str(name), str(0)))
             con.commit()
             con.close()
         except OSError as e:
