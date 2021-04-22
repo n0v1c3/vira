@@ -39,6 +39,7 @@ class ViraAPI():
         self.update_issues = []
         self.last_issues = []
         self.jql_start_at = 0
+        self.jql_offset = 0
 
         self.userconfig_filter_default = {
             'assignee': '',
@@ -91,20 +92,20 @@ class ViraAPI():
         #  TODO: VIRA-247 [21023] - Clean-up vim variables in python _async
         #  - UPDATES must be taken into account
         try:
-            self.db_update_issue(self.update_issues[0])
-            self.update_issues = self.update_issues[1:]
+            self.db_update_issue(self.update_issues[int(self.jql_offset)])
+            self.jql_offset = self.jql_offset + 1
         except:
             self.last_issues = self.update_issues
-            self.update_issues = self.db_jql_update()
-            if self.last_issues == self.update_issues:
-                self.update_issues = []
-                self.jql_start_at = 0
-                vim.command('let g:vira_async_timer = g:vira_async_sleep')
-            else:
-                self.jql_start_at = self.jql_start_at + 1
-                vim.command('let g:vira_async_timer = g:vira_async_fast')
+            try:
+                self.db_update_server()
+            except:
+                pass
+
+                self.update_issues = self.db_jql_update()
+                self.jql_offset = 0
+                self.jql_start_at = int(self.db_select_server(self._get_serv())[4])
+                self.db_update_server()
             pass
-            self.db_update_server()
 
     def _get_serv(self):
         return str(self._vira_eval('g:vira_serv'))
@@ -140,7 +141,7 @@ class ViraAPI():
 
                 cur.execute("CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
                 cur.execute("CREATE TABLE projects (server_id int, name text, description text)")
-                cur.execute("CREATE TABLE servers (name text, description text, address text, jql_start_at int)")
+                cur.execute("CREATE TABLE servers (name text, description text, address text, jql_start_at int, jql_offset int)")
                 cur.execute("CREATE TABLE statuses (project_id int, name text, description text)")
                 #  cur.execute("CREATE TABLE todos (issue_id int, user_id int, description text, filename text, date int)")
                 #  cur.execute("CREATE TABLE comments (issue_id int, user_id int, count int, description text, date int)")
@@ -161,7 +162,7 @@ class ViraAPI():
         try:
             self.db_serv = self.db_select_server(server)
             if self.db_serv is None:
-                self.db_serv = self.db_insert_server(server)
+                self.db_serv = selfdb_insert_server(server)
         except:
             try:
                 self.db_create('')
@@ -272,6 +273,7 @@ class ViraAPI():
                 self.db_insert_user(user_displayName, user_name)
         except:
             pass
+
         #  vim.command('echo "' + str(key) + ' - ' + str(version) + ' - ' + str(summary) + '"')
         self.db_insert_issue(str(project), str(version), str(issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
 
@@ -368,10 +370,10 @@ class ViraAPI():
                 version_id = str(self.db_select_version(str(project_id), str(version))[0])
 
                 # Update `project db row`
-                cur.execute("UPDATE versions SET name='" + str(version) + "', description='" + str(description) + "' WHERE rowid = " + version_id)
+                cur.execute("UPDATE versions SET name = '" + str(version) + "', description = '" + str(description) + "' WHERE rowid = " + version_id)
             except:
                 try:
-                    cur.execute('INSERT OR REPLACE INTO versions(project_id,version,description) VALUES (?,?,?)', (
+                    cur.execute('INSERT OR REPLACE INTO versions(project_id,name,description) VALUES (?,?,?)', (
                         str(project_id), str(version), str(description)))
                 except:
                     pass
@@ -421,7 +423,7 @@ class ViraAPI():
             try:
                 cur.execute("UPDATE statuses SET description = '" + str(description) + "' WHERE rowid = " + str(status_id))
             except:
-                cur.execute('INSERT OR REPLACE INTO statuses(project_id,status,description) VALUES (?,?,?)', (
+                cur.execute('INSERT OR REPLACE INTO statuses(project_id,name,description) VALUES (?,?,?)', (
                     str(project_id), str(status), str(description)))
                 pass
 
@@ -578,7 +580,6 @@ class ViraAPI():
                 try:
                     issue = self.db_select_issue(str(project_id), str(identifier))
                     cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status_id) + " WHERE updated < " + str(updated) + " AND rowid IS " + str(issue[0]))
-                    #  print('Issue updated - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
                 except:
                     try:
                         cur.execute('INSERT INTO issues(project_id,version_id,identifier,summary,status_id,created,updated) VALUES(?,?,?,?,?,?,?)',
