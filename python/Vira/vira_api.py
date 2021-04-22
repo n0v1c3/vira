@@ -95,16 +95,22 @@ class ViraAPI():
             self.db_update_issue(self.update_issues[int(self.jql_offset)])
             self.jql_offset = self.jql_offset + 1
         except:
-            self.last_issues = self.update_issues
             try:
                 self.db_update_server()
             except:
                 pass
 
-                self.update_issues = self.db_jql_update()
-                self.jql_offset = 0
-                self.jql_start_at = int(self.db_select_server(self._get_serv())[4])
-                self.db_update_server()
+            self.update_issues = self.db_jql_update()
+            if self.last_issues == self.update_issues:
+                vim.command('let g:vira_async_timer = g:vira_async_sleep')
+                self.jql_start_at = int(0)
+            else:
+                vim.command('let g:vira_async_timer = g:vira_async_fast')
+                #  TODO: VIRA-253 [210422] - Manage multiple connections here
+                self.jql_start_at = int(self.db_select_server(self._get_serv())[4]) + 1
+
+            self.jql_offset = 0
+            self.last_issues = self.update_issues
             pass
 
     def _get_serv(self):
