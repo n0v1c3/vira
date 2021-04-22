@@ -217,31 +217,32 @@ endfunction
 
 function! vira#_load_project_config(...) " {{{2
   " Save current directory and switch to file directory
-  let s:current_dir = getcwd()
-  cd %:p:h
+  if get(s:, 'vira_connected', 1) == 0
+    let s:current_dir = getcwd()
+    cd %:p:h
 
-  if a:0 > 0
-    let vira_repo  = a:1
-  else
-    let vira_repo   = ''
-  end
-  let old_server = get(g:, 'vira_serv', '')
+    if a:0 > 0
+      let vira_repo  = a:1
+    else
+      let vira_repo   = ''
+    end
+    let old_server = get(g:, 'vira_serv', '')
 
-  " Load project configuration for the current git repo
-  call vira#_reset_filters()
-  exe 'python3 Vira.api.load_project_config("'.vira_repo.'")'
+    " Load project configuration for the current git repo
+    call vira#_reset_filters()
+    exe 'python3 Vira.api.load_project_config("'.vira_repo.'")'
 
-  " Return to current directory
-  cd `=s:current_dir`
+    " Return to current directory
+    cd `=s:current_dir`
 
-  " Disable loading of project config
-  let g:vira_load_project_enabled = 0
+    " Disable loading of project config
+    let g:vira_load_project_enabled = 0
 
-  " Handle changing servers
-  if old_server != get(g:, 'vira_serv', '')
-    call vira#_connect()
+    " Handle changing servers
+    if old_server != get(g:, 'vira_serv', '')
+      call vira#_connect()
+    endif
   endif
-
 endfunction
 
 function! vira#_menu(type) abort " {{{2
@@ -551,8 +552,6 @@ function! vira#_highlight() "{{{2
   if type == 'assign_issue' || type == 'assignees' || type == 'reporters' || type == 'versions' || type == 'version'
     let seperator = ''
   else | let seperator = '^' | endif
-
-  " echo s:vira_highlight
 
   let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
   let s:vira_highlight = substitute(s:vira_highlight,"\\\.","\\\\\\.",'g')

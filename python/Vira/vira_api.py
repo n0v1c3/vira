@@ -89,8 +89,6 @@ class ViraAPI():
         Initialize vira
         '''
 
-        #  TODO: VIRA-247 [21023] - Clean-up vim variables in python _async
-        #  - UPDATES must be taken into account
         try:
             self.db_update_issue(self.update_issues[int(self.jql_offset)])
             self.jql_offset = self.jql_offset + 1
@@ -247,12 +245,18 @@ class ViraAPI():
 
         summary = str(issue['fields']['summary'])
 
-        #  TODO: VIRA-253 [210327] - Handle multiple versions
+        version = None
         try:
-            version = str(issue['fields']['fixVersions'][0]['name'])
+            for versions in self.update_issues[int(self.jql_offset)]['fields']['fixVersions']:
+                version = str(versions['name'])
+                description = str(versions['description'])
+                version_description = description if description != '' else 'No Description'
         except:
-            version = 'None'
             pass
+
+        if version is None:
+            version = 'None'
+            version_description = 'Issues that have not been assigned to any ' + str(project) + ' versions.'
 
         status = str(issue['fields']['status']['statusCategory']['name'])
 
@@ -281,7 +285,7 @@ class ViraAPI():
             pass
 
         #  vim.command('echo "' + str(key) + ' - ' + str(version) + ' - ' + str(summary) + '"')
-        self.db_insert_issue(str(project), str(version), str(issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
+        self.db_insert_issue(str(project), str(version), str(version_description), str(issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
 
     def db_insert_server(self, name):
         '''
@@ -536,7 +540,7 @@ class ViraAPI():
             raise e
         return row
 
-    def db_insert_issue(self, project, version, identifier, issueType, summary, status, created, updated):
+    def db_insert_issue(self, project, version, version_description, identifier, issueType, summary, status, created, updated):
         '''
         Create or update an issue
         :param con:
@@ -559,8 +563,6 @@ class ViraAPI():
 
             # Version ID check
             if str(version) != 'None':
-                #  TODO: VIRA-253 [210326] - Version descriptions
-                version_description = str(version) + ' - Description'
                 try:
                     version_id = self.db_select_version(str(project_id), str(version))[0]
                 except:
