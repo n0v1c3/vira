@@ -149,11 +149,11 @@ function! vira#_connect() abort "{{{2
     " Lock connection
     let s:vira_connected = 1
 
-    " Start async process for any connection
-    call vira#_async()
-
     " Re-call this function
     call vira#_connect()
+
+    " Start async process for any connection
+    call vira#_async()
 
   " Connect through python
   else

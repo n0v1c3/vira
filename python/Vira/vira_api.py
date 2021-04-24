@@ -90,25 +90,33 @@ class ViraAPI():
         '''
 
         try:
+            vim.command('let g:vira_async_timer = g:vira_async_fast')
             self.db_update_issue(self.update_issues[int(self.jql_offset)])
-            self.jql_offset = self.jql_offset + 1
+            self.jql_offset = int(self.jql_offset) + 1
         except:
+            vim.command('let g:vira_async_timer = g:vira_async_sleep')
+            server = self.db_select_server(self._get_serv())
+
+            if len(self.update_issues) > 0:
+                if len(self.last_issues) > 0:
+                    if self.update_issues != self.last_issues:
+                        self.jql_start_at = int(server[4]) + 1
+            else:
+                self.jql_start_at = 0
+            self.last_issues = self.update_issues
+
             try:
                 self.db_update_server()
             except:
                 pass
 
-            self.update_issues = self.db_jql_update()
-            if self.last_issues == self.update_issues:
-                vim.command('let g:vira_async_timer = g:vira_async_sleep')
-                self.jql_start_at = int(0)
-            else:
-                vim.command('let g:vira_async_timer = g:vira_async_fast')
-                #  TODO: VIRA-253 [210422] - Manage multiple connections here
-                self.jql_start_at = int(self.db_select_server(self._get_serv())[4]) + 1
+            try:
+                self.update_issues = self.db_jql_update()
+            except:
+                #  TODO: VIRA-253 [210423] - Handle connect and total connection fail here
+                self.connect(self._get_serv())
 
             self.jql_offset = 0
-            self.last_issues = self.update_issues
             pass
 
     def _get_serv(self):
@@ -194,7 +202,7 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute("UPDATE servers SET jql_start_at = " + str(self.jql_start_at) + " WHERE name IS '" + str(self._get_serv() + "'"))
+            cur.execute("UPDATE servers SET jql_start_at=" + str(self.jql_start_at) + " WHERE name IS '" + str(self._get_serv() + "'"))
             con.commit()
             con.close()
         except OSError as e:
@@ -245,18 +253,17 @@ class ViraAPI():
 
         summary = str(issue['fields']['summary'])
 
-        version = None
         try:
+            version = 'None'
+            version_description = 'No Description'
+
             for versions in self.update_issues[int(self.jql_offset)]['fields']['fixVersions']:
                 version = str(versions['name'])
-                description = str(versions['description'])
-                version_description = description if description != '' else 'No Description'
+                version_description = str(versions['description']) if str(versions['description']) != '' else 'No Description'
         except:
-            pass
-
-        if version is None:
             version = 'None'
             version_description = 'Issues that have not been assigned to any ' + str(project) + ' versions.'
+            pass
 
         status = str(issue['fields']['status']['statusCategory']['name'])
 
@@ -596,13 +603,17 @@ class ViraAPI():
                         self.db_create('issue')
                         raise OSError
                     pass
-                vim.command('let g:vira_updated_issue = "' + str(project) + '-' + str(identifier) + '"')
                 con.commit()
                 con.close()
             except OSError as e:
                 raise e
         except:
             pass
+
+        vim.command('let g:vira_updated_issue = "' + str(project) + '-' + str(identifier) + '"')
+
+        return self.db_select_issue(str(project_id), str(identifier))
+
         # Issue insert or update
         #  TODO: VIRA-253 [210326] - If there is a real update print a message
         #  - Move these to our `ViraStatusLine`
@@ -794,7 +805,8 @@ class ViraAPI():
             self.users = self.get_users()
             self.get_projects()
 
-            self.update_issues = []
+            self.update_issues = self.db_jql_update()
+            self.jql_start_at = int(self.db_select_server(self._get_serv())[4]) + 1
 
             vim.command('echo "Connection to ' + self._get_serv() + ' server was successful"')
         except JIRAError as e:
