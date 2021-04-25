@@ -111,19 +111,101 @@ class ViraAPI():
                 pass
 
             try:
-                self.update_issues = self.db_jql_update()
+                self.update_issues = self.db_update_jql()
             except:
-                #  TODO: VIRA-253 [210423] - Handle connect and total connection fail here
-                self.connect(self._get_serv())
+                try:
+                    self.connect(self._get_serv())
+                except:
+                    self._print_serv_stat('lost!')
+                    raise OSError
+                pass
 
             self.jql_offset = 0
             pass
 
     def _get_serv(self):
-        return str(self._vira_eval('g:vira_serv'))
+        return str(vim.eval('g:vira_serv'))
 
-    def _vira_eval(self, evalVal):
-        return str(vim.eval(evalVal))
+    def _has_field(self, issue, field):
+        return field in issue and type(issue[field]) == dict
+
+    def _print_serv_stat(self, status):
+        vim.command('echo "Connection to ' + self._get_serv() + ' was ' + str(status) + '"')
+
+    def connect(self, server):
+        '''
+        Connect to Jira server with supplied auth details
+        '''
+
+        self.users = set()
+        self.users_type = ''
+
+        try:
+            # Specify whether the server's TLS certificate needs to be verified
+            if self.vira_servers[server].get('skip_cert_verify'):
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                cert_verify = False
+            else:
+                cert_verify = True
+
+            # Get auth for current server
+            username = self.vira_servers[server].get('username')
+            password_cmd = self.vira_servers[server].get('password_cmd')
+            if password_cmd:
+                password = run_command(password_cmd)['stdout'].strip().split('\n')[0]
+            else:
+                password = self.vira_servers[server]['password']
+        except:
+            cert_verify = True
+            server = vim.eval('input("server: ")')
+            vim.command('let g:vira_serv = "' + server + '"')
+            username = vim.eval('input("username: ")')
+            password = vim.eval('inputsecret("password: ")')
+
+        # Connect to jira server
+        try:
+            if 'https://' not in server.lower():
+                server = 'https://' + server
+                vim.command('let g:vira_serv = "' + server + '"')
+
+            # Authorize
+            self.jira = JIRA(
+                options={
+                    'server': server,
+                    'verify': cert_verify,
+                },
+                basic_auth=(username, password),
+                timeout=2,
+                async_=True,
+                max_retries=2)
+
+            # Initial list updates (will create `db` if required)
+            self.db_connect(server)
+
+            # Get last updated date from server convert from int to date format
+            update = self.db_select_server(server)[4]
+            update = str(update)
+            self.updated_date = update
+            if self.updated_date != str(0):
+                self.updated_date = update[0:4] + '-' + update[4:6] + '-' + update[6:8] + ' ' + update[8:10] + ':' + update[10:12]
+
+            self.users = self.get_users()
+            self.get_projects()
+
+            self.update_issues = self.db_update_jql()
+            self.jql_start_at = int(self.db_select_server(self._get_serv())[4]) + 1
+
+            self._print_serv_stat('successful!')
+        except JIRAError as e:
+            if 'CAPTCHA' in str(e):
+                self._print_serv_stat('NOT successful! Check authentication details and log in from browser for mandatory CAPTCHA.')
+            else:
+                vim.command('let g:vira_serv = ""')
+                raise e
+        except:
+            vim.command('let g:vira_serv = ""')
+            self._print_serv_stat('NOT successful! See the README for vira_server.json information.')
+            pass
 
     def db_create(self, table):
         '''
@@ -184,62 +266,19 @@ class ViraAPI():
             pass
         self.jql_start_at = self.db_serv[4]
 
-    def db_insert_vira(self):
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            cur.execute('INSERT INTO vira(version,description) VALUES (?,?)',
-                        (str(vim.eval('s:vira_version')),
-                         str('Stay inside vim while following and updating Jira issues along with creating new issues on the go.')))
-            con.commit()
-            con.close()
-        except OSError as e:
-            raise e
-
-        return self.db_select_vira()
-
     def db_update_server(self):
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute("UPDATE servers SET jql_start_at=" + str(self.jql_start_at) + " WHERE name IS '" + str(self._get_serv() + "'"))
+            jql_start_at = str(self.jql_start_at)
+            name = "'" + str(self.db_safe_string(self._get_serv())) + "'"
+            cur.execute("UPDATE servers SET jql_start_at=" + jql_start_at + " WHERE name IS " + name)
             con.commit()
             con.close()
         except OSError as e:
             raise e
 
         return self.db_select_server()
-
-    def db_select_vira(self):
-        try:
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            cur.execute('SELECT rowid, * FROM vira WHERE rowid=?', (1,))
-            row = cur.fetchone()
-            con.commit()
-            con.close()
-        except OSError as e:
-            raise e
-
-        return row
-
-    def db_jql_update(self):
-        '''
-        Query issues based on current filters
-        '''
-        #  updated_date = str(self.updated_date)
-        #  updated_date = '"' + updated_date + '"' if updated_date != str(0) else updated_date
-        try:
-            issues = self.jira.search_issues(
-                #  'updatedDate >= ' + str(updated_date) + ' ORDER BY updatedDate ASC',
-                'updatedDate >= 0 ORDER BY updatedDate ASC',
-                fields='project,updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
-                json_result='True',
-                startAt=int(vim.eval('g:vira_jql_max_results')) * self.jql_start_at,
-                maxResults=vim.eval('g:vira_jql_max_results'))
-        except JIRAError as e:
-            raise e
-        return issues['issues']
 
     def db_update_issue(self, issue):
         key = str(issue['key'])
@@ -294,6 +333,55 @@ class ViraAPI():
         #  vim.command('echo "' + str(key) + ' - ' + str(version) + ' - ' + str(summary) + '"')
         self.db_insert_issue(str(project), str(version), str(version_description), str(issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
 
+    def db_update_jql(self):
+        '''
+        Query issues based on current filters
+        '''
+        #  updated_date = str(self.updated_date)
+        #  updated_date = '"' + updated_date + '"' if updated_date != str(0) else updated_date
+        try:
+            issues = self.jira.search_issues(
+                #  'updatedDate >= ' + str(updated_date) + ' ORDER BY updatedDate ASC',
+                'updatedDate >= 0 ORDER BY updatedDate ASC',
+                fields='project,updated,created,fixVersions,summary,comment,status,statusCategory,issuetype,assignee,reporter',
+                json_result='True',
+                startAt=int(vim.eval('g:vira_jql_max_results')) * self.jql_start_at,
+                maxResults=vim.eval('g:vira_jql_max_results'))
+        except JIRAError as e:
+            raise e
+        return issues['issues']
+
+    def db_safe_string(self, string):
+        string = string.replace("'", "''")
+        return string
+
+    def db_insert_vira(self):
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('INSERT INTO vira(version,description) VALUES (?,?)',
+                        (str(vim.eval('s:vira_version')),
+                         str('Stay inside vim while following and updating Jira issues along with creating new issues on the go.')))
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        return self.db_select_vira()
+
+    def db_select_vira(self):
+        try:
+            con = sqlite3.connect(self.vira_db)
+            cur = con.cursor()
+            cur.execute('SELECT rowid, * FROM vira WHERE rowid=?', (1,))
+            row = cur.fetchone()
+            con.commit()
+            con.close()
+        except OSError as e:
+            raise e
+
+        return row
+
     def db_insert_server(self, name):
         '''
         Update server details in the database as required
@@ -301,6 +389,7 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
+            name = str(self.db_safe_string(name))
             cur.execute('INSERT INTO servers(name, description, jql_start_at) VALUES (?,?,?)', (str(name), str(name), str(0)))
             con.commit()
             con.close()
@@ -314,9 +403,9 @@ class ViraAPI():
         Select current server `rowid`
         '''
         try:
-            name = str(name)
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
+            name = str(self.db_safe_string(name))
             cur.execute('SELECT rowid, * FROM servers WHERE name IS ?', (name,))
             row = cur.fetchone()
             con.commit()
@@ -510,24 +599,24 @@ class ViraAPI():
         '''
         con = sqlite3.connect(self.vira_db)
         cur = con.cursor()
+        name = str(self.db_safe_string(name))
+        jira_id = str(self.db_safe_string(jira_id))
         try:
-            user_id = str(self.db_select_user(str(jira_id))[0])
-            cur.execute("UPDATE users SET name = '" + str(name) + "' WHERE rowid = " + str(user_id))
+            user = self.db_select_user(str(jira_id))
+            rowid = str(user[0])
+            cur.execute('UPDATE users SET name = "' + str(name) + '" WHERE rowid=' + rowid)
         except:
             try:
                 server_id = self.db_serv[0]
                 cur.execute('INSERT OR REPLACE INTO users(server_id,name,jira_id) VALUES (?,?,?)', (
                     str(server_id), str(name), str(jira_id)))
-                row = cur.fetchone()
             except:
-                try:
-                    row = self.db_insert_user(self._get_serv(self._get_serv(), name, jira_id))
-                except OSError as e:
-                    raise e
+                #  TODO: VIRA-253 [210424] - This could be version or db usage overload
+                # - We will miss a user if we get here
+                raise OSError
             pass
         con.commit()
         con.close()
-
         return self.db_select_user(str(jira_id))
 
     def db_select_user(self, jira_id):
@@ -594,6 +683,7 @@ class ViraAPI():
                 cur = con.cursor()
                 try:
                     issue = self.db_select_issue(str(project_id), str(identifier))
+                    summary = self.db_safe_string(summary)
                     cur.execute("UPDATE issues SET summary='" + str(summary) + "', status_id=" + str(status_id) + " WHERE updated < " + str(updated) + " AND rowid IS " + str(issue[0]))
                 except:
                     try:
@@ -630,7 +720,7 @@ class ViraAPI():
         try:
             con = sqlite3.connect(self.vira_db)
             cur = con.cursor()
-            cur.execute('SELECT rowid, * FROM issues WHERE project_id=' + str(project) + ' AND identifier=' + str(identifier))
+            cur.execute('SELECT rowid, * FROM issues WHERE project_id=? AND identifier=?', (str(int(project)), str(int(identifier))))
             row = cur.fetchone()
             con.commit()
             con.close()
@@ -673,8 +763,18 @@ class ViraAPI():
             raise e
         return int(count[0])
 
-    def _has_field(self, issue, field):
-        return field in issue and type(issue[field]) == dict
+    def add_worklog(self, issue, timeSpentSeconds, comment):
+        '''
+        Calculate the offset for the start time of the time tracking
+        '''
+
+        earlier = datetime.now() - datetime.timedelta(seconds=timeSpentSeconds)
+
+        self.jira.add_worklog(
+            issue=issue,
+            timeSpentSeconds=timeSpentSeconds,
+            comment=comment,
+            started=earlier)
 
     def create_issue(self, input_stripped):
         '''
@@ -732,99 +832,6 @@ class ViraAPI():
         jira_server = vim.eval('g:vira_serv')
         print(f'Added {jira_server}/browse/{issue_key}')
 
-    def add_worklog(self, issue, timeSpentSeconds, comment):
-        '''
-        Calculate the offset for the start time of the time tracking
-        '''
-
-        earlier = datetime.now() - datetime.timedelta(seconds=timeSpentSeconds)
-
-        self.jira.add_worklog(
-            issue=issue,
-            timeSpentSeconds=timeSpentSeconds,
-            comment=comment,
-            started=earlier)
-
-    def connect(self, server):
-        '''
-        Connect to Jira server with supplied auth details
-        '''
-
-        self.users = set()
-        self.users_type = ''
-
-        try:
-            # Specify whether the server's TLS certificate needs to be verified
-            if self.vira_servers[server].get('skip_cert_verify'):
-                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-                cert_verify = False
-            else:
-                cert_verify = True
-
-            # Get auth for current server
-            username = self.vira_servers[server].get('username')
-            password_cmd = self.vira_servers[server].get('password_cmd')
-            if password_cmd:
-                password = run_command(password_cmd)['stdout'].strip().split('\n')[0]
-            else:
-                password = self.vira_servers[server]['password']
-        except:
-            cert_verify = True
-            server = vim.eval('input("server: ")')
-            vim.command('let g:vira_serv = "' + server + '"')
-            username = vim.eval('input("username: ")')
-            password = vim.eval('inputsecret("password: ")')
-
-        # Connect to jira server
-        try:
-            if 'https://' not in server.lower():
-                server = 'https://' + server
-                vim.command('let g:vira_serv = "' + server + '"')
-
-            # Authorize
-            self.jira = JIRA(
-                options={
-                    'server': server,
-                    'verify': cert_verify,
-                },
-                basic_auth=(username, password),
-                timeout=2,
-                async_=True,
-                max_retries=2)
-
-            # Initial list updates (will create `db` if required)
-            self.db_connect(server)
-
-            # Get last updated date from server convert from int to date format
-            update = self.db_select_server(server)[4]
-            update = str(update)
-            self.updated_date = update
-            if self.updated_date != str(0):
-                self.updated_date = update[0:4] + '-' + update[4:6] + '-' + update[6:8] + ' ' + update[8:10] + ':' + update[10:12]
-
-            self.users = self.get_users()
-            self.get_projects()
-
-            self.update_issues = self.db_jql_update()
-            self.jql_start_at = int(self.db_select_server(self._get_serv())[4]) + 1
-
-            vim.command('echo "Connection to ' + self._get_serv() + ' server was successful"')
-        except JIRAError as e:
-            if 'CAPTCHA' in str(e):
-                vim.command(
-                    'echo "Could not log into ' + self._get_serv() + '! Check authentication details and log in from web browser to enter mandatory CAPTCHA."'
-                )
-            else:
-                #  vim.command('echo "' + str(e) + '"')
-                vim.command('let g:vira_serv = ""')
-                raise e
-        except:
-            vim.command('let g:vira_serv = ""')
-            vim.command(
-                'echo "Could not log into jira! See the README for vira_server.json information"'
-            )
-            pass
-
     def filter_str(self, filterType):
         '''
         Build a filter string to add to a JQL query
@@ -839,6 +846,14 @@ class ViraAPI():
         selection = str(self.userconfig_filter[filterType]).strip('[]') if type(self.userconfig_filter[filterType]) == list else self.userconfig_filter[filterType] if type(self.userconfig_filter[filterType]) == tuple else "'" + self.userconfig_filter[filterType] + "'"
 
         return str(f"{filterType} in ({selection})").replace("'None'", "Null").replace("'Unassigned'", "Null").replace("'currentUser'", "currentUser()").replace("'currentUser()'", "currentUser()").replace("'currentuser'", "currentUser()").replace("'currentuser()'", "currentUser()").replace("'null'", "Null").replace(f"text in ({selection})", f"text ~ {selection}")
+
+    def format_date(self, date):
+        '''
+        Initialize vira
+        '''
+
+        time = datetime.now().strptime(date, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
+        return str(time)[0:10] + ' ' + str(time)[11:19]
 
     def get_assign_issue(self):
         '''
@@ -993,21 +1008,6 @@ class ViraAPI():
         for priority in self.jira.priorities():
             print(priority)
 
-    def print_projects(self):
-        '''
-        Build a vim pop-up menu for a list of projects
-        '''
-
-        all_projects = self.get_projects()
-        batch_size = 10
-        project_batches = [all_projects[i:i + batch_size]
-                           for i in range(0, len(all_projects), batch_size)]
-
-        for batch in project_batches:
-            projects = self.jira.createmeta(
-                projectKeys=','.join(batch), expand='projects')['projects']
-            [print(p['key'] + ' ~ ' + p['name']) for p in projects]
-
     def get_projects(self):
         '''
         Build a vim pop-up menu for a list of projects
@@ -1131,14 +1131,6 @@ class ViraAPI():
 [Assignee] {self.userconfig_newissue["assignee"]}
 {self.prompt_text_commented}'''
         return self.prompt_text
-
-    def format_date(self, date):
-        '''
-        Initialize vira
-        '''
-
-        time = datetime.now().strptime(date, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone()
-        return str(time)[0:10] + ' ' + str(time)[11:19]
 
     def get_report(self):
         '''
@@ -1274,19 +1266,6 @@ class ViraAPI():
         self.prompt_text = self.report_users(report.format(**locals()))
         return self.prompt_text
 
-    def report_users(self, report):
-        '''
-        Replace report accountid with names
-        '''
-
-        for user in self.users:
-            user = user.split(' ~ ')
-            if user[0] != "Unassigned":
-                report = report.replace('accountid:', '').replace(
-                    '[~' + user[1] + ']', '[~' + user[0] + ']')
-
-        return report
-
     def get_reporters(self):
         '''
         Get my issues with JQL
@@ -1361,35 +1340,6 @@ class ViraAPI():
 
         #  print('None')
 
-    def new_component(self, name, project):
-        '''
-        New component added to project
-        '''
-
-        self.jira.create_component(name=name, project=project, description=name)
-
-    def new_version(self, name, project, description):
-        '''
-        Get my issues with JQL
-        '''
-
-        self.jira.create_version(name=name, project=project, description=description)
-
-    def print_users(self):
-        '''
-        Print users
-        '''
-
-        current_user = \
-            self.get_current_user('assignee') or \
-            self.get_current_user('reporter')
-        if current_user:
-            print(current_user + ' ~ currentUser')
-
-        for user in self.users:
-            print(user)
-        print('Unassigned')
-
     def get_users(self):
         '''
         Get my issues with JQL
@@ -1422,49 +1372,6 @@ class ViraAPI():
         issue = issues['issues'][0]['fields']
         if self._has_field(issue, role):
             return issue[role][self.users_type]
-
-    def version_percent(self, project, fixVersion):
-        '''
-        Initialize vira
-        '''
-        if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
-            name = fixVersion[2]
-            try:
-                project = self.db_select_project(str(project))
-                try:
-                    fixVersion = str(self.db_select_version(str(project[0]), fixVersion)[2])
-                except:
-                    fixVersion = str(self.db_select_version(str(project[0]), fixVersion[2])[2])
-                    pass
-                total = self.db_count_issue_version(str(project[2]), fixVersion)
-                fixed = self.db_count_issue_version_status(str(project[2]), fixVersion, 'Done')
-                percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
-                space = ''.join([char * (5 - len(percent)) for char in ' '])
-
-                #  TODO: VIRA-253 [210329] - add description to the version db
-                # try:
-                    #  description = issue['description']
-                #  except:
-                description = 'None'
-                    #  pass
-
-            except:
-                total = 0
-                pending = 0
-                fixed = total - pending
-                percent = "0"
-                space = ''.join([char * (5 - len(percent)) for char in ' '])
-                description = 'None'
-                pass
-
-            version = str(
-                str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
-                space + '|' + str(percent) + '%')
-
-        else:
-            percent = 0
-
-        return percent
 
     def load_project_config(self, repo):
         '''
@@ -1523,6 +1430,36 @@ class ViraAPI():
         self.userconfig_issuesort = ', '.join(sort_order) if type(
             sort_order) == list else sort_order
 
+    def print_projects(self):
+        '''
+        Build a vim pop-up menu for a list of projects
+        '''
+
+        all_projects = self.get_projects()
+        batch_size = 10
+        project_batches = [all_projects[i:i + batch_size]
+                           for i in range(0, len(all_projects), batch_size)]
+
+        for batch in project_batches:
+            projects = self.jira.createmeta(
+                projectKeys=','.join(batch), expand='projects')['projects']
+            [print(p['key'] + ' ~ ' + p['name']) for p in projects]
+
+    def print_users(self):
+        '''
+        Print users
+        '''
+
+        current_user = \
+            self.get_current_user('assignee') or \
+            self.get_current_user('reporter')
+        if current_user:
+            print(current_user + ' ~ currentUser')
+
+        for user in self.users:
+            print(user)
+        print('Unassigned')
+
     def query_issues(self):
         '''
         Query issues based on current filters
@@ -1543,6 +1480,19 @@ class ViraAPI():
             maxResults=vim.eval('g:vira_issue_limit'))
 
         return issues['issues']
+
+    def report_users(self, report):
+        '''
+        Replace report accountid with names
+        '''
+
+        for user in self.users:
+            user = user.split(' ~ ')
+            if user[0] != "Unassigned":
+                report = report.replace('accountid:', '').replace(
+                    '[~' + user[1] + ']', '[~' + user[0] + ']')
+
+        return report
 
     def reset_filters(self):
         '''
@@ -1630,3 +1580,47 @@ class ViraAPI():
             self.version_hide = False
         else:
             self.version_hide = not self.version_hide
+
+    def version_percent(self, project, fixVersion):
+        '''
+        Initialize vira
+        '''
+        if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
+            name = fixVersion[2]
+            try:
+                project = self.db_select_project(str(project))
+                try:
+                    fixVersion = str(self.db_select_version(str(project[0]), fixVersion)[2])
+                except:
+                    fixVersion = str(self.db_select_version(str(project[0]), fixVersion[2])[2])
+                    pass
+                total = self.db_count_issue_version(str(project[2]), fixVersion)
+                fixed = self.db_count_issue_version_status(str(project[2]), fixVersion, 'Done')
+                percent = str(round(fixed / total * 100, 1)) if total != 0 else 1
+                space = ''.join([char * (5 - len(percent)) for char in ' '])
+
+                #  TODO: VIRA-253 [210329] - add description to the version db
+                try:
+                    description = str(fixVersion[3])
+                except:
+                    description = 'None'
+                    pass
+
+            except:
+                total = 0
+                pending = 0
+                fixed = total - pending
+                percent = "0"
+                space = ''.join([char * (5 - len(percent)) for char in ' '])
+                description = 'None'
+                pass
+
+            version = str(
+                str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
+                space + '|' + str(percent) + '%')
+
+        else:
+            percent = 0
+
+        return percent
+
