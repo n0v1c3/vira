@@ -3,6 +3,16 @@
 Database functionctions for vira
 '''
 
+#  TODO: VIRA-253 [210319] - Create summary `db` with id links
+#  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
+#  TODO: VIRA-253 [210326] - If there is a real update print a message
+#  - Should show only `identifier` and `field` that has been updated
+#  - This should be fine with a planed timer and sync with the jql search
+#  - Using it to confirm right now
+#  TODO: VIRA-253 [210424] - This could be version or db usage overload
+# - We will miss a user if we get here
+#  TODO: VIRA-253 [210505] - Percent complete for issues with no versions goes here
+
 from datetime import datetime
 import vim
 import sqlite3
@@ -47,6 +57,7 @@ class ViraDB():
         Create the database file in the vira dir
         '''
 
+
         table = str(table)
 
         try:
@@ -65,7 +76,6 @@ class ViraDB():
                 cur.execute("CREATE TABLE " + table + "s (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
                 self.update_server()
             else:
-                #  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
                 cur.execute("CREATE TABLE vira (version text, description text)")
 
                 cur.execute("CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
@@ -172,7 +182,6 @@ class ViraDB():
         except:
             pass
 
-        #  vim.command('echo "' + str(key) + ' - ' + str(version) + ' - ' + str(summary) + '"')
         self.insert_issue(str(project), str(version), str(version_description), str(issue_count), str(issueType), str(summary), str(status), str(created), str(updated))
 
     def safe_string(self, string):
@@ -347,83 +356,42 @@ class ViraDB():
             raise e
         return row
 
-    def order_by(self, orders):
-        order_list = str()
-        for order in orders:
-            order_list = str(order_list) + str(('ORDER BY' if len(order_list) == 0 else ',') + ' ' +
-                                               str(order[0]) + '.' + # table
-                                               str(order[1]) + ' ' + # column
-                                               str(order[2]))        # sort
-        return str(order_list)
-
-    def group_by(self, groups):
-        group_list = str()
-        for group in groups:
-            group_list = str(group_list) + str(('GROUP BY' if len(group_list) == 0 else ',') + ' ' +
-                                               str(group[0]) + '.' + # table
-                                               str(group[1]))        # column
-        return str(group_list)
-
-    def inner_join(self, variables):
-        string = str()
-        for variable in variables:
-            string = str(string) + str(str('INNER JOIN') + ' ' +
-                                       str(variable[0]) + ' ' +                 # table
-                                       str('ON') + ' ' +
-                                       str(variable[0]) + '.' + 'rowid' + ' ' + # table.id
-                                       '=' + ' ' +
-                                       str(variable[1]) + ' ')                  # join_id
-        return str(string)
-
     def select_versions(self):
+        versions = set()
+        con = sqlite3.connect(self.vira_db)
+        cur = con.cursor()
         try:
-            versions = set()
-            con = sqlite3.connect(self.vira_db)
-            cur = con.cursor()
-            cur.execute('SELECT' + ' ' +
-                        'issues.identifier' + ' ' + ',' + ' ' +
-                        'projects.name' + ' ' + ',' + ' ' +
-                        'versions.name' + ' ' + ',' + ' ' +
-                        'versions.description' + ' '
-                        'FROM' + ' ' +
-                        'issues' + ' ' +
-                        str(self.inner_join([
-                            ['versions', 'issues.version_id'],
-                            ['projects', 'issues.project_id'],
-                            ['servers', 'projects.server_id']
-                        ])) + ' ' +
-                        'WHERE' + ' ' +
-                        'servers.name' + ' ' + 'IS' + ' ' + '?' + ' ' +
-                        'AND' + ' ' +
-                        'projects.rowid' + ' ' + '=' + ' ' + 'versions.project_id' + ' ' +
-                        str(self.group_by([
-                            ['versions', 'name']
-                        ])) + ' ' +
-                        str(self.order_by([
-                            ['projects', 'name', 'ASC'],
-                            ['versions', 'name', 'DESC']
-                        ])),
-                        (str(self._get_serv()), ))
-            projects = cur.fetchall()
+            cur.execute(
+                'SELECT * FROM issues ' +
+                'LEFT JOIN projects ON projects.rowid = issues.project_id ' +
+                'LEFT JOIN versions ON versions.rowid = issues.version_id ' +
+                'WHERE projects.server_id = ? ' +
+                #  'AND issues.version_id != 0 ' +
+                'GROUP BY issues.version_id, issues.project_id ',
+                (str(self.db_serv[0]), )
+            )
+            issues = cur.fetchall()
+            for issue in issues:
+                version = str(issue[11])
+                description = str(issue[12])
+                project = str(issue[9])
+                try:
+                    fixed = self.count_issue_version_status(str(project), str(version), 'Done')
+                except:
+                    description = str('Unassigned')
+                    fixed = ['1', '0']
+                    pass
+                percent = str(round(int(str(fixed[1])) / int(str(fixed[0])) * 100, 1)) if int(str(fixed[0])) != 0 else 1
+                versions.add(tuple([project, version, description, percent]))
+
             con.commit()
             con.close()
-            for project in projects:
-                version = str(project[2])
-                description = str(project[3])
-                #  percent = str(0)
-                project = str(project[1])
-                #  total = self.count_issue_version(str(project), version)
-                fixed = self.count_issue_version_status(str(project), version, 'Done')
-                percent = str(round(int(str(fixed[1])) / int(str(fixed[0])) * 100, 1)) if int(str(fixed[0])) != 0 else 1
-                #  percent = str(self.version_percent(project[1], version))
-                #  versions.add('│ ' + project + ' │ ' + version + ' │ ' + description + ' │ ' + percent + ' │')
 
         except Error as e:
             print(e)
-            pass
+            raise e
 
         return versions
-        #  print('│ None │')
 
     def insert_status(self, project, status, description):
         '''
@@ -532,8 +500,6 @@ class ViraDB():
                 cur.execute('INSERT OR REPLACE INTO users(server_id,name,jira_id) VALUES (?,?,?)', (
                     str(server_id), str(name), str(jira_id)))
             except:
-                #  TODO: VIRA-253 [210424] - This could be version or db usage overload
-                # - We will miss a user if we get here
                 raise OSError
             pass
         con.commit()
@@ -583,7 +549,7 @@ class ViraDB():
                 try:
                     version_id = self.select_version(str(project_id), str(version))[0]
                 except:
-                    version_id = self.insert_version(str(project_id), str(version), str(version_description))
+                    version_id = self.insert_version(str(project_id), str(version), str(version_description))[0]
                     print('VIRA: Version ' + str(version) + ', has been added to the ' + str(project) + ' project on ' + str(self._get_serv()) + '!')
                     pass
             else:
@@ -611,8 +577,10 @@ class ViraDB():
                         #  print('Issue updated on ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
                 except:
                     try:
-                        cur.execute('INSERT INTO issues(project_id,version_id,identifier,summary,status_id,created,updated) VALUES(?,?,?,?,?,?,?)',
-                                    (str(project_id), str(version_id), str(identifier), str(summary), str(status_id), str(created), str(updated)))
+                        cur.execute(
+                            'INSERT INTO issues(project_id,version_id,identifier,summary,status_id,created,updated) VALUES(?,?,?,?,?,?,?)',
+                            (str(project_id), str(version_id), str(identifier), str(summary), str(status_id), str(created), str(updated))
+                        )
                         #  print('New issue added to ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
                     except:
                         self.create('issue')
@@ -627,15 +595,6 @@ class ViraDB():
             pass
 
         return self.select_issue(str(project_id), str(identifier))
-
-        # Issue insert or update
-        #  TODO: VIRA-253 [210326] - If there is a real update print a message
-        #  - Move these to our `ViraStatusLine`
-        #  - Should show only `identifier` and `field` that has been updated
-        #  - This should be fine with a planed timer and sync with the jql search
-        #  - Using it to confirm right now
-                #  TODO: VIRA-253 [210319] - Create summary `db` with id links
-                #  print('New issue added - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(created))
 
     def select_issue(self, project, identifier):
         '''
@@ -687,6 +646,7 @@ class ViraDB():
             con.commit()
             con.close()
         except OSError as e:
+            print(e)
             pass
         return count
 

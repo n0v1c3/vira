@@ -12,8 +12,6 @@ from datetime import datetime
 import json
 import urllib3
 import vim
-import sqlite3
-from sqlite3 import Error
 
 class ViraAPI():
     '''
@@ -105,7 +103,6 @@ class ViraAPI():
         try:
             latest_issue = self.ViraDB.latest_issue()
             vim.command('let g:vira_updated_issue = "' + str(latest_issue[8]) + '-' + str(latest_issue[2]) + '"')
-            #  self._echo(str(latest_issue[1]) + '-' + str(latest_issue[3]))
         except:
             pass
 
@@ -775,24 +772,46 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        print('│ Project Version Description Percent │')
-        print('├────────┬───────┬───────────┬────────┤')
-        #  versions = set()
+        #  print('│ Project Version Description Percent │')
+        #  print('├────────┬───────┬───────────┬────────┤')
 
         try:
-            for version in sorted(self.ViraDB.select_versions()):
-                print(version)
+            versions = list()
+            project = str()
+            project_len = int()
+            description_len = int()
+            percent_len = int()
+            version_len = int()
+            s = '│'
+
+            for version in self.ViraDB.select_versions():
+                if str(version[0]) != str(project):
+                    project = str(version[0])
+                    project_len = len(project) if len(project) > project_len else project_len
+                description = str(version[2])
+                description_len = len(description) if len(description) > description_len else description_len
+                percent = str(version[3])
+                percent_len = len(percent) if len(percent) > percent_len else percent_len
+                version = str(version[1])
+                version_len = len(version) if len(version) > version_len else version_len
+                versions.append([project, version, description, percent])
+
+            for version in sorted(versions):
+                p_len = project_len - len(version[0])
+                v_len = version_len - len(version[1])
+                d_len = description_len - len(version[2])
+                c_len = percent_len - len(version[3])
+                print(
+                    '│ ' +
+                    str(version[0]) + str(' ' * p_len) + ' │ ' +
+                    str(version[1]) + str(' ' * v_len) + ' │ ' +
+                    str(version[2]) + str(' ' * d_len) + ' │ ' +
+                    str(version[3]) + '%' + str(' ' * c_len) +
+                    ' │'
+                )
         except OSError as e:
             print(e)
             pass
-
-        print('│ None │')
-
-        #  self.versions_hide = vim.eval('g:vira_version_hide')
-        #  s = ' │ '
-        #  wordslength = sorted(versions, key=len)[-1]
-        #  dashlength = s.join([char * len(wordslength) for char in s])
-        #  print(str(dashlength))
 
     def get_users(self):
         '''
@@ -872,6 +891,7 @@ class ViraAPI():
             value = self.vira_projects.get(repo, {}).get('filter', {}).get(key)
             if value:
                 self.userconfig_filter[key] = value
+        print(str(self.vira_projects.get(repo, {}).get('filter', {}).get('project', {})))
 
         # Set user-defined new-issue defaults for current project
         for key in self.userconfig_newissue.keys():
@@ -1052,10 +1072,9 @@ class ViraAPI():
                 fixed = self.ViraDB.count_issue_version_status(str(project[2]), fixVersion, 'Done')
                 total = fixed[0]
                 fixed = fixed[1]
-                percent = str(round(total / fixed * 100, 1)) if fixed != 0 else 1
+                percent = str(round(fixed / total * 100, 1)) if fixed != 0 else 1
                 space = ''.join([char * (5 - len(percent)) for char in ' '])
 
-                #  TODO: VIRA-253 [210329] - add description to the version db
                 try:
                     description = str(fixVersion[3])
                 except:
