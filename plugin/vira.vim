@@ -39,7 +39,7 @@ endif
 
 let g:vira_issue_limit = get(g:, 'vira_issue_limit', 50)
 let g:vira_version_hide = get(g:, 'vira_version_hide', 1)
-let g:vira_async_fast = get(g:, 'vira_async_fast', 25)
+let g:vira_async_fast = get(g:, 'vira_async_fast', 0)
 let g:vira_async_sleep = get(g:, 'vira_async_sleep', 1000)
 let g:vira_async_timer = get(g:, 'vira_async_timer', g:vira_async_fast)
 

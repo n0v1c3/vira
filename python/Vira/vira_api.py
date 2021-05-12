@@ -38,8 +38,6 @@ class ViraAPI():
         self.updated_date = 0
         self.update_issues = []
         self.last_issues = []
-        self.jql_start_at = 0
-        self.jql_offset = 0
         self.ViraDB = ViraDB()
 
         self.userconfig_filter_default = {
@@ -100,48 +98,37 @@ class ViraAPI():
         Initialize vira
         '''
 
-        try:
-            latest_issue = self.ViraDB.latest_issue()
-            vim.command('let g:vira_updated_issue = "' + str(latest_issue[8]) + '-' + str(latest_issue[2]) + '"')
-        except:
-            pass
-
-        try:
-            vim.command('let g:vira_async_timer = g:vira_async_fast')
-            self.ViraDB.update_issue(self.ViraDB.update_issues[int(self.ViraDB.jql_offset)])
-            self.ViraDB.jql_offset = int(self.ViraDB.jql_offset) + 1
-        except:
-            vim.command('let g:vira_async_timer = g:vira_async_sleep')
-            server = self.ViraDB.select_server(self._get_serv())
-
-            if len(self.ViraDB.update_issues) > 0:
-                if len(self.ViraDB.last_issues) > 0:
-                    if self.ViraDB.update_issues != self.ViraDB.last_issues:
-                        self.ViraDB.jql_start_at = int(server[4]) + 1
-            else:
-                self.ViraDB.jql_start_at = 0
-            self.ViraDB.last_issues = self.ViraDB.update_issues
-
+        if self.ViraDB.jql_start_at is not None:
+            self.ViraDB.db_connect('TRUE')
             try:
-                self.ViraDB.update_server()
+                latest_issue = self.ViraDB.latest_issue()
+                vim.command('let g:vira_updated_issue = "' + str(latest_issue[8]) + '-' + str(latest_issue[2]) + '"')
             except:
                 pass
 
             try:
-                self.ViraDB.update_issues = self.ViraDB.update_jql(self.jira)
+                vim.command('let g:vira_async_timer = g:vira_async_fast')
+                self.ViraDB.jql_issue(self.ViraDB.update_issues[int(self.ViraDB.jql_offset)])
+                self.ViraDB.jql_offset = int(self.ViraDB.jql_offset) + 1
             except:
+                vim.command('let g:vira_async_timer = g:vira_async_sleep')
+                server = self.ViraDB.select_server(self._get_serv())
+
+                self.ViraDB.last_issues = self.ViraDB.update_issues
+
                 try:
-                    self.connect(self._get_serv())
-                except Error as e:
-                    print(e)
+                    self.ViraDB.update_server()
                 except:
-                    self._print_serv_stat('lost!')
-                    raise OSError
+                    pass
 
-            self.ViraDB.jql_offset = 0
-
-    def _echo(self, string):
-        vim.command('echo "' + str(string) + '"')
+                try:
+                    self.ViraDB.update_issues = self.ViraDB.update_jql(self.jira)
+                except:
+                    try:
+                        self.connect(self.ViraDB.select_server()[1])
+                    except:
+                        self._print_serv_stat('lost! Reconnecting!')
+            self.ViraDB.db_connect('FALSE')
 
     def _get_serv(self):
         return str(vim.eval('g:vira_serv'))
@@ -150,7 +137,7 @@ class ViraAPI():
         return field in issue and type(issue[field]) == dict
 
     def _print_serv_stat(self, status):
-        vim.command('echo "Connection to ' + self.ViraDB._get_serv() + ' was ' + str(status) + '"')
+        vim.command('echo "Connection to ' + self._get_serv() + ' was ' + str(status) + '"')
 
     def connect(self, server):
         '''
@@ -199,11 +186,14 @@ class ViraAPI():
                 async_=True,
                 max_retries=2)
 
+            vim.command('let g:vira_serv = "' + server + '"')
+
             # Initial list updates (will create `db` if required)
+            self.ViraDB.db_connect("TRUE")
             self.ViraDB.connect(server)
 
             # Get last updated date from server convert from int to date format
-            update = self.ViraDB.select_server(server)[4]
+            update = self.ViraDB.last_update(server)
             update = str(update)
             self.updated_date = update
             if self.updated_date != str(0):
@@ -213,7 +203,7 @@ class ViraAPI():
             self.get_projects()
 
             self.ViraDB.update_issues = self.ViraDB.update_jql(self.jira)
-            self.ViraDB.jql_start_at = int(self.ViraDB.select_server(self._get_serv())[4]) + 1
+            self.ViraDB.db_connect("FALSE")
 
             self._print_serv_stat('successful!')
         except JIRAError as e:
@@ -784,6 +774,7 @@ class ViraAPI():
             version_len = int()
             s = '│'
 
+            self.ViraDB.db_connect('TRUE')
             for version in self.ViraDB.select_versions():
                 if str(version[0]) != str(project):
                     project = str(version[0])
@@ -795,6 +786,7 @@ class ViraAPI():
                 version = str(version[1])
                 version_len = len(version) if len(version) > version_len else version_len
                 versions.append([project, version, description, percent])
+            self.ViraDB.db_connect('FALSE')
 
             for version in sorted(versions):
                 p_len = project_len - len(version[0])
@@ -1059,42 +1051,45 @@ class ViraAPI():
         '''
         Initialize vira
         '''
-        if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
-            name = str(fixVersion)
-            try:
-                project = self.ViraDB.select_project(str(project))
+        if self.ViraDB.jql_start_at is not None:
+            if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
+                name = str(fixVersion)
                 try:
-                    fixVersion = str(self.ViraDB.select_version(str(project[0]), fixVersion)[2])
-                except:
-                    fixVersion = str(self.ViraDB.select_version(str(project[0]), fixVersion[2])[2])
-                    pass
-                #  total = self.ViraDB.count_issue_version(str(project[2]), fixVersion)
-                fixed = self.ViraDB.count_issue_version_status(str(project[2]), fixVersion, 'Done')
-                total = fixed[0]
-                fixed = fixed[1]
-                percent = str(round(fixed / total * 100, 1)) if fixed != 0 else 1
-                space = ''.join([char * (5 - len(percent)) for char in ' '])
+                    self.ViraDB.db_connect('TRUE')
+                    project = self.ViraDB.select_project(str(project))
+                    try:
+                        fixVersion = str(self.ViraDB.select_version(str(project[0]), fixVersion)[2])
+                    except:
+                        fixVersion = str(self.ViraDB.select_version(str(project[0]), fixVersion[2])[2])
+                        pass
+                    #  total = self.ViraDB.count_issue_version(str(project[2]), fixVersion)
+                    fixed = self.ViraDB.count_issue_version_status(str(project[2]), fixVersion, 'Done')
+                    self.ViraDB.db_connect('FALSE')
+                    total = fixed[0]
+                    fixed = fixed[1]
+                    percent = str(round(fixed / total * 100, 1)) if fixed != 0 else 1
+                    space = ''.join([char * (5 - len(percent)) for char in ' '])
 
-                try:
-                    description = str(fixVersion[3])
+                    try:
+                        description = str(fixVersion[3])
+                    except:
+                        description = 'None'
+                        pass
+
                 except:
+                    total = 0
+                    pending = 0
+                    fixed = total - pending
+                    percent = "0"
+                    space = ''.join([char * (5 - len(percent)) for char in ' '])
                     description = 'None'
                     pass
 
-            except:
-                total = 0
-                pending = 0
-                fixed = total - pending
-                percent = "0"
-                space = ''.join([char * (5 - len(percent)) for char in ' '])
-                description = 'None'
-                pass
+                version = str(
+                    str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
+                    space + '|' + str(percent) + '%')
 
-            version = str(
-                str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
-                space + '|' + str(percent) + '%')
+            else:
+                percent = 0
 
-        else:
-            percent = 0
-
-        return percent
+            return percent

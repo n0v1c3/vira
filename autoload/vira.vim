@@ -23,6 +23,8 @@ let s:vira_highlight = ''
 let s:projects = []
 let s:versions = []
 
+let s:db_query = ''
+
 let s:vira_updated_issue = ''
 
 let s:vira_todo_header = 'TODO'
@@ -60,7 +62,11 @@ function! vira#_async() abort "{{{2
   " Connect to jira server if not connected already
   try
     if s:vira_connected == 1
-      python3 Vira.api._async(Vira.api._async_db)
+      if !has('nvim')
+        python3 Vira.api._async(Vira.api._async_db)
+      else
+        silent! python3 Vira.api._async(Vira.api._async_db)
+      endif
     endif
     call timer_start(g:vira_async_timer, { -> execute('call vira#_async()', '') })
   endtry
@@ -152,9 +158,6 @@ function! vira#_connect() abort "{{{2
     " Re-call this function
     call vira#_connect()
 
-    " Start async process for any connection
-    call vira#_async()
-
   " Connect through python
   else
     " Manually type server if not found
@@ -164,6 +167,9 @@ function! vira#_connect() abort "{{{2
 
     " Connect to python and start or reset async updates
     python3 Vira.api.connect(vim.eval("g:vira_serv"))
+
+    " Start async process for any connection
+    call vira#_async()
   endif
 endfunction
 
