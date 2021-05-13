@@ -6,7 +6,7 @@ Database functionctions for vira
 #  TODO: VIRA-253 [210319] - Create summary `db` with id links
 #  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
 #  TODO: VIRA-253 [210326] - If there is a real update print a message
-#  - Should show only `identifier` and `field` that has been updated
+#  - Should show only `issue_id` and `field` that has been updated
 #  - This should be fine with a planed timer and sync with the jql search
 #  - Using it to confirm right now
 #  TODO: VIRA-253 [210424] - This could be version or db usage overload
@@ -70,56 +70,102 @@ class ViraDB():
         table = str(table)
 
         try:
-            if table is 'issue':
-                self.updated_date = 0
-                self.update_issues = []
-                self.last_issues = []
-                vim.command('let g:vira_async_sleep = 0')
-                vim.command('let g:vira_updated_issue = ""')
-                try:
-                    self.cur.execute('DROP TABLE ' + table + 's')
-                except:
-                    pass
-                self.cur.execute("CREATE TABLE " + table + "s (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
-            else:
-                self.cur.execute("CREATE TABLE vira (version text, description text)")
-
-                self.cur.execute("CREATE TABLE issues (project_id int, version_id int, identifier int, summary text, status_id int, created int, updated int)")
-                self.cur.execute("CREATE TABLE projects (server_id int, name text, description text)")
-                self.cur.execute("CREATE TABLE servers (name text, description text, address text, jql_start_at int, jql_offset int)")
-                self.cur.execute("CREATE TABLE statuses (project_id int, name text, description text)")
-                #  cur.execute("CREATE TABLE todos (issue_id int, user_id int, description text, filename text, date int)")
-                self.cur.execute(
-                    'CREATE TABLE comments' +
-                    '(' +
-                    'issue_id INTEGER, idx INTEGER, author TEXT, date TEXT, body TEXT,' +
-                    'UNIQUE(issue_id, idx)' +
-                    ')'
-                )
-                #  cur.execute("CREATE TABLE summaries (issue_id int, user_id int, description text, date int)")
-                self.cur.execute(
-                    'CREATE TABLE types' +
-                    '('
-                    'idx INTEGER PRIMARY KEY NOT NULL, project_id INTEGER, name TEXT, ' +
-                    'UNIQUE(project_id, name)' +
-                    ')'
-                )
-                self.cur.execute(
-                    'CREATE TABLE users' +
-                    '(' +
-                    'idx INTEGER PRIMARY KEY NOT NULL, server_id int, name text, jira_id text, ' +
-                    'UNIQUE(idx, server_id, jira_id)' +
-                    ')'
-                )
-                self.cur.execute(
-                    'CREATE TABLE versions' +
-                    '(' +
-                    'idx INTEGER PRIMARY KEY NOT NULL, project_id INTEGER, name TEXT, description TEXT, ' +
-                    'UNIQUE(idx, project_id)' +
-                    ')'
-                )
-
-                self.insert_vira()
+            self.cur.execute(
+                'CREATE TABLE vira' +
+                '(' +
+                'version TEXT,' +
+                'description TEXT' +
+                ')'
+            )
+            self.cur.execute(
+                'CREATE TABLE comments' +
+                '(' +
+                'issue_id INTEGER,' +
+                'idx INTEGER,' +
+                'author TEXT,' +
+                'date TEXT,' +
+                'body TEXT,' +
+                'UNIQUE(issue_id, idx)' +
+                ')'
+            )
+            self.cur.execute(
+                'CREATE TABLE issues' +
+                '(' +
+                'project_id INTEGER,' +
+                'version_id INTEGER,' +
+                'idx INTEGER,' +            # <- This is the ID of the issue ie "VIRA-253" would be 253 here.
+                'summary TEXT,' +
+                'status_id INTEGER,' +
+                'created INTEGER,' +
+                'updated INTEGER,' +
+                'UNIQUE(project_id, version_id, idx)'
+                ')'
+            )
+            self.cur.execute(
+                'CREATE TABLE projects' +
+                '(' +
+                'server_id INTEGER,' +
+                'name TEXT,' +
+                'description TEXT' +
+                ')'
+            )
+            self.cur.execute(
+                'CREATE TABLE servers' +
+                '(' +
+                'name TEXT,' +
+                'description TEXT,' +
+                'address TEXT,' +
+                'jql_start_at INTEGER,' +
+                'jql_offset INTEGER' +
+                ')'
+            )
+            self.cur.execute(
+                'CREATE TABLE statuses' +
+                '(' +
+                'project_id INTEGER,' +
+                'name TEXT,' +
+                'description TEXT' +
+                ')'
+            )
+            self.cur.execute(
+                'CREATE TABLE summaries' +
+                '(' +
+                'issue_id INTEGER,' +
+                'user_id INTEGER,' +
+                'description TEXT,' +
+                'date INTEGER' +
+                ')'
+            )
+            self.cur.execute(
+                'CREATE TABLE types' +
+                '('
+                'idx INTEGER PRIMARY KEY NOT NULL,' +
+                'project_id INTEGER,' +
+                'name TEXT,' +
+                'UNIQUE(project_id, name)' +
+                ')'
+            )
+            self.cur.execute(
+                'CREATE TABLE users' +
+                '(' +
+                'idx INTEGER PRIMARY KEY NOT NULL,' +
+                'server_id INTEGER,' +
+                'name TEXT,' +
+                'jira_id TEXT,' +
+                'UNIQUE(idx, server_id, jira_id)' +
+                ')'
+            )
+            self.cur.execute(
+                'CREATE TABLE versions' +
+                '(' +
+                'idx INTEGER PRIMARY KEY NOT NULL,' +
+                'project_id INTEGER,' +
+                'name TEXT,' +
+                'description TEXT,' +
+                'UNIQUE(idx, project_id)' +
+                ')'
+            )
+            self.insert_vira()
 
         except:
             pass
@@ -190,12 +236,12 @@ class ViraDB():
         ).strptime(created, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
         ))
         created = str(created).replace(' ', '').replace('-', '').replace(':', '')
-        created = str(created)[0:19]
+        created = str(created)[0:15]
 
         updated = str(issue['fields']['updated'])
         self.updated_date = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())
         updated = str(self.updated_date).replace(' ', '').replace('-', '').replace(':', '')
-        updated = str(updated)[0:19]
+        updated = str(updated)[0:15]
 
         try:
             user_name = str(issue['fields']['reporter']['name'])
@@ -282,7 +328,7 @@ class ViraDB():
 
         return row
 
-    def insert_comment(self, lastrowid, project, identifier, idx, author, date, body):
+    def insert_comment(self, lastrowid, project, issue_id, idx, author, date, body):
         '''
         Update server details in the databas as required
         '''
@@ -293,8 +339,7 @@ class ViraDB():
 
         try:
             # Update `project db row`
-            #  cur.execute('UPDATE comments SET body="'+str(body)+'", date="'+str(date)+'" ' +
-            rowid = str(self.select_comment(project, identifier, idx)[0])
+            rowid = str(self.select_comment(project, issue_id, idx)[0])
             self.cur.execute(
                 'UPDATE comments SET body=?, date=? WHERE rowid=? AND idx=?',
                 (body, date, rowid, idx)
@@ -303,12 +348,10 @@ class ViraDB():
             try:
                 self.cur.execute('INSERT OR REPLACE INTO comments(issue_id,idx,author,date,body) ' +
                                  'VALUES (?,?,?,?,?)',
-                                 (str(lastrowid), idx, str(author), str(date), str(body)), )
+                                 (str(issue_id), idx, str(author), str(date), str(body)), )
             except Error as e:
                 raise e
             pass
-
-        return self.select_comment(lastrowid, idx)
 
     def select_comment(self, issue_id, idx):
         '''
@@ -519,20 +562,20 @@ class ViraDB():
             print(e)
         return row
 
-    def insert_issue(self, project, version, version_description, identifier, issueType, summary, status, created, updated, user, comments):
+    def insert_issue(self, project, version, version_description, idx, issueType, summary, status, created, updated, user, comments):
         '''
         Create or update an issue
         :param con:
         :param issue:
         :return:
         '''
+        project = str(project)
+        summary = str(summary)
+        updated = str(updated)
         user_displayName = str(user[0])
         user_name = str(user[1])
-        project = str(project)
         version = str(version)
-        updated = str(updated)
         version_description = str(version_description)
-        #  summary = self.safe_string(summary)
 
         self.insert_user(user_displayName, user_name)
         project_id = str(self.insert_project(str(project))[0])
@@ -550,42 +593,40 @@ class ViraDB():
         status_id = self.insert_status(str(project_id), str(status), str(str(status) + ' - Description'))[0]
 
         try:
-            issue = self.select_issue(str(project_id), str(identifier))
+            issue = self.select_issue(str(project_id), str(idx))
             self.cur.execute(
                 'UPDATE issues SET summary=?, status_id=? WHERE updated < ? AND project_id=? AND rowid=?',
                 (str(summary), str(status_id), updated, str(project_id), str(issue[0]), )
             )
             #  if int(issue[7]) < int(updated):
-                #  print('Issue updated on ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
+                #  print('Issue updated on ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(idx) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
         except:
             self.cur.execute(
-                'INSERT INTO issues(project_id,version_id,identifier,summary,status_id,created,updated) VALUES(?,?,?,?,?,?,?)',
-                (str(project_id), str(version_id), str(identifier), str(summary), str(status_id), str(created), updated, )
+                'INSERT INTO issues(project_id,version_id,idx,summary,status_id,created,updated) VALUES(?,?,?,?,?,?,?)',
+                (str(project_id), str(version_id), str(idx), str(summary), str(status_id), str(created), updated, )
             )
-                #  print('New issue added to ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(identifier) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
+                #  print('New issue added to ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(idx) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
             pass
 
         try:
-            issue_id = self.cur.lastrowid
-            idx = 0
-            for comment in comments:
-                project = str(comment[0])
-                identifier = str(comment[1])
-                idx = str(comment[2])
-                author = str(comment[3])
-                update = str(comment[4])
-                body = str(comment[5])
-                #  print(project + '-' + identifier + ': ' + idx + ' ' + author + ' (' + update + ') - ' + body)
-                self.insert_comment(issue_id, project, identifier, idx, author, update, body)
+            for comment in range(len(comments)):
+                project = str(comments[comment][0])
+                issue_id = str(comments[comment][1])
+                idx = str(comments[comment][2])
+                author = str(comments[comment][3])
+                update = str(comments[comment][4])
+                body = str(comments[comment][5])
+                #  print(project + '-' + issue_id + ': ' + idx + ' ' + author + ' (' + update + ') - ' + body)
+                self.insert_comment(issue_id, project, issue_id, idx, author, update, body)
         except:
             pass
 
-    def select_issue(self, project, identifier):
+    def select_issue(self, project, idx):
         '''
         Select current server `rowid`
         '''
         try:
-            self.cur.execute('SELECT rowid,* FROM issues WHERE project_id=? AND identifier=?', (str(project), str(identifier), ))
+            self.cur.execute('SELECT rowid,* FROM issues WHERE project_id=? AND idx=?', (str(project), str(idx), ))
             row = self.cur.fetchone()
         except Error as e:
             raise e
@@ -660,12 +701,6 @@ class ViraDB():
                 'issues.updated DESC ' +
                 'LIMIT 1', (str(self._get_serv()), )
             )
-            #  self.cur.execute('SELECT' + ' ' + '*' + ',' + ' ' + 'servers.name' + ' ' + 'FROM' + ' ' + 'issues' + ' ' +
-                             #  'INNER JOIN' + ' ' + 'projects' + ' ' + 'ON' + ' ' + 'projects.rowid' + ' ' + '=' + ' ' + 'issues.project_id' + ' ' +
-                             #  'INNER JOIN' + ' ' + 'servers' + ' ' + 'ON' + ' ' + 'servers.rowid' + ' ' + '=' + ' ' + 'projects.server_id' + ' ' +
-                             #  'WHERE' + ' ' + 'servers.name' + ' ' + 'IS' + ' ' + '"' + str(self._get_serv()) + '"' + ' ' +
-                             #  'ORDER BY' + ' ' + 'issues.updated' + ' ' + 'DESC' + ' ' +
-                             #  'LIMIT' + ' ' + '1')
             row = self.cur.fetchone()
         except Error as e:
             print(e)
