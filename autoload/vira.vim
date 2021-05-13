@@ -565,6 +565,11 @@ function! vira#_highlight() "{{{2
 
   let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
   let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
+  " TODO: VIRA-253 [210512] - version menu managment in `_highlight()`
+  if type == 'versions'
+    let s:vira_filter = '"' . split(s:vira_filter[0:len(s:vira_filter)],' │ ')[1]
+    " echo s:vira_filter
+  endif
 endfunction
 
 function! vira#_highlight_reload() "{{{2
