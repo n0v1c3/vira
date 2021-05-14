@@ -17,6 +17,8 @@ let s:vira_root_dir = resolve(fnamemodify(resolve(expand('<sfile>:p')), ':h') . 
 let s:vira_menu_type = ''
 
 let s:vira_filter = ''
+let s:vira_filter_projects = []
+let s:vira_filter_versions = []
 let s:vira_filter_hold = @/
 let s:vira_filter_setkey = 0
 let s:vira_highlight = ''
@@ -564,12 +566,33 @@ function! vira#_highlight() "{{{2
   let @/ = '\v' . seperator . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|', end_seperator . '|' . seperator,'g') . end_seperator . end_line
 
   let s:vira_highlight = substitute(s:vira_highlight,"\\\\\\\.","\\.",'g')
-  let s:vira_filter = '"' . substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g') . '"'
+  let s:vira_filter = substitute(s:vira_highlight[1:len(s:vira_highlight)-2],'|','","','g')
+
+
   " TODO: VIRA-253 [210512] - version menu managment in `_highlight()`
+  " TODO: VIRA-253 [210513] - Change to a 2D then XD array
   if type == 'versions'
-    let s:vira_filter = '"' . split(s:vira_filter[0:len(s:vira_filter)],' │ ')[1]
-    " echo s:vira_filter
+    " Full line
+    let menu = eval('["' . substitute(s:vira_filter[0:len(s:vira_filter)], ' │ ', ' │ ', 'g') . '"]')
+
+    " Projects
+    let prg = [eval('"' . split(menu[len(menu)-1],' │ ')[0] . '"')]
+    let s:vira_filter_projects = add(s:vira_filter_projects, prg)
+    " echo string(s:vira_filter_projects[len(s:vira_filter_projects) - 1])
+    " echo string(len(s:vira_filter_projects))
+    " echo string(s:vira_filter_projects)
+
+    " Versions
+    let vrs = [eval('"' . split(menu[len(menu)-1],' │ ')[1] . '"')]
+    let s:vira_filter_versions = add(s:vira_filter_versions, vrs)
+    " echo string(s:vira_filter_versions[len(s:vira_filter_versions) - 1])
+    " echo string(len(s:vira_filter_versions))
+    " echo string(s:vira_filter_versions)
+  else
+    let s:vira_filter_versions = []
+    let s:vira_filter_projects = []
   endif
+  let s:vira_filter = '"' . s:vira_filter . '"'
 endfunction
 
 function! vira#_highlight_reload() "{{{2
