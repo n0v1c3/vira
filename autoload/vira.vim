@@ -25,6 +25,13 @@ let s:vira_highlight = ''
 let s:projects = []
 let s:versions = []
 
+" DEBUGGERS: Switches used to display messages in `front-end` from the `back-end`
+let s:debug = [0, 0]
+let s:debug_projects = 0
+let s:debug_versions = 0
+let s:debug[s:debug_projects] = 0
+let s:debug[s:debug_versions] = 0
+
 let s:db_query = ''
 
 let s:vira_updated_issue = ''
@@ -573,21 +580,20 @@ function! vira#_highlight() "{{{2
   " TODO: VIRA-253 [210513] - Change to a 2D then XD array
   if type == 'versions'
     " Full line
+    let menu = []
     let menu = eval('["' . substitute(s:vira_filter[0:len(s:vira_filter)], ' │ ', ' │ ', 'g') . '"]')
 
     " Projects
-    let prg = [eval('"' . split(menu[len(menu)-1],' │ ')[0] . '"')]
+    let prg = []
+    " TODO: VIRA-253 [210514] - `silent` should not be needed
+    silent! let prg = [eval('"' . split(menu[len(menu)-1],' │ ')[0] . '"')]
     let s:vira_filter_projects = add(s:vira_filter_projects, prg)
-    " echo string(s:vira_filter_projects[len(s:vira_filter_projects) - 1])
-    " echo string(len(s:vira_filter_projects))
-    " echo string(s:vira_filter_projects)
 
     " Versions
-    let vrs = [eval('"' . split(menu[len(menu)-1],' │ ')[1] . '"')]
+    let vrs = []
+    " TODO: VIRA-253 [210514] - `silent` should not be needed
+    silent! let vrs = [eval('"' . split(menu[len(menu)-1],' │ ')[1] . '"')]
     let s:vira_filter_versions = add(s:vira_filter_versions, vrs)
-    " echo string(s:vira_filter_versions[len(s:vira_filter_versions) - 1])
-    " echo string(len(s:vira_filter_versions))
-    " echo string(s:vira_filter_versions)
   else
     let s:vira_filter_versions = []
     let s:vira_filter_projects = []
@@ -661,7 +667,18 @@ function! vira#_set() "{{{2
     " FILTER
     else
         if s:vira_filter[:0] == '"'
-          let value = substitute(s:vira_filter,'|',', ','')
+          if s:vira_filter_versions != []
+
+            " DEBUGGERS: Versions being sent after selection
+            if s:debug[s:debug_versions] == 1 | echo string(s:vira_filter_versions) | endif
+
+            for fixVersion in s:vira_filter_versions
+              let hold = substitute(string(fixVersion)[:-3],'\s\+$','','') . "']" " The `\+` adds one more space
+              if hold != 'None' | let value = hold | endif
+            endfor
+          else
+            let value = substitute(s:vira_filter,'|',', ','')
+          endif
         else | let value = '"' . value . '"' | endif
         execute 'python3 Vira.api.userconfig_filter["' . variable . '"] = ' . value
         if variable == 'status' | execute 'python3 Vira.api.userconfig_filter["statusCategory"] = ""' | endif
