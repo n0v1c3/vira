@@ -103,6 +103,15 @@ class ViraDB():
                 ')'
             )
             self.cur.execute(
+                'CREATE TABLE broken_issues' +
+                '(' +
+                'idx INTEGER PRIMARY KEY NOT NULL,' +
+                'key TEXT,' +            # <- This is the KEY of the issue ie "VIRA-253" would be 253 here.
+                'issueType TEXT,' +
+                'summary TEXT' +
+                ')'
+            )
+            self.cur.execute(
                 'CREATE TABLE projects' +
                 '(' +
                 'server_id INTEGER,' +
@@ -193,13 +202,12 @@ class ViraDB():
     def update_server(self):
         try:
             jql_start_at = str(self.jql_start_at)
-            name = "'" + str(self._get_serv()) + "'"
-            self.cur.execute("UPDATE servers SET jql_start_at=" + jql_start_at + " WHERE name IS " + name)
+            jql_offset = str(self.jql_offset)
+            name = str(self._get_serv())
+            self.cur.execute("UPDATE servers SET jql_offset=?, jql_start_at=? WHERE name IS ?", (jql_start_at, jql_offset, name))
         except Error as e:
             print(e)
             raise e
-        row = self.select_server()
-        return row
 
     def jql_issue(self, issue):
         key = str(issue['key'])
@@ -219,7 +227,10 @@ class ViraDB():
             try:
                 comments.append([project, issue_count, idx, str(comment['author']['displayName']), str(self.format_date(comment['updated'])), str(comment['body'])])
             except:
-                #  print(project + '-' + issue_count + ' [' + issueType + '] - ' + summary)
+                self.cur.execute(
+                    'INSERT INTO broken_issues(key,issueType,summary) VALUES(?,?,?,?)',
+                    (str(key), str(issueType), str(summary), )
+                )
                 pass
 
         try:
@@ -234,7 +245,10 @@ class ViraDB():
             version_description = 'Issues that have not been assigned to any ' + str(project) + ' versions.'
             pass
 
-        status = str(issue['fields']['status']['statusCategory']['name'])
+        try:
+            status = str(issue['fields']['status']['statusCategory']['name'])
+        except:
+            status = ''
 
         created = str(issue['fields']['created'])
         created = str(datetime.now(
@@ -261,6 +275,7 @@ class ViraDB():
             pass
 
         self.insert_issue(str(project), str(version), str(version_description), str(issue_count), str(issueType), str(summary), str(status), str(created), str(updated), [str(user_name), str(user_displayName)], comments)
+        self.update_server()
 
     def safe_string(self, string):
         string = string.replace("'", "''")
