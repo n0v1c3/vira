@@ -215,8 +215,12 @@ class ViraDB():
 
         comments = list()
         idx = 0
-        for idx, comment in enumerate((issue['fields']['comment']['comments'])):
-            comments.append([project, issue_count, idx, str(comment['author']['displayName']), str(self.format_date(comment['updated'])), str(comment['body'])])
+        for idx, comment in enumerate(issue['fields']['comment']['comments']):
+            try:
+                comments.append([project, issue_count, idx, str(comment['author']['displayName']), str(self.format_date(comment['updated'])), str(comment['body'])])
+            except:
+                #  print(project + '-' + issue_count + ' [' + issueType + '] - ' + summary)
+                pass
 
         try:
             version = 'None'
@@ -444,9 +448,9 @@ class ViraDB():
             )
             issues = self.cur.fetchall()
             for issue in issues:
-                version = str(issue[12])
-                description = str(issue[13])
-                project = str(issue[9])
+                version = str(issue[13])
+                description = str(issue[14])
+                project = str(issue[10])
                 try:
                     fixed = self.count_issue_version_status(str(project), str(version), 'Done')
                 except:
@@ -642,7 +646,6 @@ class ViraDB():
             project_id = self.select_project(str(project))[0]
             version_id = self.select_version(str(project_id), str(version))[0]
             self.cur.execute('SELECT COUNT(*) FROM issues WHERE project_id=? AND version_id=?', (str(project_id), str(version_id), ))
-            #  self.cur.execute('SELECT COUNT(*) FROM issues WHERE project_id IS "' + str(project_id) + '" AND version_id IS "' + str(version_id) + '"')
             count = self.cur.fetchone()
         except Error as e:
             raise e
