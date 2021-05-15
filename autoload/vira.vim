@@ -602,10 +602,13 @@ function! vira#_set() "{{{2
         if value != "None" | let value = '"' . value . '"' | endif
         let variable = s:vira_epic_field
         execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":' . value . '})'
-    elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . substitute(value, 'currentUser', currentUser, '') . '"})'))
+    elseif variable == 'transition_issue'
+        let value = execute('python3 print(Vira.api.jira.find_transitionid_by_name("' . g:vira_active_issue . '", "' . value . '"))')[1:-1]
+        execute 'silent! python3 Vira.api.jira.transition_issue("' . g:vira_active_issue . '", "' . value . '")'
+    elseif (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . substitute(value, 'currentUser', currentUser, '') . '"})'))
         let value = substitute(value, 'currentUser', currentUser, '')
         let value = substitute(value, 'Unassigned', '-1', '')
-        execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+        execute 'silent! python3 Vira.api.jira.assign_issue("' . g:vira_active_issue . '", "' . value . '")'
 
     " FILTER
     else
