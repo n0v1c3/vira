@@ -3,18 +3,9 @@
 Database functionctions for vira
 '''
 
-#  TODO: VIRA-253 [210319] - Create summary `db` with id links
 #  TODO: VIRA-253 [210326] - Check VIRA versions and `update`/`cleanup` db is required
-#  TODO: VIRA-253 [210326] - If there is a real update print a message
-#  - Should show only `issue_id` and `field` that has been updated
-#  - This should be fine with a planed timer and sync with the jql search
-#  - Using it to confirm right now
-#  TODO: VIRA-253 [210424] - This could be version or db usage overload
-# - We will miss a user if we get here
 #  TODO: VIRA-253 [210505] - Percent complete for issues with no versions goes here
 #  TODO: VIRA-253 [210511] - `nvim` will require a handle for print and sql at the same time
-#  TODO: VIRA-253 [210511] - `jql_offset` currently used to keep queries moving
-#  TODO: VIRA-253 [210511] - Hold `jql_offset` in `db` for `update_jql`
 
 from datetime import datetime
 import vim
