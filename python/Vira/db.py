@@ -212,14 +212,30 @@ class ViraDB():
     def jql_issue(self, issue):
         key = str(issue['key'])
 
-        issue_count = key.split('-')[1]
+        issue_count = int(key.split('-')[1])
 
         project = key.replace('-', '')
-        project = "".join(filter(lambda x: not x.isdigit(), project))
+        project = str("".join(filter(lambda x: not x.isdigit(), project)))
 
-        issueType = str(issue['fields']['issuetype']['name'])
+        try:
+            issueType = str(issue['fields']['issuetype']['name'])
+        except:
+            self.cur.execute(
+                'INSERT INTO broken_issues(key) VALUES(?)',
+                (key)
+            )
+            issueType = ''
+            pass
 
-        summary = str(issue['fields']['summary'])
+        try:
+            summary = str(issue['fields']['summary'])
+        except:
+            self.cur.execute(
+                'INSERT INTO broken_issues(key,issueType) VALUES(?,?)',
+                (key, issueType, )
+            )
+            summary = ''
+            pass
 
         comments = list()
         idx = 0
@@ -228,7 +244,7 @@ class ViraDB():
                 comments.append([project, issue_count, idx, str(comment['author']['displayName']), str(self.format_date(comment['updated'])), str(comment['body'])])
             except:
                 self.cur.execute(
-                    'INSERT INTO broken_issues(key,issueType,summary) VALUES(?,?,?,?)',
+                    'INSERT INTO broken_issues(key,issueType,summary) VALUES(?,?,?)',
                     (str(key), str(issueType), str(summary), )
                 )
                 pass
@@ -249,6 +265,7 @@ class ViraDB():
             status = str(issue['fields']['status']['statusCategory']['name'])
         except:
             status = ''
+            pass
 
         created = str(issue['fields']['created'])
         created = str(datetime.now(
