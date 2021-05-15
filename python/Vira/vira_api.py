@@ -733,9 +733,11 @@ class ViraAPI():
         '''
 
         try:
-            for server in self.vira_servers.keys():
-                print(server)
-            print('Null')
+            if self.vira_servers.keys():
+                for server in self.vira_servers.keys():
+                    print(server)
+            else:
+                print('Null')
         except:
             self.connect('')
 
@@ -744,8 +746,20 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
+        jira_statuses = []
+
+        active_issue = vim.eval("g:vira_active_issue")
+        if active_issue:
+            try:
+                issue = self.jira.issue(active_issue)
+                jira_statuses = [t['name'] for t in self.jira.transitions(issue)]
+            except:
+                jira_statuses = self.jira.statuses()
+        else:
+            jira_statuses = self.jira.statuses()
+
         statuses = []
-        for status in self.jira.statuses():
+        for status in jira_statuses:
             if str(status) not in statuses:
                 statuses.append(str(status))
                 print(str(status))

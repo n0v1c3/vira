@@ -1,4 +1,4 @@
-# VIRA 0.4.10
+# VIRA 0.4.11
 
 **Vim JIRA Atlassian**
 
@@ -476,10 +476,10 @@ This is an example of a typical jira issue report (except the report looks color
 Edit any jira field
 
 +--------------+
-| Descripotion |
+|  Description |
 +--------------+
 A user should be able to edit any field that
-is shown on a vira issuereport.
+is shown on a vira issue report.
 
 I would suggest to use a default key of <cr>
 for editing a report field and allow the user
@@ -550,26 +550,6 @@ nnoremap <silent> <leader>vei :call Enter_ViraActiveIssue()<cr>
 " Status
 statusline+=%{ViraStatusline()}
 ```
-
-## Troubleshooting/Tips
-
-### Report edits are slow
-
-If you are experiencing laggy report Set/Edits, you are not alone.
-
-There is a bug in the pycontribs/jira library:
-[Issue 622](https://github.com/pycontribs/jira/issues/622)
-
-We are working on coming up with a permanent solution to this problem. In the meantime, you can patch your own
-version of pycontribs/jira in the following manner.
-
-Comment line 297 in `~/.local/lib/python3.8/site-packages/jira/resources.py`:
-
-```
-time.sleep(4)
-```
-
-Please note that the jira python library may be in a different location on your machine.
 
 ## Support
 
