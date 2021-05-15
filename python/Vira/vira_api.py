@@ -102,7 +102,7 @@ class ViraAPI():
             self.ViraDB.db_connect('TRUE')
             try:
                 latest_issue = self.ViraDB.latest_issue()
-                vim.command('let g:vira_updated_issue = "' + str(latest_issue[8]) + '-' + str(latest_issue[2]) + '"')
+                vim.command('let g:vira_updated_issue = "' + str(latest_issue[9]) + '-' + str(latest_issue[3]) + '"')
             except:
                 pass
 

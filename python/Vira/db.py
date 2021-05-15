@@ -91,14 +91,15 @@ class ViraDB():
             self.cur.execute(
                 'CREATE TABLE issues' +
                 '(' +
+                'idx INTEGER PRIMARY KEY NOT NULL,' +
                 'project_id INTEGER,' +
                 'version_id INTEGER,' +
-                'idx INTEGER,' +            # <- This is the ID of the issue ie "VIRA-253" would be 253 here.
+                'key INTEGER,' +            # <- This is the KEY of the issue ie "VIRA-253" would be 253 here.
                 'summary TEXT,' +
                 'status_id INTEGER,' +
                 'created INTEGER,' +
                 'updated INTEGER,' +
-                'UNIQUE(project_id, version_id, idx)'
+                'UNIQUE(project_id, version_id, key)'
                 ')'
             )
             self.cur.execute(
@@ -562,7 +563,7 @@ class ViraDB():
             print(e)
         return row
 
-    def insert_issue(self, project, version, version_description, idx, issueType, summary, status, created, updated, user, comments):
+    def insert_issue(self, project, version, version_description, key, issueType, summary, status, created, updated, user, comments):
         '''
         Create or update an issue
         :param con:
@@ -593,19 +594,19 @@ class ViraDB():
         status_id = self.insert_status(str(project_id), str(status), str(str(status) + ' - Description'))[0]
 
         try:
-            issue = self.select_issue(str(project_id), str(idx))
+            issue = self.select_issue(str(project_id), str(key))
             self.cur.execute(
-                'UPDATE issues SET summary=?, status_id=? WHERE updated < ? AND project_id=? AND rowid=?',
+                'UPDATE issues SET summary=?, status_id=? WHERE updated < ? AND project_id=? AND idx=?',
                 (str(summary), str(status_id), updated, str(project_id), str(issue[0]), )
             )
             #  if int(issue[7]) < int(updated):
-                #  print('Issue updated on ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(idx) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
+                #  print('Issue updated on ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(key) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
         except:
             self.cur.execute(
-                'INSERT INTO issues(project_id,version_id,idx,summary,status_id,created,updated) VALUES(?,?,?,?,?,?,?)',
-                (str(project_id), str(version_id), str(idx), str(summary), str(status_id), str(created), updated, )
+                'INSERT INTO issues(project_id,version_id,key,summary,status_id,created,updated) VALUES(?,?,?,?,?,?,?)',
+                (str(project_id), str(version_id), str(key), str(summary), str(status_id), str(created), updated, )
             )
-                #  print('New issue added to ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(idx) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
+                #  print('New issue added to ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(key) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
             pass
 
         try:
@@ -621,12 +622,12 @@ class ViraDB():
         except:
             pass
 
-    def select_issue(self, project, idx):
+    def select_issue(self, project, key):
         '''
         Select current server `rowid`
         '''
         try:
-            self.cur.execute('SELECT rowid,* FROM issues WHERE project_id=? AND idx=?', (str(project), str(idx), ))
+            self.cur.execute('SELECT rowid,* FROM issues WHERE project_id=? AND key=?', (str(project), str(key), ))
             row = self.cur.fetchone()
         except Error as e:
             raise e
