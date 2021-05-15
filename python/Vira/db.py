@@ -140,10 +140,12 @@ class ViraDB():
             self.cur.execute(
                 'CREATE TABLE summaries' +
                 '(' +
-                'issue_id INTEGER,' +
-                'user_id INTEGER,' +
-                'description TEXT,' +
-                'date INTEGER' +
+                'idx INTEGER PRIMARY KEY NOT NULL,' +
+                'issues_id INTEGER,' +
+                'users_id INTEGER,' +
+                'body TEXT,' +
+                'date INTEGER,' +
+                'UNIQUE(date)' +
                 ')'
             )
             self.cur.execute(
@@ -152,7 +154,7 @@ class ViraDB():
                 'idx INTEGER PRIMARY KEY NOT NULL,' +
                 'project_id INTEGER,' +
                 'name TEXT,' +
-                'UNIQUE(project_id, name)' +
+                'UNIQUE(idx, project_id, name)' +
                 ')'
             )
             self.cur.execute(
@@ -614,7 +616,7 @@ class ViraDB():
         version = str(version)
         version_description = str(version_description)
 
-        self.insert_user(user_displayName, user_name)
+        user_id = str(self.insert_user(user_displayName, user_name)[0])
         project_id = str(self.insert_project(str(project))[0])
 
         if str(version) != 'None':
@@ -644,6 +646,9 @@ class ViraDB():
             )
                 #  print('New issue added to ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(key) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
             pass
+        issue_id = self.cur.lastrowid
+        if issue_id != 0:
+            self.insert_summary(issue_id, user_id, summary, updated)
 
         try:
             for comment in range(len(comments)):
@@ -668,6 +673,44 @@ class ViraDB():
         except Error as e:
             raise e
         return row
+
+    def insert_summary(self, issues_id, users_id, body, date):
+        '''
+        Update server details in the databas as required
+        '''
+        issues_id = str(issues_id)
+        users_id = str(users_id)
+        body = str(body)
+        date = str(date)
+
+        try:
+            idx = str(self.select_summary(issues_id, date)[0])
+            self.cur.execute('UPDATE summaries SET body=? where idx=?' +
+                             'VALUES(?,?)', (issues_id, idx, ))
+        except:
+            self.cur.execute('INSERT OR REPLACE INTO summaries(issues_id, users_id, body, date) ' +
+                             'VALUES(?,?,?,?)', (issues_id, users_id, body, date, ))
+            pass
+
+    def select_summary(self, issues_id, date):
+        '''
+        Return a single summary selection by issue id
+        '''
+
+        try:
+            issues_id = str(issues_id)
+            date = str(date)
+            self.cur.execute(
+                'SELECT rowid,* FROM summaries WHERE issues_id=? AND date=?'
+                (issues_id, date, )
+            )
+            row = self.cur.fetchone()
+        except Error as e:
+            raise e
+        return row
+
+        #  self.jql_start_at = self.jql_start_at - 1 if self.jql_start_at > 0 else 0
+        #  self.jql_offset = 0
 
     def count_issue_version(self, project, version):
         '''
