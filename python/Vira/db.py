@@ -86,7 +86,6 @@ class ViraDB():
                 'project_id INTEGER,' +
                 'version_id INTEGER,' +
                 'key INTEGER,' +            # <- This is the KEY of the issue ie "VIRA-253" would be 253 here.
-                'summary TEXT,' +
                 'status_id INTEGER,' +
                 'created INTEGER,' +
                 'updated INTEGER,' +
@@ -197,7 +196,7 @@ class ViraDB():
             jql_start_at = str(self.jql_start_at)
             jql_offset = str(self.jql_offset)
             name = str(self._get_serv())
-            self.cur.execute("UPDATE servers SET jql_offset=?, jql_start_at=? WHERE name IS ?", (jql_start_at, jql_offset, name))
+            self.cur.execute("UPDATE servers SET jql_offset=?, jql_start_at=? WHERE name IS ?", (jql_offset, jql_start_at, name))
         except Error as e:
             print(e)
             raise e
@@ -473,9 +472,9 @@ class ViraDB():
             )
             issues = self.cur.fetchall()
             for issue in issues:
-                version = str(issue[13])
-                description = str(issue[14])
-                project = str(issue[10])
+                version = str(issue[12])
+                description = str(issue[13])
+                project = str(issue[9])
                 try:
                     fixed = self.count_issue_version_status(str(project), str(version), 'Done')
                 except:
@@ -623,23 +622,22 @@ class ViraDB():
         status_id = self.insert_status(str(project_id), str(status), str(str(status) + ' - Description'))[0]
 
         try:
-            issue = self.select_issue(str(project_id), str(key))
+            issue_id = str(self.select_issue(str(project_id), str(key))[0])
             self.cur.execute(
-                'UPDATE issues SET summary=?, status_id=? WHERE updated < ? AND project_id=? AND idx=?',
-                (str(summary), str(status_id), updated, str(project_id), str(issue[0]), )
+                'UPDATE issues SET status_id=? WHERE updated < ? AND project_id=? AND idx=?',
+                (str(status_id), updated, str(project_id), issue_id, )
             )
             #  if int(issue[7]) < int(updated):
                 #  print('Issue updated on ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(key) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
         except:
             self.cur.execute(
-                'INSERT INTO issues(project_id,version_id,key,summary,status_id,created,updated) VALUES(?,?,?,?,?,?,?)',
-                (str(project_id), str(version_id), str(key), str(summary), str(status_id), str(created), updated, )
+                'INSERT INTO issues(project_id,version_id,key,status_id,created,updated) VALUES(?,?,?,?,?,?)',
+                (str(project_id), str(version_id), str(key), str(status_id), str(created), updated, )
             )
                 #  print('New issue added to ' + str(self._get_serv()) + ' - ' + str(project) + '-' + str(key) + ': ' + str(summary) + ' | ' + str(status) + ' ~ ' + str(updated))
             pass
         issue_id = self.cur.lastrowid
-        if issue_id != 0:
-            self.insert_summary(issue_id, user_id, summary, updated)
+        self.insert_summary(issue_id, user_id, summary, updated)
 
         try:
             for comment in range(len(comments)):
