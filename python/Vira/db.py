@@ -36,6 +36,8 @@ class ViraDB():
         self.con = None
         self.cur = None
         self.lastrowid = 0
+        self.lastcreated = 0
+        self.lastupdated = 0
         pass
 
     def _get_serv(self):
@@ -210,7 +212,7 @@ class ViraDB():
         project = str("".join(filter(lambda x: not x.isdigit(), project)))
 
         try:
-            issueType = str(issue['fields']['issuetype']['name'])
+            issueType = str(issue['fields']['issuetype']['name']).strip()
         except:
             self.cur.execute(
                 'INSERT INTO broken_issues(key) VALUES(?)',
@@ -220,7 +222,7 @@ class ViraDB():
             pass
 
         try:
-            summary = str(issue['fields']['summary'])
+            summary = str(issue['fields']['summary']).strip()
         except:
             self.cur.execute(
                 'INSERT INTO broken_issues(key,issueType) VALUES(?,?)',
@@ -233,13 +235,26 @@ class ViraDB():
         idx = 0
         for idx, comment in enumerate(issue['fields']['comment']['comments']):
             try:
-                comments.append([project, issue_count, idx, str(comment['author']['displayName']), str(self.format_date(comment['updated'])), str(comment['body'])])
+                author = str(comment['author']['displayName']).strip()
             except:
+                author = 'Anonymous'
+                pass
+
+            try:
+                #  TODO: VIRA-253 [210516] - Ensure a smorth function clean body format back and forth
+                body = str(comment['body']).replace('\r\n', '\n').strip()
+                body = str(comment['body']).replace('\n', '\\n').strip()
+            except:
+                body = ''
+
+            updated = str(self.format_date(comment['updated']))
+            try:
+                comments.append([project, issue_count, idx, author, updated, body])
+            except Exception as e:
                 self.cur.execute(
                     'INSERT INTO broken_issues(key,issueType,summary) VALUES(?,?,?)',
                     (str(key), str(issueType), str(summary), )
                 )
-                pass
 
         try:
             version = 'None'
@@ -259,28 +274,41 @@ class ViraDB():
             status = ''
             pass
 
-        created = str(issue['fields']['created'])
-        created = str(datetime.now(
-        ).strptime(created, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
-        ))
-        created = str(created).replace(' ', '').replace('-', '').replace(':', '')
-        created = str(created)[0:15]
+        try:
+            created = str(issue['fields']['created'])
+            created = str(datetime.now(
+            ).strptime(created, '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
+            ))
+            created = str(created).replace(' ', '').replace('-', '').replace(':', '')
+            created = str(created)[0:15]
+            self.lastcreate = created
+        except:
+            created = self.lastcreated
 
-        updated = str(issue['fields']['updated'])
-        self.updated_date = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())
-        updated = str(self.updated_date).replace(' ', '').replace('-', '').replace(':', '')
-        updated = str(updated)[0:15]
+        try:
+            updated = str(issue['fields']['updated'])
+            self.updated_date = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())
+            updated = str(self.updated_date).replace(' ', '').replace('-', '').replace(':', '')
+            updated = str(updated)[0:15]
+            self.lastupdated = updated
+        except:
+            updated = self.lastupdated
+            pass
 
         try:
             user_name = str(issue['fields']['reporter']['name'])
             user_displayName = str(issue['fields']['reporter']['displayName'])
         except:
+            user_name = str('anonymous')
+            user_displayName = str('Anonymous')
             pass
         try:
             if 'assignee' in issue['fields'] and type(issue['fields']['assignee']) == dict:
                 user_name = str(issue['fields']['assignee']['name'])
                 user_displayName = str(issue['fields']['assignee']['displayName'])
         except:
+            user_name = str('anonymous')
+            user_displayName = str('Anonymous')
             pass
 
         self.insert_issue(str(project), str(version), str(version_description), str(issue_count), str(issueType), str(summary), str(status), str(created), str(updated), [str(user_name), str(user_displayName)], comments)
@@ -379,6 +407,7 @@ class ViraDB():
                                  'VALUES (?,?,?,?,?)',
                                  (str(issue_id), idx, str(author), str(date), str(body)), )
             except Error as e:
+                print(e)
                 raise e
             pass
 

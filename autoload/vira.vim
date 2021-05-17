@@ -5,7 +5,7 @@
 "   mikeboiko (Mike Boiko) <https://github.com/mikeboiko>
 
 " Variables {{{1
-let s:vira_version = '0.4.10'
+let s:vira_version = '0.4.12'
 let s:vira_connected = 0
 
 let s:vira_statusline = g:vira_null_issue
@@ -675,10 +675,22 @@ function! vira#_set() "{{{2
             " DEBUGGERS: Versions being sent after selection
             if s:debug[s:debug_versions] == 1 | echo string(s:vira_filter_versions) | endif
 
-            for fixVersion in s:vira_filter_versions
-              let hold = substitute(string(fixVersion)[:-3],'\s\+$','','') . "']" " The `\+` adds one more space
-              if hold != 'None' | let value = hold | endif
+            let menu_items = []
+            echo s:vira_filter
+            let menu_items = eval('[' . substitute(s:vira_filter[0:len(s:vira_filter)], ' │ ', ' │ ', '') . ']')
+            " Versions (Project / Version)
+            let vrs = [[],[]]
+            " TODO: VIRA-253 [210514] - `silent` should not be needed
+
+            for fixVersion in menu_items
+              " silent! let prg = append([eval('"' . split(menu_items[len(menu_items)-1],' │ ')[0] . '"')])
+              " let s:vira_filter_projects = add(s:vira_filter_projects, prg)
+              let vrs = add(vrs, [append([[eval('"' . split(menu_items[len(menu_items)-1],' │ ')[0] . '"')],[eval('"' . split(menu_items[len(menu_items)-1],' │ ')[1] . '"')]])])
+              " let vrs = add(s:vira_filter_versions, vrs)
+              " let hold = substitute(string(fixVersion)[:-3],'\s\+$','','') . "']" " The `\+` adds one more space
+              " if hold != 'None' | let value = hold | endif
             endfor
+            echo s:vira_filter_versions
           else
             let value = substitute(s:vira_filter,'|',', ','')
           endif
