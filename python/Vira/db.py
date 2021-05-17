@@ -38,6 +38,7 @@ class ViraDB():
         self.lastrowid = 0
         self.lastcreated = 0
         self.lastupdated = 0
+        self.last_comment_update = 0
         pass
 
     def _get_serv(self):
@@ -101,6 +102,7 @@ class ViraDB():
                 'key TEXT,' +            # <- This is the KEY of the issue ie "VIRA-253" would be 253 here.
                 'issueType TEXT,' +
                 'summary TEXT' +
+                'log TEXT' +
                 ')'
             )
             self.cur.execute(
@@ -213,20 +215,20 @@ class ViraDB():
 
         try:
             issueType = str(issue['fields']['issuetype']['name']).strip()
-        except:
+        except Exception as e:
             self.cur.execute(
-                'INSERT INTO broken_issues(key) VALUES(?)',
-                (key)
+                'INSERT INTO broken_issues(key,log) VALUES(?,?)',
+                (key, e, )
             )
             issueType = ''
             pass
 
         try:
             summary = str(issue['fields']['summary']).strip()
-        except:
+        except Exception as e:
             self.cur.execute(
-                'INSERT INTO broken_issues(key,issueType) VALUES(?,?)',
-                (key, issueType, )
+                'INSERT INTO broken_issues(key,issueType,log) VALUES(?,?,?)',
+                (key, issueType, e, )
             )
             summary = ''
             pass
@@ -235,26 +237,33 @@ class ViraDB():
         idx = 0
         for idx, comment in enumerate(issue['fields']['comment']['comments']):
             try:
-                author = str(comment['author']['displayName']).strip()
-            except:
-                author = 'Anonymous'
-                pass
+                try:
+                    author = str(comment['author']['displayName']).strip()
+                except:
+                    author = 'Anonymous'
+                    pass
 
-            try:
                 #  TODO: VIRA-253 [210516] - Ensure a smorth function clean body format back and forth
                 body = str(comment['body']).replace('\r\n', '\n').strip()
-                body = str(comment['body']).replace('\n', '\\n').strip()
-            except:
-                body = ''
+                body = body.replace('\n', '\\n').strip()
 
-            updated = str(self.format_date(comment['updated']))
-            try:
+                try:
+                    #  updated = str(self.format_date(comment['updated']))
+                    updated = str(datetime.now().strptime(str(comment['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())
+                    updated = str(self.updated_date).replace(' ', '').replace('-', '').replace(':', '')
+                    updated = str(updated)[0:15]
+                    self.last_comment_update = updated if updated > self.last_comment_update else self.last_comment_update
+                except:
+                    updated = self.last_comment_update
+                    pass
+
                 comments.append([project, issue_count, idx, author, updated, body])
             except Exception as e:
                 self.cur.execute(
-                    'INSERT INTO broken_issues(key,issueType,summary) VALUES(?,?,?)',
-                    (str(key), str(issueType), str(summary), )
+                    'INSERT INTO broken_issues(key,issueType,summary,log) VALUES(?,?,?,?)',
+                    (key, issueType, summary, e)
                 )
+                pass
 
         try:
             version = 'None'
@@ -274,6 +283,7 @@ class ViraDB():
             status = ''
             pass
 
+        created = self.lastupdated
         try:
             created = str(issue['fields']['created'])
             created = str(datetime.now(
@@ -284,7 +294,9 @@ class ViraDB():
             self.lastcreate = created
         except:
             created = self.lastcreated
+            pass
 
+        updated = self.lastupdated
         try:
             updated = str(issue['fields']['updated'])
             self.updated_date = str(datetime.now().strptime(str(issue['fields']['updated']), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone())
@@ -298,11 +310,7 @@ class ViraDB():
         try:
             user_name = str(issue['fields']['reporter']['name'])
             user_displayName = str(issue['fields']['reporter']['displayName'])
-        except:
-            user_name = str('anonymous')
-            user_displayName = str('Anonymous')
-            pass
-        try:
+
             if 'assignee' in issue['fields'] and type(issue['fields']['assignee']) == dict:
                 user_name = str(issue['fields']['assignee']['name'])
                 user_displayName = str(issue['fields']['assignee']['displayName'])
