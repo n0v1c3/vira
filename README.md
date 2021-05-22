@@ -1,8 +1,11 @@
-# VIRA 0.4.11
+# VIRA 0.4.13
 
-**Vim JIRA Atlassian**
+**Vim JIRA Atlassian: Create, Update and Follow Along Jira Issues Actively
+Without Leaving Vim!**
 
-Stay inside vim while following and updating Jira issues along with creating new issues on the go.
+If you have made it this far there is a good chance that you already enjoy
+staying inside of `vim` as much as you can. `vira` will help you stay on top of
+your Jira development process without leaving your favorite environment.
 
 ![](https://raw.githubusercontent.com/n0v1c3/viravid/video/vira-demo.gif)
 
@@ -18,7 +21,8 @@ Stay inside vim while following and updating Jira issues along with creating new
 
 ## Installation
 
-Example of vim-plug post-update hook to automatically install python dependencies along with vira:
+Example of vim-plug post-update hook to automatically install python
+dependencies along with `vira`:
 
 ```
 Plug 'n0v1c3/vira', { 'do': './install.sh' }
@@ -30,7 +34,8 @@ Alternatively, manually install the python3 dependencies:
 pip install --user jira
 ```
 
-If you would like to be on board with the active development the `dev` branch can be used:
+If you would like to be on board with the active development the `dev` branch
+can be used:
 
 ```
 Plug 'n0v1c3/vira', { 'do': './install.sh', 'branch': 'dev' }
@@ -40,11 +45,44 @@ Plug 'n0v1c3/vira', { 'do': './install.sh', 'branch': 'dev' }
 
 ## Configuration
 
+There are currently **two** separate files that are used in configuration. The
+`~/.config/vira/vira_servers.json` file will be the **required** file for your
+connections and `~/.config/vira/vira_projects.json` will map `projects` to
+folders while linking them to `servers` inside `vira_servers.json`.
+
+**NOTE:** Both of these files can be moved to other locations and set in your
+`.vimrc`:
+
+```
+let g:vira_config_file_servers = $HOME . '/.config/vira/vira_servers.json'
+let g:vira_config_file_projects = $HOME . '/.config/vira/vira_projects.json'
+```
+
+We also support trying the `yaml` configuration however, it will **require**
+one more library for `python`. The default file-type is `json`, this is because
+it comes "out of the box" inside of `python`. Run the following from the
+`terminal` if you require `PyYAML` to enjoy `yaml`:
+
+```
+pip install --user pyyaml
+```
+
+**NOTE:** When using `yaml` a link is **REQUIRED** in your `.vimrc` settings.
+
 ### Jira servers (required)
 
-The configuration for your jira server(s) needs to be done in a json or yaml file.
-The default file-type is json, because it comes with the python standard library.
-The default file location is `~/.config/vira/vira_servers.json`.
+For each Jira server, the following configuration variables are available, only
+one of the options `password` or `password_cmd` will be set depending on a
+**raw** password vs a password **command**:
+
+- `username` - Jira server username.
+- `password_cmd` - Run a CLI password manager such as `pass` or `lpass` to
+  retrieve the Jira server password.
+- `password` - Enter Jira server password in plain text. This is not
+  recommended for security reasons, but we're not going to tell you how to live
+  your life.
+- `skip_cert_verify` - This option can be set in order to connect to a sever
+  that is using self-signed TLS certificates.
 
 The following is an example of a typical `vira_servers.json` configuration:
 
@@ -62,14 +100,7 @@ The following is an example of a typical `vira_servers.json` configuration:
 }
 ```
 
-For each jira server, the following configuration variables are available:
-
-- `username` - Jira server username.
-- `password_cmd` - Run a CLI password manager such as `pass` or `lpass` to retrieve the jira server password.
-- `password` - Enter jira server password in plain text. This is not recommended for security reasons, but we're not going to tell you how to live your life.
-- `skip_cert_verify` - This option can be set in order to connect to a sever that is using self-signed TLS certificates.
-
-If you can bear to install one additional python pip dependency, `PyYAML`, you can configure your settings in yaml:
+Here is an example of the `vira_servers.yaml` configuration:
 
 ```yaml
 https://n0v1c3.atlassian.net:
@@ -81,16 +112,14 @@ https://jira.career.com:
   password: SuperSecretPassword
 ```
 
-In order for vira to use the previous yaml example, set the following variable in your .vimrc:
-`let g:vira_config_file_servers = $HOME.'/vira_servers.yaml'`
-
-If **no** configuration is found you will be asked for a manual URL, username, and password entry.
+**IMPORTANT:** If **no** configuration is found you will be asked for a manual
+URL, username, and password entry.
 
 #### Atlassian Cloud Notes
 
 [Atlassian Cloud Jira Key](https://id.atlassian.com/manage-profile/security/api-tokens)
-may be required if you are using the Atlassian Cloud service.
-Create an `API token` and use set it the value of the `password` in your `vira_servers.json` file.
+may be required if you are using the Atlassian Cloud service. Create an `API token` and set this **token** to the value of the `password` in your
+`vira_servers.json` file.
 
 ### Quick Start
 
