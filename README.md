@@ -11,26 +11,45 @@ your Jira development process without leaving your favorite environment.
 
 <ins>**_Table of Contents_**</ins>
 
-[Installation](#installation)
-[Configuration](#configuration)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Jira server configuration (Required)](#jira_servers)
+    - [Atlassian Cloud and API Token Notes](#token_notes)
+  - [Quick start guide](#quick_start)
+  - [Jira project configuration](#jira_projects)
+    - [Filter config](#filter_config)
+    - [New issue config](#issue_config)
+    - [Issue sort order](#sort_config)
+    - [Project templates](#project_templates)
+    - [\_\_default\_\_ template](#default_template)
+  - [Browser](#browser_config)
+- [Menus and Reports](#menus)
+  - [Commands](#commands)
+  - [Report](#report)
+  - [.vimrc examples](#vimrc_example)
+- [Functions](#functions)
+- [Configuration Variables](#config_vars)
+- [Support](#support)
+  - [Private and cloud Jira hosting](#private_cloud)
+  - [Vim plugins](#vim_plugins)
+    - [vim-fugitive](#fugitive)
+    - [airline](#airline)
+- [Contributors](#contributors)
 
-- [Jira server configuration (Required)](#jira_servers)
-- [Quick start guide](#quick_start)
-- [Jira project configuration](#jira_projects)
+| <ins>**_VIRA 0.4.13 UPDATES:_**</ins>                                       |
+| --------------------------------------------------------------------------- |
+| single server automatic login.                                              |
+| `README.md` create this **UPDATES** list and **Previous Releases** list.    |
+| `README.md` navigation.                                                     |
+| `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
 
-[Filters](#filters)
-[Menus](#menus)
-[Contributors](#contributors)
-
-**UPDATES:**:
-
-- `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`.
-
-- 0.4.12 - Don't append Null in non-empty server list (Krzysztof Konopko)
-- 0.4.11 - README remove old workarounds (Travis Gall)
-- 0.4.10 - Handle missing assignee and guess current user correctly (Travis Gall)
-- 0.4.9 - No Assignee "whatsoever", Missing **default**, and Default Sort (Krzysztof Konopko)
-- 0.4.8 - `async` function and percents removed (Travis Gall)
+| <ins>**_Previous Releases:_**</ins>                                                         |
+| ------------------------------------------------------------------------------------------- |
+| 0.4.12 - Don't append Null in non-empty server list (Krzysztof Konopko)                     |
+| 0.4.11 - README remove old workarounds (Travis Gall)                                        |
+| 0.4.10 - Handle missing assignee and guess current user correctly (Travis Gall)             |
+| 0.4.9 - No Assignee "whatsoever", Missing **default**, and Default Sort (Krzysztof Konopko) |
+| 0.4.8 - `async` function and percents removed (Travis Gall)                                 |
 
 <a name="installation"/>
 
@@ -86,7 +105,7 @@ pip install --user pyyaml
 
 <a name="jira_servers"/>
 
-### Jira server configuration (required)
+### Jira server configuration (required):
 
 For each Jira server, the following configuration variables are available, only
 one of the options `password` or `password_cmd` will be set depending on a
@@ -106,13 +125,13 @@ The following is an example of a typical `vira_servers.json` configuration:
 ```json
 {
   "https://n0v1c3.atlassian.net": {
-    "username": "user1",
-    "password_cmd": "lpass show --password account",
-    "skip_cert_verify": true
+    "username": "travis",
+    "password_cmd": "lpass show --password account"
   },
   "https://jira.career.com": {
-    "username": "user2",
-    "password": "SuperSecretPassword"
+    "username": "mike",
+    "password": "SuperSecretPassword",
+    "skip_cert_verify": true
   }
 }
 ```
@@ -136,7 +155,9 @@ mapping, see [Jira Projects](#jira_projects).
 **IMPORTANT:** If **NO** configuration is found you will be asked for a manual
 URL, username, and password entry.
 
-#### Atlassian Cloud and API Token Notes
+<a name="token_notes">
+
+#### Atlassian Cloud and API Token Notes:
 
 [Atlassian Cloud Jira Key](https://id.atlassian.com/manage-profile/security/api-tokens)
 may be required if you are using the Atlassian Cloud service. Create an
@@ -145,7 +166,7 @@ may be required if you are using the Atlassian Cloud service. Create an
 
 <a name="quick_start"/>
 
-### Quick start guide
+### Quick start guide:
 
 - Configure `~/.config/vira/vira_servers.json` as per [Jira servers configuration](#jira-servers).
 - Run `:ViraServers` and select a server with `<cr>`.
@@ -154,9 +175,12 @@ may be required if you are using the Atlassian Cloud service. Create an
 - Press `<cr>` to edit any field.
 - Rejoice because you have one less reason to leave `vim`!
 
+Check out [Menus and Reports](#menus) after that for a list of commands and
+tools that can be mapped to your `.vimrc` like the ones above.
+
 <a name="jira_projects"/>
 
-### Jira projects
+### Jira project configuration:
 
 As mentioned in [Configuration](#configuration) a separate file
 `vira_projects.json/yaml` can be created in the `vira` configuration directory.
@@ -202,7 +226,9 @@ OtherProject:
   server: https://jira.career.com
 ```
 
-#### Filter Configuration
+<a name="filter_config"/>
+
+#### Filter configuration:
 
 Default repo filters can be defined under a `filter` key as such:
 
@@ -259,10 +285,12 @@ The acceptable values for the filter key are:
 _NOTE:_ `currentUser` is also connected to the active account and can be used
 for all user related tasks.
 
-#### New Issues
+<a name="issue_config"/>
+
+#### New issue configuration:
 
 Similar to the `filter` key, you can define a `newissue` key to set repo-based.
-default configuration for the new-issue fields, for example:
+Default configuration for the new-issue fields, for example in:
 
 ```yaml
 vira:
@@ -288,7 +316,9 @@ The acceptable values for filter keys are:
 - `priority` - Define priority.
 - `status` - Define status. Vira will transition issue to this status.
 
-#### Issue sort order
+<a name="sort_config"/>
+
+#### Issue sort order:
 
 Optionally, it is possible to define a custom sort order for the issues
 displayed in `vira_menu`. This sort order is project based - meaning you
@@ -317,7 +347,9 @@ key is provided, the default sort order used is `updated DESC`.
 Administration > Issues > Statuses. This can be used to achieve a similar
 functionality to Kanban boards.
 
-#### Project Templates
+<a name="project_templates"/>
+
+#### Project templates:
 
 Templates can be defined in the same way that projects are defined. These
 templates can be referenced for multiple projects, by using the template key.
@@ -341,7 +373,9 @@ repo2:
     priority: High
 ```
 
-#### Default Project Template
+<a name="default_template"/>
+
+#### `__default__` template:
 
 If you would like to have a catch-all project configuration template, define a
 `__default__` key in your `vira_projects.json/yaml` file. Refer to the `yaml`
@@ -356,103 +390,9 @@ __default__:
     issuetype: Task
 ```
 
-### Browser
+<a name="browser_config"/>
 
-By default, the `open` or `xdg-open` command will be used by `:ViraBrowse` to
-open the current issue in the default browser. If either command is missing or
-you wish to override the default browser, you may set the `g:vira_browser`
-variable or provide the `BROWSER` environment variable.
-
-Example setting **custom** default browser using `g:vira_browser`:
-
-```vim
-let g:vira_browser = 'chromium'
-```
-
-<a name="filters"/>
-
-## Filters
-
-A list of the important commands, functions and global variables to be used to
-help configure Vira to work for you.
-
-### Keyboard
-
-It is possible to _select multiple_ items from all menus, if nothing is
-selected prior to the item will be selected from the current column.
-
-_NOTE:_ `currentUser` is also connected to the active account and can be used
-for all user related tasks.
-
-#### New Issues
-
-Similar to the `filter` key, you can define a `newissue` key to set repo-based.
-Default configuration for the new-issue fields, see example:
-
-```yaml
-vira:
-  server: https://n0v1c3.atlassian.net
-  newissue:
-    issuetype: Task
-OtherProject:
-  server: https://jira.career.com
-  newissue:
-    assignee: travis
-  filter:
-    assignee: travis
-    status: In-Progress
-```
-
-The acceptable values for filter keys are:
-
-- `assignee` - Define assignee.
-- `component` - Define component. Note - these are project specific.
-- `epic` - Define epic. Current project filters apply to list.
-- `fixVersion` - Define versions to fix. Note - these are project specific.
-- `issuetype` - Define types of issues. The default is `Task`.
-- `priority` - Define priority.
-- `status` - Define status. Vira will transition issue to this status.
-
-#### Project Templates
-
-Templates can be defined in the same way that projects are defined. These
-templates can be referenced for multiple projects, by using the template key.
-Any name can be used for a template, but it is recommended to use the pythonic
-syntax of `__name__` in order to make a distinction from a project. Refer to
-the yaml example below, note that the priority in `repo2` will override the
-`__maintemplate__` priority:
-
-```yaml
-__maintemplate__:
-  server: https://n0v1c3.atlassian.net
-  filter:
-    project: VIRA
-    assignee: travis
-    priority: [High, Highest]
-repo1:
-  template: __maintemplate__
-repo2:
-  template: __maintemplate__
-  filter:
-    priority: High
-```
-
-#### Default Project Template
-
-If you would like to have a catch-all project configuration template, define
-a `__default__` key in your vira_projects.json/yaml file. Refer to the yaml
-example below:
-
-```yaml
-__default__:
-  server: https://n0v1c3.atlassian.net
-  filter:
-    assignee: mike
-  newissue:
-    issuetype: Task
-```
-
-### Browser
+### Browser:
 
 By default, the `open` or `xdg-open` command will be used by `:ViraBrowse` to
 open the current issue in the default browser. If either command is missing or
@@ -467,35 +407,10 @@ let g:vira_browser = 'chromium'
 
 <a name="menus"/>
 
-## Menus
+## Menus and Reports
 
 A list of the important commands, functions and global variables to be used to
 help configure Vira to work for you.
-
-### Keyboard
-
-It is possible to _select multiple_ items from all menus, if nothing is
-selected prior to the item will be selected from the current column.
-
-_NOTE:_ These keys are only mapped to the Vira windows.
-
-**Menus:**
-
-- `D` - Unselect and Apply "Delete" all lines within menu.
-- `H` - Toggle special hidden menu items.
-- `s` - Select current line within menu.
-- `S` - Select all lines within menu.
-- `u` - Unselect current line within menu.
-- `U` - Unselect all lines within menu.
-- `q` - Quit the current menu with no apply.
-- `<cr>` - Apply selections along with current line.
-
-**Reports:**
-
-- `<cr>` - Edit current `field` cursor is within.
-- `s` - Select `issue` or `website` under cursor.
-
-### Commands
 
 - `ViraBrowse` - View Jira issue in web-browser.
 - `ViraComment` - Insert a comment for active issue.
@@ -528,36 +443,37 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 - `ViraTodo` - Make a **TODO** note for current issue.
 - `ViraTodos`- Get a list of the remaining TODOs.
 
-### Functions
+**Menus (keys pre-mapped only to `menu` windows):**
 
-- `ViraGetActiveIssue()` - Get the currently selected active issue.
-- `ViraStatusline()` - Quick statusline drop-in.
+- `D` - Unselect and Apply "Delete" all lines within menu.
+- `H` - Toggle special hidden menu items.
+- `s` - Select current line within menu.
+- `S` - Select all lines within menu.
+- `u` - Unselect current line within menu.
+- `U` - Unselect all lines within menu.
+- `q` - Quit the current menu with no apply.
+- `<cr>` - Apply selections along with current line.
 
-### Config Variables
+**NOTE:** It is possible to _select multiple_ items from all menus, if nothing
+is selected prior to the item will be selected from the current column.
 
-- `g:vira_active_issue` - Set and get the active issue.
-- `g:vira_async_timer` - Normal time between vim "async" updates. (10000ms)
-- `g:vira_async_timer_init` - Faster initial time between "async" updates. (2000ms)
-  - Lower the number to increase the rate of the initial versions listing.
-  - WARNING: A lower number makes it "jumpy" but gets it over and onto `g:vira_async_timer` much faster.
-- `g:vira_highlight` - Text used when there is no issue.
-- `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
-- `g:vira_menu_height` - Set the height of the menu (default 7).
-  - Height - `g:vira_menu_height > 0` (may also equal 'J')
-  - Tab - `g:vira_menu_height = 0` (may also equal 'T')
-- `g:vira_null_issue` - Text used when there is no issue.
-- `g:vira_report_width` - Set the width of the report (default 0).
-  - Left - `g:vira_report_width > 0` (may also equal 'L')
-  - Right - `g:vira_report_width < 0` (may also equal 'R')
-  - Tab - `g:vira_report_width = 0` (may also equal 'T')
-- `g:vira_version_hide` - Toggle the display of complete versions.
+**Reports (keys pre-mapped only to `report` windows):**
 
-### Report
+- `<cr>` - Edit current `field` cursor is within.
+- `s` - Select `issue` or `website` under cursor.
+
+**NOTE:** `currentUser` is also connected to the active account and can be used
+for all user related tasks. This can make it easier to create scripts with
+different accounts.
+
+<a name="report"/>
+
+### Report:
 
 This is an example of a typical Jira issue report (except the report looks
 colorized and fancy in vim):
 
-```vim
+```
 +---------------------------------+
 |            VIRA-134             |
 +--------------+------------------+
@@ -603,7 +519,9 @@ Most issue fields can be edited by pressing `<cr>`.
 For the text entry fields (Summary, Description, Comments), if the text entry
 is left blank, the write action will be aborted.
 
-### .vimrc examples
+<a name="vimrc_examples"/>
+
+### .vimrc examples:
 
 ```vim
 " Basics
@@ -654,9 +572,41 @@ nnoremap <silent> <leader>vei :call Enter_ViraActiveIssue()<cr>
 statusline+=%{ViraStatusline()}
 ```
 
+<a name="functions"/>
+
+## Functions
+
+- `ViraGetActiveIssue()` - Get the currently selected active issue.
+- `ViraStatusline()` - Quick statusline drop-in.
+
+<a name="config_vars"/>
+
+## Configuration Variables
+
+- `g:vira_active_issue` - Set and get the active issue.
+- `g:vira_async_timer` - Normal time between vim `async` updates. (10000ms)
+- `g:vira_async_timer_init` - Faster initial time between `async` updates. (2000ms)
+  - Lower the number to increase the rate of the initial versions listing.
+  - WARNING: A lower number makes it "jumpy" but gets it over and onto `g:vira_async_timer` much faster.
+- `g:vira_highlight` - Text used when there is no issue.
+- `g:vira_issue_limit` - Set the maximum issue limit for query (default 50).
+- `g:vira_menu_height` - Set the height of the menu (default 7).
+  - Height - `g:vira_menu_height > 0` (may also equal 'J')
+  - Tab - `g:vira_menu_height = 0` (may also equal 'T')
+- `g:vira_null_issue` - Text used when there is no issue.
+- `g:vira_report_width` - Set the width of the report (default 0).
+  - Left - `g:vira_report_width > 0` (may also equal 'L')
+  - Right - `g:vira_report_width < 0` (may also equal 'R')
+  - Tab - `g:vira_report_width = 0` (may also equal 'T')
+- `g:vira_version_hide` - Toggle the display of complete versions.
+
+<a name="support"/>
+
 ## Support
 
-### Private and Cloud Jira Hosting
+<a name="private_cloud"/>
+
+### Private and cloud Jira hosting:
 
 We currently support Private Jira servers version 8 and up. We have not seen
 issues with the lower versions we had access to but we no longer do have a
@@ -665,7 +615,9 @@ test platform.
 The Cloud feature now available from Atlassian is currently also available.
 The `API token` key referenced above is required to use as your `password`.
 
-### Vim Plugins
+<a name="vim_plugins"/>
+
+### Vim plugins:
 
 Plugins may be used and supported. This list will build as required from other
 requests. Support will be focused on providing functions that provide
@@ -674,7 +626,9 @@ information along with the related Jira commands for easy usage.
 Below are a few common examples. Please recommend any other tools that could
 use some good features to make your development easier.
 
-#### vim-fugitive
+<a name="fugitive"/>
+
+#### vim-fugitive:
 
 A simple example is below but recommended that it can be expanded on for your
 personal needs.
@@ -718,7 +672,9 @@ nnoremap <silent> <leader>vgm :execute 'Gmerge --no-ff ' . ViraStatusLine() . ' 
 nnoremap <silent> <leader>vgp :execute 'Git push -u origin ' . ViraStatusLine()<cr>
 ```
 
-#### airline
+<a name="airline"/>
+
+#### airline:
 
 I am currently using the `a` section of `airline` until I figure out the proper
 way to do it.
