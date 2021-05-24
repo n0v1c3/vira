@@ -9,13 +9,28 @@ your Jira development process without leaving your favorite environment.
 
 ![](https://raw.githubusercontent.com/n0v1c3/viravid/video/vira-demo.gif)
 
-##### Table of Contents
+<ins>**_Table of Contents_**</ins>
 
-[Installation](#installation)  
-[Configuration](#configuration)  
-[Filters](#filters)  
-[Menus](#menus)  
+[Installation](#installation)
+[Configuration](#configuration)
+
+- [Jira server configuration (Required)](#jira_servers)
+- [Quick start guide](#quick_start)
+- [Jira project configuration](#jira_projects)
+
+[Filters](#filters)
+[Menus](#menus)
 [Contributors](#contributors)
+
+**UPDATES:**:
+
+- `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`.
+
+- 0.4.12 - Don't append Null in non-empty server list (Krzysztof Konopko)
+- 0.4.11 - README remove old workarounds (Travis Gall)
+- 0.4.10 - Handle missing assignee and guess current user correctly (Travis Gall)
+- 0.4.9 - No Assignee "whatsoever", Missing **default**, and Default Sort (Krzysztof Konopko)
+- 0.4.8 - `async` function and percents removed (Travis Gall)
 
 <a name="installation"/>
 
@@ -24,20 +39,20 @@ your Jira development process without leaving your favorite environment.
 Example of vim-plug post-update hook to automatically install python
 dependencies along with `vira`:
 
-```
+```vim
 Plug 'n0v1c3/vira', { 'do': './install.sh' }
 ```
 
 Alternatively, manually install the python3 dependencies:
 
-```
+```cmd
 pip install --user jira
 ```
 
 If you would like to be on board with the active development the `dev` branch
 can be used:
 
-```
+```vim
 Plug 'n0v1c3/vira', { 'do': './install.sh', 'branch': 'dev' }
 ```
 
@@ -53,7 +68,7 @@ folders while linking them to `servers` inside `vira_servers.json`.
 **NOTE:** Both of these files can be moved to other locations and set in your
 `.vimrc`:
 
-```
+```vim
 let g:vira_config_file_servers = $HOME . '/.config/vira/vira_servers.json'
 let g:vira_config_file_projects = $HOME . '/.config/vira/vira_projects.json'
 ```
@@ -63,13 +78,15 @@ one more library for `python`. The default file-type is `json`, this is because
 it comes "out of the box" inside of `python`. Run the following from the
 `terminal` if you require `PyYAML` to enjoy `yaml`:
 
-```
+```cmd
 pip install --user pyyaml
 ```
 
 **NOTE:** When using `yaml` a link is **REQUIRED** in your `.vimrc` settings.
 
-### Jira servers (required)
+<a name="jira_servers"/>
+
+### Jira server configuration (required)
 
 For each Jira server, the following configuration variables are available, only
 one of the options `password` or `password_cmd` will be set depending on a
@@ -112,39 +129,59 @@ https://jira.career.com:
   password: SuperSecretPassword
 ```
 
-**IMPORTANT:** If **no** configuration is found you will be asked for a manual
+**IMPORTANT:** If only **ONE** the connection is automatic otherwise, a `menu`
+will open to select a server. This can be avoided with the `__default__`
+mapping, see [Jira Projects](#jira_projects).
+
+**IMPORTANT:** If **NO** configuration is found you will be asked for a manual
 URL, username, and password entry.
 
-#### Atlassian Cloud Notes
+#### Atlassian Cloud and API Token Notes
 
 [Atlassian Cloud Jira Key](https://id.atlassian.com/manage-profile/security/api-tokens)
-may be required if you are using the Atlassian Cloud service. Create an `API token` and set this **token** to the value of the `password` in your
+may be required if you are using the Atlassian Cloud service. Create an
+`API token`. This `API token` is now the `password` set in your
 `vira_servers.json` file.
 
-### Quick Start
+<a name="quick_start"/>
 
-- Configure `~/.config/vira/vira_servers.json` as per [Jira servers](#jira-servers-required).
-- Run `:ViraServers` and press `<cr>` to select server.
-- Run `:ViraIssues` and press `<cr>` to select issue.
+### Quick start guide
+
+- Configure `~/.config/vira/vira_servers.json` as per [Jira servers configuration](#jira-servers).
+- Run `:ViraServers` and select a server with `<cr>`.
+- Run `:ViraIssues` and select an issue with `<cr>`.
 - Run `:ViraReport` to view report.
 - Press `<cr>` to edit any field.
-- Rejoice because you have one less reason to leave vim.
+- Rejoice because you have one less reason to leave `vim`!
+
+<a name="jira_projects"/>
 
 ### Jira projects
 
-The configuration for your jira project(s) needs to be done in a json or yaml file.
-Similar to jira servers, default file file-type is json. The default file location is `~/.config/vira/vira_projects.json`.
+As mentioned in [Configuration](#configuration) a separate file
+`vira_projects.json/yaml` can be created in the `vira` configuration directory.
+`__default__` is also set up here to define the default server to use in the
+other directories when there is more than one server mapped.
 
-When you're in a git repo, vira will auto-load your pre-defined settings by matching the local repo name from file path.
+**NOTE:** When you're in a `git` repo, `vira` will auto-load your pre-defined
+settings by matching the local repo name from file path.
 
-For each jira project, set:
+**NOTE:** `vira` will only load the `vira_projects.json/yaml` configuration
+automatically once per vim session. You can, however, manually switch servers
+and filters as many times as you want after that.
 
-- `server` - The jira server to connect to (using authentication details from `vira_servers.json/yaml`).
+For each Jira project, set:
+
+- `server` - The Jira server to connect to (using authentication details from
+  `vira_servers.json/yaml`).
 
 The following is an example of a typical `vira_projects.json` configuration:
 
 ```json
 {
+  "__default__": {
+    "server": "https://n0v1c3.atlassian.net"
+  },
   "vira": {
     "server": "https://n0v1c3.atlassian.net"
   },
@@ -154,38 +191,57 @@ The following is an example of a typical `vira_projects.json` configuration:
 }
 ```
 
-The following is an example of the same configuration in yaml:
+The following is an example of the same configuration in `yaml`:
 
 ```yaml
+__default__:
+  server: https://n0v1c3.atlassian.net
 vira:
   server: https://n0v1c3.atlassian.net
 OtherProject:
   server: https://jira.career.com
 ```
 
-In order for vira to use the previous yaml example, set the following variable in your .vimrc:
-`let g:vira_config_file_projects = $HOME.'/vira_projects.yaml'`.
-
-Note: Vira will only load the vira_projects.json/yaml configuration automatically once per vim session. You can, however, manually switch servers and filters as many times as you want after that. See Usage section.
-
-#### Filter Config
+#### Filter Configuration
 
 Default repo filters can be defined under a `filter` key as such:
+
+```json
+{
+  "vira": {
+    "server": "https://n0v1c3.atlassian.net",
+    "filter": {
+      "project": ["VIRA"],
+      "assignee": ["travis"],
+      "priority": ["High", "Highest"],
+      "fixVersion": ["0.4.13"]
+    }
+  },
+  "OtherProject": {
+    "server": "https://jira.career.com",
+    "filter": {
+      "project": ["VQL"],
+      "assignee": ["travis", "mike"],
+      "priority": ["low", "lowest"],
+      "fixVersion": ["2.2.18"]
+  }
+}
+```
 
 ```yaml
 vira:
   server: https://n0v1c3.atlassian.net
   filter:
-    project: VIRA
-    assignee: mike
+    project: [VIRA]
+    assignee: [mike]
     priority: [High, Highest]
     fixVersion: [1.1.1, 1.1.2]
 OtherProject:
   server: https://jira.career.com
   filter:
-    project: MAIN
-    assignee: travis
-    status: In-Progress
+    project: [MAIN]
+    assignee: [travis]
+    status: [In-Progress]
 ```
 
 The acceptable values for the filter key are:
@@ -195,12 +251,13 @@ The acceptable values for the filter key are:
 - `component` - Filter these components. Can be a single item or list.
 - `epic` - Filter these epics. Can be a single item or list.
 - `fixVersion` - Filter these versions. Can be a single item or list.
-- `issuetype` - Filter these issuetypes. Can be a single item or list.
+- `issuetype` - Filter the types of issues. Can be a single item or list.
 - `priority` - Filter these priorities. Can be a single item or list.
 - `reporter` - Filter these reporters. Can be a single item or list.
 - `status` - Filter these statuses. Can be a single item or list.
 
-_NOTE:_ `currentUser` is also connected to the active account and can be used for all user related tasks.
+_NOTE:_ `currentUser` is also connected to the active account and can be used
+for all user related tasks.
 
 #### New Issues
 
@@ -233,7 +290,9 @@ The acceptable values for filter keys are:
 
 #### Issue sort order
 
-Optionally, it is possible to define a custom sort order for the issues displayed in `vira_menu`. This sort order is project based - meaning you can define different sort orders for your projects.
+Optionally, it is possible to define a custom sort order for the issues
+displayed in `vira_menu`. This sort order is project based - meaning you
+can define different sort orders for your projects.
 
 Define the sort order using the `issuesort` key as follows:
 
@@ -251,16 +310,21 @@ OtherProject:
     - updated DESC
 ```
 
-The value of `issuesort` can either be a string or a list.
-If no `issuesort` key is provided, the default sort order used is `updated DESC`.
+The value of `issuesort` can either be a string or a list. If no `issuesort`
+key is provided, the default sort order used is `updated DESC`.
 
-Note that it is possible to define a custom status order in Jira-web in Administration > Issues > Statuses. This can be used to achieve a similar functionality to kanban boards.
+**NOTE:** that it is possible to define a custom status order in Jira-web in
+Administration > Issues > Statuses. This can be used to achieve a similar
+functionality to Kanban boards.
 
 #### Project Templates
 
-Templates can be defined in the same way that projects are defined. These templates can be referenced for multiple projects, by using the template key.
-Any name can be used for a template, but it is recommended to use the pythonic syntax of `__name__` in order to make a distinction from a project.
-Refer to the yaml example below, note that the priority in `repo2` will override the `__maintemplate__` priority:
+Templates can be defined in the same way that projects are defined. These
+templates can be referenced for multiple projects, by using the template key.
+Any name can be used for a template, but it is recommended to use the pythonic
+syntax of `__name__` in order to make a distinction from a project. Refer to
+the `yaml` example below, note that the priority in `repo2` will override the
+`__maintemplate__` priority:
 
 ```yaml
 __maintemplate__:
@@ -279,8 +343,9 @@ repo2:
 
 #### Default Project Template
 
-If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects
-json/yaml file. Refer to the yaml example below:
+If you would like to have a catch-all project configuration template, define a
+`__default__` key in your `vira_projects.json/yaml` file. Refer to the `yaml`
+example below:
 
 ```yaml
 __default__:
@@ -293,13 +358,14 @@ __default__:
 
 ### Browser
 
-By default, the `open` or `xdg-open` command will be used by `:ViraBrowse` to open the current issue in the default
-browser. If either command is missing or you wish to override the default browser, you may set the `g:vira_browser`
+By default, the `open` or `xdg-open` command will be used by `:ViraBrowse` to
+open the current issue in the default browser. If either command is missing or
+you wish to override the default browser, you may set the `g:vira_browser`
 variable or provide the `BROWSER` environment variable.
 
 Example setting **custom** default browser using `g:vira_browser`:
 
-```
+```vim
 let g:vira_browser = 'chromium'
 ```
 
@@ -307,14 +373,16 @@ let g:vira_browser = 'chromium'
 
 ## Filters
 
-A list of the important commands, functions and global variables to be used to help configure Vira to work for you.
+A list of the important commands, functions and global variables to be used to
+help configure Vira to work for you.
 
 ### Keyboard
 
-It is possible to _select multiple_ items from all menus, if nothing is selected prior to the item will be selected
-from the current column.
+It is possible to _select multiple_ items from all menus, if nothing is
+selected prior to the item will be selected from the current column.
 
-_NOTE:_ `currentUser` is also connected to the active account and can be used for all user related tasks.
+_NOTE:_ `currentUser` is also connected to the active account and can be used
+for all user related tasks.
 
 #### New Issues
 
@@ -340,16 +408,19 @@ The acceptable values for filter keys are:
 - `assignee` - Define assignee.
 - `component` - Define component. Note - these are project specific.
 - `epic` - Define epic. Current project filters apply to list.
-- `fixVersion` - Define fixVersion. Note - these are project specific.
-- `issuetype` - Define issue type. The default is Bug.
+- `fixVersion` - Define versions to fix. Note - these are project specific.
+- `issuetype` - Define types of issues. The default is `Task`.
 - `priority` - Define priority.
 - `status` - Define status. Vira will transition issue to this status.
 
 #### Project Templates
 
-Templates can be defined in the same way that projects are defined. These templates can be referenced for multiple projects, by using the template key.
-Any name can be used for a template, but it is recommended to use the pythonic syntax of `__name__` in order to make a distinction from a project.
-Refer to the yaml example below, note that the priority in `repo2` will override the `__maintemplate__` priority:
+Templates can be defined in the same way that projects are defined. These
+templates can be referenced for multiple projects, by using the template key.
+Any name can be used for a template, but it is recommended to use the pythonic
+syntax of `__name__` in order to make a distinction from a project. Refer to
+the yaml example below, note that the priority in `repo2` will override the
+`__maintemplate__` priority:
 
 ```yaml
 __maintemplate__:
@@ -368,7 +439,9 @@ repo2:
 
 #### Default Project Template
 
-If you would like to have a catch-all project configuration template, define a `__default__` key in your vira_projects.json/yaml file. Refer to the yaml example below:
+If you would like to have a catch-all project configuration template, define
+a `__default__` key in your vira_projects.json/yaml file. Refer to the yaml
+example below:
 
 ```yaml
 __default__:
@@ -381,13 +454,14 @@ __default__:
 
 ### Browser
 
-By default, the `open` or `xdg-open` command will be used by `:ViraBrowse` to open the current issue in the default
-browser. If either command is missing or you wish to override the default browser, you may set the `g:vira_browser`
+By default, the `open` or `xdg-open` command will be used by `:ViraBrowse` to
+open the current issue in the default browser. If either command is missing or
+you wish to override the default browser, you may set the `g:vira_browser`
 variable or provide the `BROWSER` environment variable.
 
 Example setting **custom** default browser using `g:vira_browser`:
 
-```
+```vim
 let g:vira_browser = 'chromium'
 ```
 
@@ -395,11 +469,13 @@ let g:vira_browser = 'chromium'
 
 ## Menus
 
-A list of the important commands, functions and global variables to be used to help configure Vira to work for you.
+A list of the important commands, functions and global variables to be used to
+help configure Vira to work for you.
 
 ### Keyboard
 
-It is possible to _select multiple_ items from all menus, if nothing is selected prior to the item will be selected from the current column.
+It is possible to _select multiple_ items from all menus, if nothing is
+selected prior to the item will be selected from the current column.
 
 _NOTE:_ These keys are only mapped to the Vira windows.
 
@@ -478,9 +554,10 @@ _NOTE:_ These keys are only mapped to the Vira windows.
 
 ### Report
 
-This is an example of a typical jira issue report (except the report looks colorized and fancy in vim):
+This is an example of a typical Jira issue report (except the report looks
+colorized and fancy in vim):
 
-```
+```vim
 +---------------------------------+
 |            VIRA-134             |
 +--------------+------------------+
@@ -499,7 +576,7 @@ This is an example of a typical jira issue report (except the report looks color
 +--------------+
 |    Summary   |
 +--------------+
-Edit any jira field
+Edit any Jira field
 
 +--------------+
 |  Description |
@@ -523,12 +600,12 @@ issues/comments.
 
 Most issue fields can be edited by pressing `<cr>`.
 
-For the text entry fields (Summary, Description, Comments), if the text entry is left blank,
-the write action will be aborted.
+For the text entry fields (Summary, Description, Comments), if the text entry
+is left blank, the write action will be aborted.
 
 ### .vimrc examples
 
-```
+```vim
 " Basics
 nnoremap <silent> <leader>vI :ViraIssue<cr>
 nnoremap <silent> <leader>vS :ViraServers<cr>
@@ -581,35 +658,57 @@ statusline+=%{ViraStatusline()}
 
 ### Private and Cloud Jira Hosting
 
-We currently support Private Jira servers version 8 and up. We
-have not seen issues with the lower versions we had access to
-but we no longer do have a test platform.
+We currently support Private Jira servers version 8 and up. We have not seen
+issues with the lower versions we had access to but we no longer do have a
+test platform.
 
-The Cloud feature now available from Atlassian is currently
-also available. The `API token` key referenced above is required
-to use as your `password`.
+The Cloud feature now available from Atlassian is currently also available.
+The `API token` key referenced above is required to use as your `password`.
 
 ### Vim Plugins
 
-Plugins may be used and supported. This list will build as required from other requests.
-Support will be focused on providing functions that provide information along with the related Jira commands for easy usage.
+Plugins may be used and supported. This list will build as required from other
+requests. Support will be focused on providing functions that provide
+information along with the related Jira commands for easy usage.
 
-Below are a few common examples.
-Please recommend any other tools that could use some good features to make your development easier.
+Below are a few common examples. Please recommend any other tools that could
+use some good features to make your development easier.
 
 #### vim-fugitive
 
-A simple example is below but recommended that it can be expanded on for your personal needs.
+A simple example is below but recommended that it can be expanded on for your
+personal needs.
 
-```
+```vim
 function! s:Vira_GitActiveIssue()
     let g:vira_active_issue = execute("Git branch --show-current > echo")
     ViraReport
 endfunction
 
-function! s:Vira_GitPrompt()
-  return '"' . ViraStatusLine() . ': ' . input(ViraStatusLine() . ': ') . '"'
+function! s:Vira_GitCommit()
+  " Commit current `git` status
+  silent! execute 'Git commit'
+
+  " Call prompt
+  call s:Vira_GitPrompt()
 endfunction
+
+function! s:Vira_GitPrompt()
+  if g:vira_active_issue != 'None'
+    " Write current version
+    redir @x>
+      silent! echo g:vira_active_issue . ': '
+    redir END
+    put x
+
+    " Delete blank lines
+    goto 1
+    join!
+    join!
+  endif
+endfunction
+
+nnoremap <silent> <leader>vgc :call Vira_GitCommit()<cr>
 
 nnoremap <silent> <leader>vgC :execute 'Git checkout -b' . ViraStatusLine()<cr>
 nnoremap <silent> <leader>vgc :execute 'Git checkout ' . ViraStatusLine()<cr>
@@ -621,17 +720,19 @@ nnoremap <silent> <leader>vgp :execute 'Git push -u origin ' . ViraStatusLine()<
 
 #### airline
 
-I am currently using the z section of airline until I figure out the proper way to do it.
+I am currently using the `a` section of `airline` until I figure out the proper
+way to do it.
 
-```
-let g:airline_section_z = '%{ViraStatusLine()}'
+```vim
+let g:airline_section_a = '%{ViraStatusLine()}'
 ```
 
 <a name="contributors"/>
 
 ## Contributors
 
-A big thank you to [@mikeboiko](https://github.com/mikeboiko) for his active development on vira.
+A big thank you to [@mikeboiko](https://github.com/mikeboiko) for his active
+development on `vira`.
 
 With growing support from:
 [@chinwobble](https://github.com/chinwobble),

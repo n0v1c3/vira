@@ -15,6 +15,8 @@ let s:vira_end_time = 0
 let s:vira_root_dir = resolve(fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..')
 
 let s:vira_menu_type = ''
+let s:vira_menu_hold = ''
+let s:vira_serv_count = 0
 
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
@@ -234,6 +236,7 @@ function! vira#_menu(type) abort " {{{2
     if (g:vira_load_project_enabled == 1) | call vira#_load_project_config() | endif
     " User to select jira server and connect to it if not done already
     if (!exists('g:vira_serv') || g:vira_serv == '')
+      let s:vira_menu_hold = a:type
       call vira#_menu('servers')
       return
     endif
@@ -329,6 +332,15 @@ function! vira#_menu(type) abort " {{{2
   else | silent! execute 'set wrap' | endif
 
   silent! execute 'set linebreak'
+
+  " Recall the menu if
+  if a:type == 'servers' && s:vira_serv_count == 1
+    let s:vira_serv_count = 0
+    if s:vira_menu_hold == ''
+      let s:vira_menu_hold = 'issues'
+    endif
+    call vira#_menu(s:vira_menu_hold)
+  endif
 endfunction
 
 function! vira#_quit() "{{{2

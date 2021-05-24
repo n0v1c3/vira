@@ -711,8 +711,16 @@ class ViraAPI():
 
         try:
             if self.vira_servers.keys():
-                for server in self.vira_servers.keys():
-                    print(server)
+                count = len(self.vira_servers.keys())
+                vim.command('let s:vira_serv_count = ' + str(count))
+
+                if count > 1:
+                    for server in self.vira_servers.keys():
+                        print(server)
+                else:
+                    server = str(list(self.vira_servers.keys())[0])
+                    vim.command('let g:vira_serv = "{server}"')
+                    self.connect(server)
             else:
                 print('Null')
         except:
