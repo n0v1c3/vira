@@ -25,23 +25,24 @@ your Jira development process without leaving your favorite environment.
   - [Browser](#browser_config)
 - [Menus and Reports](#menus)
   - [Commands](#commands)
-  - [Report](#report)
-  - [.vimrc examples](#vimrc_example)
+  - [Reports](#report)
+  - [.vimrc examples](#vimrc_examples)
 - [Functions](#functions)
 - [Configuration Variables](#config_vars)
 - [Support](#support)
   - [Private and cloud Jira hosting](#private_cloud)
   - [Vim plugins](#vim_plugins)
     - [vim-fugitive](#fugitive)
-    - [airline](#airline)
 - [Contributors](#contributors)
 
 | <ins>**_VIRA 0.4.13 UPDATES:_**</ins>                                       |
 | --------------------------------------------------------------------------- |
+| Replace manual entry with `vira_projects.json/yaml` warning.                |
 | single server automatic login.                                              |
 | `README.md` create this **UPDATES** list and **Previous Releases** list.    |
 | `README.md` navigation.                                                     |
 | `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
+| Removed `airline` support until real it is real.                            |
 
 | <ins>**_Previous Releases:_**</ins>                                                         |
 | ------------------------------------------------------------------------------------------- |
@@ -238,7 +239,7 @@ Default repo filters can be defined under a `filter` key as such:
     "server": "https://n0v1c3.atlassian.net",
     "filter": {
       "project": ["VIRA"],
-      "assignee": ["travis"],
+      "assignee": ["Travis Gall"],
       "priority": ["High", "Highest"],
       "fixVersion": ["0.4.13"]
     }
@@ -247,7 +248,7 @@ Default repo filters can be defined under a `filter` key as such:
     "server": "https://jira.career.com",
     "filter": {
       "project": ["VQL"],
-      "assignee": ["travis", "mike"],
+      "assignee": ["Travis Gall", "Mike Boiko"],
       "priority": ["low", "lowest"],
       "fixVersion": ["2.2.18"]
   }
@@ -259,21 +260,21 @@ vira:
   server: https://n0v1c3.atlassian.net
   filter:
     project: [VIRA]
-    assignee: [mike]
+    assignee: [Mike Boiko]
     priority: [High, Highest]
     fixVersion: [1.1.1, 1.1.2]
 OtherProject:
   server: https://jira.career.com
   filter:
     project: [MAIN]
-    assignee: [travis]
+    assignee: [Travis Gall]
     status: [In-Progress]
 ```
 
 The acceptable values for the filter key are:
 
 - `project` - Filter these projects. Can be a single item or list.
-- `assignee` - Filter these assignees. Can be a single item or list.
+- `assignee` - Filter these assignees by display name. Can be a single item or list.
 - `component` - Filter these components. Can be a single item or list.
 - `epic` - Filter these epics. Can be a single item or list.
 - `fixVersion` - Filter these versions. Can be a single item or list.
@@ -282,8 +283,14 @@ The acceptable values for the filter key are:
 - `reporter` - Filter these reporters. Can be a single item or list.
 - `status` - Filter these statuses. Can be a single item or list.
 
-_NOTE:_ `currentUser` is also connected to the active account and can be used
+**NOTE:** `currentUser` is also connected to the active account and can be used
 for all user related tasks.
+
+**IMPORTANT:** use the display name in `assignee` and `reporter`, as account
+names will be unknown. You only know your own account number on Cloud services.
+
+- example: "Travis Gall" vs
+  `travis/848ab357sfd1c5e32effcd4657234e233/n0v1c3@gmail.com`
 
 <a name="issue_config"/>
 
@@ -292,18 +299,50 @@ for all user related tasks.
 Similar to the `filter` key, you can define a `newissue` key to set repo-based.
 Default configuration for the new-issue fields, for example in:
 
+```json
+{
+  "vira": {
+    "server": "https://n0v1c3.atlassian.net",
+    "filter": {
+      "project": ["VIRA"],
+      "assignee": ["Travis Gall"],
+      "priority": ["High", "Highest"],
+      "fixVersion": ["0.4.13"]
+    },
+    "newissue": {
+      "issuetype": "Task"
+    }
+  },
+  "OtherProject": {
+    "server": "https://jira.career.com",
+    "filter": {
+      "project": ["VIM", "TEST"],
+      "assignee": ["Mike Boiko"],
+      "priority": ["low", "lowest"],
+    "newissue": {
+      "assignee": "Travis Gall"
+    }
+  }
+}
+```
+
 ```yaml
 vira:
   server: https://n0v1c3.atlassian.net
+  filter:
+    project: [VIRA]
+    assignee: [Travis Gall]
+    priority: [High, Hihest]
+    fixVersion: [0.4.13]
   newissue:
-    issuetype: Task
+    issuetype: [Task]
 OtherProject:
   server: https://jira.career.com
-  newissue:
-    assignee: travis
   filter:
-    assignee: travis
-    status: In-Progress
+    assignee: [Travis Gall]
+    status: [In-Progress]
+  newissue:
+    assignee: Travis Gall
 ```
 
 The acceptable values for filter keys are:
@@ -326,6 +365,25 @@ can define different sort orders for your projects.
 
 Define the sort order using the `issuesort` key as follows:
 
+```json
+{
+  "vira": {
+    "server": "https:n0v1c3.atlasian.net",
+    "issuesort": "status DESC"
+  },
+  "OtherProject": {
+    "server": "https://jira.career.com",
+    "filter": {
+      "assignee": ["Travis Gall", "Mike Boiko"],
+      "priority": ["Low", "Lowest"],
+    "issuesort": {
+      "status": "ASC",
+      "updated": "DESC"
+    }
+  }
+}
+```
+
 ```yaml
 vira:
   server: https://n0v1c3.atlassian.net
@@ -333,7 +391,7 @@ vira:
 OtherProject:
   server: https://jira.career.com
   filter:
-    assignee: travis
+    assignee: Mike Boiko
     status: In-Progress
   issuesort:
     - status ASC
@@ -358,12 +416,34 @@ syntax of `__name__` in order to make a distinction from a project. Refer to
 the `yaml` example below, note that the priority in `repo2` will override the
 `__maintemplate__` priority:
 
+```json
+{
+  "__WORK__": {
+    "server": "https:n0v1c3.atlasian.net",
+    "filter": {
+      "project": "VIRA",
+      "assignee": ["Travis Gall"],
+      "priority": ["High", "Highest"]
+    }
+  },
+  "repo1": {
+    "template": "__WORK__"
+  },
+  "repo2": {
+    "template": "__WORK__",
+    "filter": {
+      "priority": "High"
+    }
+  }
+}
+```
+
 ```yaml
-__maintemplate__:
+__WORK__:
   server: https://n0v1c3.atlassian.net
   filter:
     project: VIRA
-    assignee: travis
+    assignee: Travis Gall
     priority: [High, Highest]
 repo1:
   template: __maintemplate__
@@ -381,11 +461,26 @@ If you would like to have a catch-all project configuration template, define a
 `__default__` key in your `vira_projects.json/yaml` file. Refer to the `yaml`
 example below:
 
+```json
+{
+  "__default__": {
+    "server": "https:n0v1c3.atlasian.net",
+    "filter": {
+      "assignee": ["Travis Gall"],
+      "priority": ["High", "Highest"]
+    },
+    "newissue": {
+      "issuetype": "Story"
+    }
+  }
+}
+```
+
 ```yaml
 __default__:
   server: https://n0v1c3.atlassian.net
   filter:
-    assignee: mike
+    assignee: Mike Boiko
   newissue:
     issuetype: Task
 ```
@@ -409,8 +504,13 @@ let g:vira_browser = 'chromium'
 
 ## Menus and Reports
 
-A list of the important commands, functions and global variables to be used to
-help configure Vira to work for you.
+A list of the important commands, functions and global variables for `menus`
+and `reports` to be used to help configure Vira to work for you. There is also
+a good example of `.vimrc` mapping and `report` layout.
+
+<a name="commands"/>
+
+### Commands
 
 - `ViraBrowse` - View Jira issue in web-browser.
 - `ViraComment` - Insert a comment for active issue.
@@ -468,7 +568,7 @@ different accounts.
 
 <a name="report"/>
 
-### Report:
+### Reports:
 
 This is an example of a typical Jira issue report (except the report looks
 colorized and fancy in vim):
@@ -672,17 +772,6 @@ nnoremap <silent> <leader>vgm :execute 'Gmerge --no-ff ' . ViraStatusLine() . ' 
 nnoremap <silent> <leader>vgp :execute 'Git push -u origin ' . ViraStatusLine()<cr>
 ```
 
-<a name="airline"/>
-
-#### airline:
-
-I am currently using the `a` section of `airline` until I figure out the proper
-way to do it.
-
-```vim
-let g:airline_section_a = '%{ViraStatusLine()}'
-```
-
 <a name="contributors"/>
 
 ## Contributors
@@ -696,4 +785,4 @@ With growing support from:
 [@kkonopko](https://github.com/kkonopko),
 and [@maricn](https://github.com/maricn)
 
-All user feedback and contributions are welcome!
+**All user feedback and contributions are welcome!**
