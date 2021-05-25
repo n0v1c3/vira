@@ -165,6 +165,9 @@ class ViraAPI():
             comment=comment,
             started=earlier)
 
+    def msg_server_fail(self):
+        print('No `vira_servers.json/yaml` file found or, check the config! See `README.md` for more information.')
+
     def connect(self, server):
         '''
         Connect to Jira server with supplied auth details
@@ -190,11 +193,8 @@ class ViraAPI():
             else:
                 password = self.vira_servers[server]['password']
         except:
-            cert_verify = True
-            server = vim.eval('input("server: ")')
-            vim.command('let g:vira_serv = "' + server + '"')
-            username = vim.eval('input("username: ")')
-            password = vim.eval('inputsecret("password: ")')
+            self.msg_server_fail()
+            raise
 
         # Connect to jira server
         try:
@@ -710,19 +710,44 @@ class ViraAPI():
         '''
 
         try:
-            for server in self.vira_servers.keys():
-                print(server)
-            print('Null')
+            if self.vira_servers.keys():
+                count = len(self.vira_servers.keys())
+                vim.command('let s:vira_serv_count = ' + str(count))
+
+                if count > 1:
+                    for server in self.vira_servers.keys():
+                        print(server)
+                elif count == 1:
+                        server = str(list(self.vira_servers.keys())[0])
+                        vim.command('let g:vira_serv = "{server}"')
+                        self.connect(server)
+            else:
+                print('Null')
+        except AttributeError as e:
+            self.msg_server_fail()
         except:
             self.connect('')
+            pass
 
     def get_statuses(self):
         '''
         Get my issues with JQL
         '''
 
+        jira_statuses = []
+
+        active_issue = vim.eval("g:vira_active_issue")
+        if active_issue:
+            try:
+                issue = self.jira.issue(active_issue)
+                jira_statuses = [t['name'] for t in self.jira.transitions(issue)]
+            except:
+                jira_statuses = self.jira.statuses()
+        else:
+            jira_statuses = self.jira.statuses()
+
         statuses = []
-        for status in self.jira.statuses():
+        for status in jira_statuses:
             if str(status) not in statuses:
                 statuses.append(str(status))
                 print(str(status))
