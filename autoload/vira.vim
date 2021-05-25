@@ -15,6 +15,8 @@ let s:vira_end_time = 0
 let s:vira_root_dir = resolve(fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..')
 
 let s:vira_menu_type = ''
+let s:vira_menu_hold = ''
+let s:vira_serv_count = 0
 
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
@@ -234,6 +236,7 @@ function! vira#_menu(type) abort " {{{2
     if (g:vira_load_project_enabled == 1) | call vira#_load_project_config() | endif
     " User to select jira server and connect to it if not done already
     if (!exists('g:vira_serv') || g:vira_serv == '')
+      let s:vira_menu_hold = a:type
       call vira#_menu('servers')
       return
     endif
@@ -329,6 +332,15 @@ function! vira#_menu(type) abort " {{{2
   else | silent! execute 'set wrap' | endif
 
   silent! execute 'set linebreak'
+
+  " Recall the menu if
+  if a:type == 'servers' && s:vira_serv_count == 1
+    let s:vira_serv_count = 0
+    if s:vira_menu_hold == ''
+      let s:vira_menu_hold = 'issues'
+    endif
+    call vira#_menu(s:vira_menu_hold)
+  endif
 endfunction
 
 function! vira#_quit() "{{{2
@@ -602,10 +614,13 @@ function! vira#_set() "{{{2
         if value != "None" | let value = '"' . value . '"' | endif
         let variable = s:vira_epic_field
         execute 'python3 Vira.api.jira.issue("' . g:vira_active_issue . '").update(fields={"' . variable . '":' . value . '})'
-    elseif variable == 'transition_issue' || (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . substitute(value, 'currentUser', currentUser, '') . '"})'))
+    elseif variable == 'transition_issue'
+        let value = execute('python3 print(Vira.api.jira.find_transitionid_by_name("' . g:vira_active_issue . '", "' . value . '"))')[1:-1]
+        execute 'silent! python3 Vira.api.jira.transition_issue("' . g:vira_active_issue . '", "' . value . '")'
+    elseif (variable == 'assign_issue' && !execute('silent! python3 Vira.api.jira.issue("'. g:vira_active_issue . '").update(assignee={"id": "' . substitute(value, 'currentUser', currentUser, '') . '"})'))
         let value = substitute(value, 'currentUser', currentUser, '')
         let value = substitute(value, 'Unassigned', '-1', '')
-        execute 'silent! python3 Vira.api.jira.' . variable . '(vim.eval("g:vira_active_issue"), "' . value . '")'
+        execute 'silent! python3 Vira.api.jira.assign_issue("' . g:vira_active_issue . '", "' . value . '")'
 
     " FILTER
     else
