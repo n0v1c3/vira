@@ -39,6 +39,7 @@ your Jira development process without leaving your favorite environment.
 | ------------------------------------------------------------------------------------- |
 | VIRA-213: `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
 | VIRA-283: begin syntax for `GV` in `report` windows.                                  |
+| VIRA-283: fix `GV bar` syntax between `tags`.                                         |
 
 | <ins>**_Recent Previous Releases:_**</ins>                                                  |
 | ------------------------------------------------------------------------------------------- |

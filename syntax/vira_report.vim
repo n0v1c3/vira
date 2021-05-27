@@ -4,7 +4,7 @@ if exists('b:current_syntax') | finish|  endif
 " Syntax matching {{{1
 syntax match viraHTML "https://.*"hs=s,he=e
 syntax match viraIssuesIssue ".*-.* │.*│.*│.*│.*" contains=viraIssuesDescription
-syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus contains=viraIssuesStatus,viraGV contained
+syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus contains=viraIssuesStatus,viraGV,viraGVBar contained
 syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
 
 syntax match viraBold "\*.*\*"
@@ -195,7 +195,8 @@ highlight viraTodos cterm=bold,underline gui=bold,underline
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=underline
 " GV Style {{{2
-syntax match viraGV   "^.*\d\{4}-\d\{2}-\d\{2}\s\w\{7}\s.*$" contains=viraGVTag
+syntax match viraGV "^.*\d\{4}-\d\{2}-\d\{2}\s\w\{7}\s.*$" contains=viraGVTag
+syntax match viraGVBar "^|.*\*\s\+$\|^|.*\\\s\+$\|^|.*|\s\+$\||.*/\s\+$"
 syntax match viraGVTag "^*.*\||.*" contained contains=viraGVDate
 syntax match viraGVDate " \d\{4}-\d\{2}-\d\{2} " contained nextgroup=viraGVHeader
 syntax match viraGVHeader "\w\{7}\s" contained nextgroup=viraGVMessage contains=viraGVBranch
@@ -204,6 +205,7 @@ syntax match viraGVCode "`.*`" contained
 syntax match viraGVBranch "\s(.*)\s" contained nextgroup=viraGVMessage
 syntax match viraGVUsername "(.*)$" contained
 highlight viraGVTag ctermfg=4 ctermbg=bg guifg=4 guibg=bg
+highlight viraGVBar ctermfg=4 ctermbg=bg guifg=4 guibg=bg
 highlight viraGVHeader ctermfg=2 ctermbg=bg guifg=2 guibg=bg
 highlight viraGVDate ctermfg=1 ctermbg=bg guifg=1 guibg=bg
 highlight viraGVBranch ctermfg=22 ctermbg=bg guifg=7 guibg=bg cterm=bold gui=bold
