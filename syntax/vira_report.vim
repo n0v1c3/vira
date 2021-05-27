@@ -200,17 +200,19 @@ syntax match viraGVBar "^|.*\*\s\+$\|^|.*\\\s\+$\|^|.*|\s\+$\||.*/\s\+$"
 syntax match viraGVTag "^*.*\||.*" contained contains=viraGVDate
 syntax match viraGVDate " \d\{4}-\d\{2}-\d\{2} " contained nextgroup=viraGVHeader
 syntax match viraGVHeader "\w\{7}\s" contained nextgroup=viraGVMessage contains=viraGVBranch
-syntax match viraGVMessage ".*(.*)$" contained contains=viraVGBranch,viraGVCode,viraGVUsername
-syntax match viraGVCode "`.*`" contained
+syntax match viraGVMessage ".*(.*)$" contained contains=viraGVIssue,viraVGBranch,viraGVCode,viraGVUsername
+syntax match viraGVIssue "\w\+-\d\+:\|\w\+-\d\+\|#\d\+\:\|#\d\+" contained
+syntax region viraGVCode start="`" end="`" contained
 syntax match viraGVBranch "\s(.*)\s" contained nextgroup=viraGVMessage
 syntax match viraGVUsername "(.*)$" contained
 highlight viraGVTag ctermfg=4 ctermbg=bg guifg=4 guibg=bg
 highlight viraGVBar ctermfg=4 ctermbg=bg guifg=4 guibg=bg
 highlight viraGVHeader ctermfg=2 ctermbg=bg guifg=2 guibg=bg
 highlight viraGVDate ctermfg=1 ctermbg=bg guifg=1 guibg=bg
-highlight viraGVBranch ctermfg=22 ctermbg=bg guifg=7 guibg=bg cterm=bold gui=bold
+highlight viraGVBranch ctermfg=35 ctermbg=bg guifg=35 guibg=bg cterm=bold gui=bold
 highlight viraGVMessage ctermfg=24 ctermbg=bg guifg=3 guibg=bg
 highlight viraGVCode ctermfg=3 ctermbg=bg guifg=#808000 guibg=bg cterm=bold gui=bold
 highlight viraGVUsername ctermfg=5 ctermbg=bg guifg=5 guibg=bg
+highlight viraGVIssue ctermfg=34 ctermbg=bg guifg=34 guibg=bg cterm=bold,underline gui=bold,underline
 " }}}
 let b:current_syntax = 'vira_report'
