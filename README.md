@@ -1,4 +1,4 @@
-# VIRA 0.4.13
+# VIRA 0.4.14
 
 **Vim JIRA Atlassian: Create, Update and Follow Along Jira Issues Actively
 Without Leaving Vim!**
@@ -35,22 +35,18 @@ your Jira development process without leaving your favorite environment.
     - [vim-fugitive](#fugitive)
 - [Contributors](#contributors)
 
-| <ins>**_VIRA 0.4.13 UPDATES:_**</ins>                                       |
-| --------------------------------------------------------------------------- |
-| Replace manual entry with `vira_projects.json/yaml` warning.                |
-| single server automatic login.                                              |
-| `README.md` create this **UPDATES** list and **Previous Releases** list.    |
-| `README.md` navigation.                                                     |
-| `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
-| Removed `airline` support until real it is real.                            |
+| <ins>**_VIRA 0.4.14 UPDATES:_**</ins>                                                 |
+| ------------------------------------------------------------------------------------- |
+| VIRA-213: `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
+| VIRA-283: begin syntax for `GV` in `report` windows.                                  |
 
-| <ins>**_Previous Releases:_**</ins>                                                         |
+| <ins>**_Recent Previous Releases:_**</ins>                                                  |
 | ------------------------------------------------------------------------------------------- |
+| 0.4.13 - remove manual login and README update (Travis Gall)                                |
 | 0.4.12 - Don't append Null in non-empty server list (Krzysztof Konopko)                     |
 | 0.4.11 - README remove old workarounds (Travis Gall)                                        |
 | 0.4.10 - Handle missing assignee and guess current user correctly (Travis Gall)             |
 | 0.4.9 - No Assignee "whatsoever", Missing **default**, and Default Sort (Krzysztof Konopko) |
-| 0.4.8 - `async` function and percents removed (Travis Gall)                                 |
 
 <a name="installation"/>
 
