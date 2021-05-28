@@ -114,7 +114,13 @@ syntax region viraCode start="(`"hs=s+1 end="`)"he=e-1 skip="\\\""
 syntax region viraCode start=/$\n```/ end=/```\n\n\|}}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax match viraCode "{code:.*}.*{code}" contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
-
+" Plugin Support {{{3
+syntax region viraCode start=/^{code:.*}\n```GV```/ end=/{code}/ contains=viraGV,viraGVBar
+syntax region viraCode start=/^{code:.*}\n```git```/ end=/{code}/ contains=viraGV,viraGVBar
+syntax region viraCode start=/^{code:.*}\n```glog```/ end=/{code}/ contains=viraGV,viraGVBar
+syntax region viraCode start=/^{code:.*}\n```git-log```/ end=/{code}/ contains=viraGV,viraGVBar
+syntax region viraCode start=/^{code:.*}\n```git-vira```/ end=/{code}/ contains=viraGV,viraGVBar
+" }}}
 " Common Tags {{{2
 syntax match viraTodos "FYI\|TODOs\|TODO"
 
@@ -197,6 +203,7 @@ highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=und
 " GV Style {{{2
 syntax match viraGV "^.*\d\{4}-\d\{2}-\d\{2}\s\w\{7}\s.*$" contains=viraGVTag
 syntax match viraGVBar "^|.*\*\s\+$\|^|.*\\\s\+$\|^|.*|\s\+$\||.*/\s\+$"
+syntax match viraGVBar "^|.*\*$\|^|.*\\$\|^|.*|$\||.*/$"
 syntax match viraGVTag "^*.*\||.*" contained contains=viraGVDate
 syntax match viraGVDate " \d\{4}-\d\{2}-\d\{2} " contained nextgroup=viraGVHeader
 syntax match viraGVHeader "\w\{7}\s" contained nextgroup=viraGVMessage contains=viraGVBranch

@@ -33,6 +33,7 @@ your Jira development process without leaving your favorite environment.
   - [Private and cloud Jira hosting](#private_cloud)
   - [Vim plugins](#vim_plugins)
     - [vim-fugitive](#fugitive)
+    - [GV](#GV)
 - [Contributors](#contributors)
 
 | <ins>**_VIRA 0.4.14 UPDATES:_**</ins>                                                 |
@@ -40,6 +41,7 @@ your Jira development process without leaving your favorite environment.
 | VIRA-213: `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
 | VIRA-283: begin syntax for `GV` in `report` windows.                                  |
 | VIRA-283: fix `GV bar` syntax between `tags`.                                         |
+| VIRA-283: add `{code.*}` sub-header `GV` for syntax support.                          |
 
 | <ins>**_Recent Previous Releases:_**</ins>                                                  |
 | ------------------------------------------------------------------------------------------- |
@@ -760,14 +762,42 @@ function! s:Vira_GitPrompt()
 endfunction
 
 nnoremap <silent> <leader>vgc :call Vira_GitCommit()<cr>
-
-nnoremap <silent> <leader>vgC :execute 'Git checkout -b' . ViraStatusLine()<cr>
-nnoremap <silent> <leader>vgc :execute 'Git checkout ' . ViraStatusLine()<cr>
-nnoremap <silent> <leader>vgc :execute 'Git commit -m ' . s:Vira_GitPrompt()<cr>
 nnoremap <silent> <leader>vgi :call Vira_GitActiveIssue()<cr>
-nnoremap <silent> <leader>vgm :execute 'Gmerge --no-ff ' . ViraStatusLine() . ' -m ' . s:Vira_GitPrompt()<cr>
-nnoremap <silent> <leader>vgp :execute 'Git push -u origin ' . ViraStatusLine()<cr>
 ```
+
+<a name="GV"/>
+
+#### GV:
+
+Most of us that have made it this far to use `vim` all day while using `git`
+to merge our work together and `Jira` to track what we have done and needs
+to be done coming up, [GV](https://github.com/junegunn/gv.vim) is very
+helpful in nearly needing to leave our `vim` would. `vira` has added
+in some `syntax` so that we will be able to see some useful `copy/paste`
+in our `{code}` sections.
+
+**NOTE:** Wrap with code and place ` {code:none}```GV``` ` as the header.
+
+````
+{code:none}
+```GV```
+*   2021-03-06 8a97263 VIRA 0.4.7 - temporary version filter bypass (Travis Gall)
+|\
+| * 2021-03-06 fd073bd VIRA-253: version update (Travis Gall)
+| * 2021-03-06 0180e52 VIRA-253: temportaty `_async()` removed (Travis Gall)
+|/
+*   2021-03-05 e5ce063 VIRA 0.4.6 - `issuetype` menu typo (Travis Gall)
+|\
+| *   2021-03-05 daf502f VIRA-18: `issuetype` type patch (Travis Gall)
+| |\
+| | * 2021-03-05 43e33c0 VIRA-18: prepare version increase (Travis Gall)
+| | * 2021-03-05 360cd97 VIRA-253: `issuetype` typo fix (Travis Gall)
+| |/
+| * 2021-03-04 85093b1 VIRA-245: Fixed summary/description line edit bug (Mike Boiko)
+|/
+*   2021-03-03 f9996e3 VIRA 0.4.5 - `report` reload bug patch (Travis Gall)
+{code}
+````
 
 <a name="contributors"/>
 
