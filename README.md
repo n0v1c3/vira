@@ -42,6 +42,7 @@ your Jira development process without leaving your favorite environment.
 | VIRA-283: begin syntax for `GV` in `report` windows.                                  |
 | VIRA-283: fix `GV bar` syntax between `tags`.                                         |
 | VIRA-283: add `{code.*}` sub-header `GV` for syntax support.                          |
+| VIRA-283: remove the underline from `:` syntax for issue labels                       |
 
 | <ins>**_Recent Previous Releases:_**</ins>                                                  |
 | ------------------------------------------------------------------------------------------- |
