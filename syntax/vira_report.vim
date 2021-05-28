@@ -209,8 +209,8 @@ syntax match viraGVDate " \d\{4}-\d\{2}-\d\{2} " contained nextgroup=viraGVHeade
 syntax match viraGVHeader "\w\{7}\s" contained nextgroup=viraGVMessage contains=viraGVBranch
 syntax match viraGVMessage ".*(.*)$" contained contains=viraGVIssue,viraVGBranch,viraGVCode,viraGVUsername
 syntax match viraGVIssue "\w\+-\d\+:\s\|\w\+-\d\+\s" contained contains=viraGVIssueUnderline
-syntax match viraGVIssue "#\d\+:\|#\d\+" contained contains=viraGVIssueUnderline
-syntax match viraGVIssueUnderline "\w\+-\d\+" contained
+syntax match viraGVIssue "#\d\+:\s\|#\d\+\s" contained contains=viraGVIssueUnderline
+syntax match viraGVIssueUnderline "\w\+-\d\+\|\d\+" contained
 syntax region viraGVCode start="`" end="`" contained
 syntax match viraGVBranch "\s(.*)\s" contained nextgroup=viraGVMessage
 syntax match viraGVUsername "(.*)$" contained

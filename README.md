@@ -39,10 +39,7 @@ your Jira development process without leaving your favorite environment.
 | <ins>**_VIRA 0.4.14 UPDATES:_**</ins>                                                 |
 | ------------------------------------------------------------------------------------- |
 | VIRA-213: `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
-| VIRA-283: begin syntax for `GV` in `report` windows.                                  |
-| VIRA-283: fix `GV bar` syntax between `tags`.                                         |
-| VIRA-283: add `{code.*}` sub-header `GV` for syntax support.                          |
-| VIRA-283: remove the underline from `:` syntax for issue labels                       |
+| VIRA-283: Added `GV` syntax to `{code}` sections.                                     |
 
 | <ins>**_Recent Previous Releases:_**</ins>                                                  |
 | ------------------------------------------------------------------------------------------- |
