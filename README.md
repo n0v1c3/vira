@@ -40,6 +40,8 @@ your Jira development process without leaving your favorite environment.
 | ------------------------------------------------------------------------------------- |
 | VIRA-213: `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
 | VIRA-283: Added `GV` syntax to `{code}` sections.                                     |
+| VIRA-282: READ-ONLY for `report` and `menu` windows.                                  |
+| VIRA-282: `TextChanged` added to `ftdetect` with `WinEnter` added to `main()`.        |
 
 | <ins>**_Recent Previous Releases:_**</ins>                                                  |
 | ------------------------------------------------------------------------------------------- |

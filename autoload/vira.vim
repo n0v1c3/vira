@@ -242,6 +242,10 @@ function! vira#_menu(type) abort " {{{2
     endif
   endif
 
+  " Turn on modification for the `vira_menu` and `vira_report` windows
+  "   - This is not in `ftdetect` as it will change at the end of the function
+  autocmd WinEnter vira_menu,vira_report setlocal modifiable
+
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
   if a:type == 'report'
     if (vira#_get_active_issue() == g:vira_null_issue)

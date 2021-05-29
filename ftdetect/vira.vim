@@ -45,4 +45,5 @@ augroup Vira
   autocmd Filetype vira_menu,vira_report nnoremap <silent> <buffer> u :set hlsearch<cr>:call vira#_unselect()<cr>
   autocmd Filetype vira_menu,vira_report setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   autocmd BufLeave vira_menu,vira_report call vira#_filter_unload()
+  autocmd TextChanged vira_menu,vira_report setlocal nomodifiable
 augroup END
