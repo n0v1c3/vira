@@ -66,7 +66,7 @@ Plug 'n0v1c3/vira', { 'do': './install.sh' }
 Alternatively, manually install the python3 dependencies:
 
 ```cmd
-pip install --user jira
+pip3 install --user jira
 ```
 
 If you would like to be on board with the active development the `dev` branch
@@ -99,7 +99,7 @@ it comes "out of the box" inside of `python`. Run the following from the
 `terminal` if you require `PyYAML` to enjoy `yaml`:
 
 ```cmd
-pip install --user pyyaml
+pip3 install --user pyyaml
 ```
 
 **NOTE:** When using `yaml` a link is **REQUIRED** in your `.vimrc` settings.
