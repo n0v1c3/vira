@@ -12,7 +12,7 @@ syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
 syntax region viraCommentOlder start=/^\d.* Older Comment.* {/ end=/{{\d/
 syntax match viraCommentAuthor /^\w.*\s@\s\d\{4\}.*/hs=s,he=e contains=viraCommentDate
-syntax match viraCommentDate / @ .* {/hs=s,he=e-1 contained contains=viraCommentOpen,viraCommentDateAt /@/hs=s,he=e contained
+syntax match viraCommentDate / @ .* {/hs=s,he=e-1 contained contains=viraCommentOpen,viraCommentDateAt
 syntax match viraCommentOpen /.*{{{.*/hs=e-4 contained
 syntax match viraCommentClose "}}}"
 " Report {{{2
@@ -108,8 +108,10 @@ syntax match viraCodeFunction " \w.*\w(" contained contains=viraCodeSemiFix
 syntax match viraCodeMethod "ASC\|DESC\|desc\|\~\|ORDER \|order \|BY \|by \|or \|OR \|and\|AND\|in\|return\|==\|!=\|<\|>\|def\|for\|in\|true\|True\|false\|False" contained
 syntax match viraCodeFunction "syntax\|string\|int\|echo\|print\|self" contained
 syntax match viraCodeSemiFix "\.\|(\|\[\|=" contained
+syntax region viraCode start="^`" end="`."he=e-1 skip="\\\""
 syntax region viraCode start=" `" end="`."he=e-1 skip="\\\""
 syntax region viraCode start=" `" end="\n\|`" skip="\\\""
+syntax region viraCode start="^`" end="\n\|`" skip="\\\""
 syntax region viraCode start="(`"hs=s+1 end="`)"he=e-1 skip="\\\""
 syntax region viraCode start=/$\n```/ end=/```\n\n\|}}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix

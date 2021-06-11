@@ -192,7 +192,7 @@ function! vira#_init_python() "{{{2
   silent! python3 import Vira
 endfunction
 
-function! vira#_print_report(list) " {{{2
+function! vira#_report_print() " {{{2
   " Write report output into buffer
   silent! redir @x>
   silent! execute 'python3 print(Vira.api.get_report())'
@@ -227,7 +227,6 @@ function! vira#_load_project_config(...) " {{{2
     let s:vira_connected = 0
     call vira#_connect()
   endif
-
 endfunction
 
 function! vira#_menu(type) abort " {{{2
@@ -244,7 +243,8 @@ function! vira#_menu(type) abort " {{{2
 
   " Turn on modification for the `vira_menu` and `vira_report` windows
   "   - This is not in `ftdetect` as it will change at the end of the function
-  autocmd WinEnter vira_menu,vira_report setlocal modifiable
+  " autocmd WinEnter vira_menu,vira_report setlocal modifiable
+  autocmd TextChanged,BufWinEnter vira_menu,vira_report setlocal modifiable
 
   " Get the current winnr of the 'vira_menu' or 'vira_report' buffer
   if a:type == 'report'
@@ -305,14 +305,14 @@ function! vira#_menu(type) abort " {{{2
       if g:vira_menu_height != 't' && g:vira_menu_height != 'T' && g:vira_menu_height != 0
         execute 'resize ' . g:vira_menu_height
       endif
-    else | call execute(winnr . ' windo e') | endif
+    else | call execute(winnr . 'windo e') | endif
   endif
 
   silent! redraw
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
 
   " Clean-up existing report buffer
-  execute winnr . ' wincmd "' . execute("normal! ggVGd") . '"'
+  execute winnr . 'wincmd "' . execute("normal! ggVGd") . '"'
 
   " Write report output into buffer
   if type == 'menu'
@@ -321,7 +321,7 @@ function! vira#_menu(type) abort " {{{2
     call vira#_filter_unload()
     call vira#_highlight_reload()
     silent! put=list
-  else | call vira#_print_report(list) | endif
+  else | call vira#_report_print() | endif
 
   " Clean-up extra output and remove blank lines
   if a:type != 'text'
@@ -330,6 +330,8 @@ function! vira#_menu(type) abort " {{{2
       silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
       silent! normal zCGVzOgg
   endif
+
+  autocmd TextChanged,BufWinEnter vira_menu,vira_report setlocal nomodifiable
 
   " Ensure wrap and linebreak are enabled
   if type == 'menu' | silent execute 'set nowrap'
@@ -345,6 +347,75 @@ function! vira#_menu(type) abort " {{{2
     endif
     call vira#_menu(s:vira_menu_hold)
   endif
+endfunction
+
+function! vira#_report(force) abort " {{{2
+  " Confirm server selection
+  if (g:vira_load_project_enabled == 1) | call vira#_load_project_config() | endif
+  " User to select jira server and connect to it if not done already
+  if (!exists('g:vira_serv') || g:vira_serv == '')
+    let s:vira_menu_hold = 'report'
+    call vira#_menu('servers')
+    return
+  endif
+
+  " Confirm issue selection
+  if (g:vira_load_project_enabled == 1) | call vira#_load_project_config() | endif
+  if (vira#_get_active_issue() == g:vira_null_issue)
+    call vira#_menu('issues')
+    return
+  endif
+
+  let winnr = bufwinnr(s:vira_root_dir . '/vira_report' . '$')
+
+  " Clean-up existing report buffer
+  if winnr >= 0
+    execute winnr . 'wincmd "' . execute("setlocal lazyredraw") . '"'
+    execute winnr . 'wincmd "' . execute("setlocal modifiable") . '"'
+    autocmd TextChanged,WinEnter vira_report setlocal modifiable
+    execute winnr . 'wincmd "' . execute("normal! ggVGd") . '"'
+  else
+    " Open buffer into a window
+    if g:vira_report_width == 'l' || g:vira_report_width == 'L'
+      autocmd BufEnter vira_report silent! wincmd L
+    elseif g:vira_report_width == 'h' || g:vira_report_width == 'H'
+      autocmd BufEnter vira_report silent! wincmd H
+    elseif g:vira_report_width == 't' || g:vira_report_width == 'T'
+      autocmd BufEnter vira_report silent! wincmd T
+    elseif g:vira_report_width > 0
+      autocmd BufEnter vira_report setlocal winfixwidth
+      silent! execute 'vertical resize ' . g:vira_report_width
+    endif
+    silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_report')
+
+    " Current report winnr
+    let winnr = bufwinnr(s:vira_root_dir . '/vira_report' . '$')
+  endif
+
+  " Edit the current window
+  silent! call execute(winnr . 'windo e')
+  execute winnr . 'wincmd "' . execute("setlocal modifiable") . '"'
+  autocmd TextChanged,WinEnter vira_report setlocal modifiable
+
+  " Goto report `window`
+  execute winnr . 'wincmd w'
+
+  " Write report output into buffer
+  call vira#_report_print()
+
+  " Ensure wrap and linebreak are enabled
+  execute winnr . 'wincmd "' . execute("setlocal wrap") . '"'
+  execute winnr . 'wincmd "' . execute("setlocal linebreak") . '"'
+
+  " Remove `^M` and replace Triple New Lines with Double (Windows)
+  silent! execute '%s/\^M//g' | call histdel("search", -1)
+  silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
+
+  " Close old comments and delete blank lines while moving to the top
+  silent! execute winnr . 'wincmd "' . execute("normal! zCkzCGVzOggVjx") . '"'
+
+  " Clean-up extra output and remove blank lines
+  autocmd TextChanged,WinEnter vira_report setlocal nomodifiable
 endfunction
 
 function! vira#_quit() "{{{2
@@ -364,7 +435,7 @@ function! vira#_refresh() " {{{2
     let winnr = bufwinnr(s:vira_root_dir . '/vira_' . vira_window . '$')
     if (winnr > 0)
       if (vira_window == 'report')
-        silent! call vira#_menu(vira_window)
+        execute 'call vira#_' . vira_window . '(' . '0' . ')'
       else | call vira#_menu(s:vira_menu_type) | endif
       execute 'silent! set syntax=vira_' . vira_window
     endif
@@ -494,7 +565,7 @@ function! vira#_select() "{{{2
       let issueTest = substitute(issueTest,'│','','g')
     silent! if execute('python3 Vira.api.jira.search_issues("issue = ' . issueTest . '")') == ''
       let g:vira_active_issue = issueTest
-      call vira#_menu('report')
+      call vira#_report(0)
     else
       call vira#_browse(expand('<cWORD>'))
     endif

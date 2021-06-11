@@ -5,8 +5,8 @@
 
 augroup Vira
   autocmd!
-  autocmd BufNewFile,BufRead vira_menu setf vira_menu
-  autocmd BufNewFile,BufRead vira_report setf vira_report
+  autocmd BufNewFile,BufRead vira_menu setfiletype vira_menu
+  autocmd BufNewFile,BufRead vira_report setfiletype vira_report
 
   " autocmd BufEnter vira_menu let t_back = &t_EI
   " autocmd BufEnter vira_menu let &t_EI = "\<esc>[4 q"
@@ -37,7 +37,7 @@ augroup Vira
   " Common
   autocmd Filetype vira_menu,vira_report cnoremap <silent> <buffer> q!<cr> :q!<cr>:call vira#_resize()<cr>
   autocmd Filetype vira_menu,vira_report cnoremap <silent> <buffer> q<cr> :q!<cr>:call vira#_resize()<cr>
-  autocmd Filetype vira_menu,vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_resize()<cr>
+  autocmd Filetype vira_menu,vira_report nnoremap <silent> <buffer> q :q!<cr>:call vira#_resize()<cr>:call vira#_msg_error("E319", "q will be replaced by gq by version 0.5.0")<cr>
   autocmd Filetype vira_menu,vira_report cnoremap <silent> <buffer> gq!<cr> :q!<cr>:call vira#_resize()<cr>
   autocmd Filetype vira_menu,vira_report cnoremap <silent> <buffer> gq<cr> :q!<cr>:call vira#_resize()<cr>
   autocmd Filetype vira_menu,vira_report nnoremap <silent> <buffer> gq :q!<cr>:call vira#_resize()<cr>
@@ -45,5 +45,8 @@ augroup Vira
   autocmd Filetype vira_menu,vira_report nnoremap <silent> <buffer> u :set hlsearch<cr>:call vira#_unselect()<cr>
   autocmd Filetype vira_menu,vira_report setlocal buftype=nowrite bufhidden=wipe noswapfile nowrap nobuflisted
   autocmd BufLeave vira_menu,vira_report call vira#_filter_unload()
-  autocmd TextChanged vira_menu,vira_report setlocal nomodifiable
+  " autocmd BufNew,BufRead vira_menu,vira_report setlocal nomodifiable
+  " autocmd BufLeave vira_menu,vira_report setlocal nomodifiable
+  " autocmd Filetype vira_menu,vira_report setlocal nomodifiable
+  " autocmd BufEnter vira_menu,vira_report setlocal nomodifiable
 augroup END
