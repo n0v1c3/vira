@@ -34,12 +34,15 @@ your Jira development process without leaving your favorite environment.
   - [Vim plugins](#vim_plugins)
     - [vim-fugitive](#fugitive)
     - [GV](#GV)
+  - [name 'Vira' is not defined](#vira_not_defined)
 - [Contributors](#contributors)
 
 | <ins>**_VIRA 0.4.14 UPDATES:_**</ins>                                                 |
 | ------------------------------------------------------------------------------------- |
 | VIRA-213: `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
+| VIRA-213: Added proper message inside `vim` and `nvim` for `q` removal.               |
 | VIRA-283: Added `GV` syntax to `{code}` sections.                                     |
+| VIRA-282: READ-ONLY for `report` and `menu` windows.                                  |
 
 | <ins>**_Recent Previous Releases:_**</ins>                                                  |
 | ------------------------------------------------------------------------------------------- |
@@ -770,7 +773,7 @@ nnoremap <silent> <leader>vgi :call Vira_GitActiveIssue()<cr>
 Most of us that have made it this far to use `vim` all day while using `git`
 to merge our work together and `Jira` to track what we have done and needs
 to be done coming up, [GV](https://github.com/junegunn/gv.vim) is very
-helpful in nearly needing to leave our `vim` would. `vira` has added
+helpful in nearly needing to leave our `vim` world. `vira` has added
 in some `syntax` so that we will be able to see some useful `copy/paste`
 in our `{code}` sections.
 
@@ -797,6 +800,26 @@ in our `{code}` sections.
 {code}
 ````
 
+<a name="vira_not_defined"/>
+
+#### name 'Vira' is not defined:
+
+I have seen that users still make their way to issue
+[#43](https://github.com/n0v1c3/vira/issues/43) once in a while. You may need
+to update `python3_host_prog` that is stuck in version `0.4.1`.
+
+**FROM:** [@uberbrodt](https://github.com/uberbrodt)
+
+> Ok, so I finally got back around to looking at this. I tested with removing
+> the `python3_host_prog` and it worked after I upgraded to `pynvim 0.4.2`
+> (previous was at `0.4.1`).
+>
+> Setting the `python3_host_prog` again and then manually install the Jira
+> package works as well. My suspicion is that the automatic install via
+> vim-plug was not working with `virtualenv` for some reason, so might be
+> something to note in the README. Thanks to everyone for debugging
+> and offering advice!
+
 <a name="contributors"/>
 
 ## Contributors
@@ -808,6 +831,7 @@ With growing support from:
 [@chinwobble](https://github.com/chinwobble),
 [@jamesl33](https://github.com/jamesl33),
 [@kkonopko](https://github.com/kkonopko),
+[@mattalexander-pantheon](https://github.com/kmattalexander-pantheon),
 and [@maricn](https://github.com/maricn)
 
 **All user feedback and contributions are welcome!**
