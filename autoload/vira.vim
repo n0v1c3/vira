@@ -326,17 +326,7 @@ function! vira#_menu(type) abort " {{{2
 endfunction
 
 function! vira#_report() abort " {{{2
-  " Confirm server selection
-  if (g:vira_load_project_enabled == 1) | call vira#_load_project_config() | endif
-  " User to select jira server and connect to it if not done already
-  if (!exists('g:vira_serv') || g:vira_serv == '')
-    let s:vira_menu_hold = 'report'
-    call vira#_menu('servers')
-    return
-  endif
-
   " Confirm issue selection
-  if (g:vira_load_project_enabled == 1) | call vira#_load_project_config() | endif
   if (vira#_get_active_issue() == g:vira_null_issue)
     call vira#_menu('issues')
     return
