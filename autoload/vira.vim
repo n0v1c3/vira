@@ -309,7 +309,7 @@ function! vira#_menu(type) abort " {{{2
   " else | call vira#_report_print() | endif
   endif
 
-  autocmd TextChanged,BufWinEnter vira_menu,vira_report setlocal nomodifiable
+  autocmd TextChanged,WinEnter vira_menu,vira_report setlocal nomodifiable
 
   " Ensure wrap and linebreak are enabled
   silent! execute 'set nowrap'
