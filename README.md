@@ -773,7 +773,7 @@ nnoremap <silent> <leader>vgi :call Vira_GitActiveIssue()<cr>
 Most of us that have made it this far to use `vim` all day while using `git`
 to merge our work together and `Jira` to track what we have done and needs
 to be done coming up, [GV](https://github.com/junegunn/gv.vim) is very
-helpful in nearly needing to leave our `vim` would. `vira` has added
+helpful in nearly needing to leave our `vim` world. `vira` has added
 in some `syntax` so that we will be able to see some useful `copy/paste`
 in our `{code}` sections.
 
@@ -831,6 +831,7 @@ With growing support from:
 [@chinwobble](https://github.com/chinwobble),
 [@jamesl33](https://github.com/jamesl33),
 [@kkonopko](https://github.com/kkonopko),
+[@mattalexander-pantheon](https://github.com/kmattalexander-pantheon),
 and [@maricn](https://github.com/maricn)
 
 **All user feedback and contributions are welcome!**
