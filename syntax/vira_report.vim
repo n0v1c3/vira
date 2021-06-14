@@ -92,7 +92,7 @@ syntax match viraListComplete "\[X]\|\[x]\|\[✓]"hs=s+1,he=e-1 contained
 syntax match viraListRemoved "\[-]"hs=s+1,he=e-1 contained
 syntax match viraListForward "\[>]"hs=s+1,he=e-1 contained
 syntax match viraPointer "└──>"
-syntax match viraUsername "\[\~.*\]"
+syntax match viraUsername "\[\~.*\]\|@\w\+"
 
 " Code Wrap {{{2
 " OoO is very important

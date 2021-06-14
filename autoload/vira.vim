@@ -14,9 +14,20 @@ let s:vira_end_time = 0
 
 let s:vira_root_dir = resolve(fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..')
 
+let s:vira_serv_count = 0
+
+" Menu {{{2
 let s:vira_menu_type = ''
 let s:vira_menu_hold = ''
-let s:vira_serv_count = 0
+let s:vira_menu_lnum = 1
+let s:vira_menu_column = 1
+"}}}
+
+" Report {{{2
+let s:vira_report_winnr = -1
+let s:vira_report_lnum = 1
+let s:vira_report_column = 1
+"}}}
 
 let s:vira_filter = ''
 let s:vira_filter_hold = @/
@@ -243,7 +254,7 @@ function! vira#_menu(type) abort " {{{2
 
   " Turn on modification for the `vira_menu` and `vira_report` windows
   "   - This is not in `ftdetect` as it will change at the end of the function
-  autocmd TextChanged,BufWinEnter vira_menu,vira_report setlocal modifiable
+  autocmd TextChanged,BufWinEnter vira_menu setlocal modifiable
 
   if a:type == 'text'
     let value = input('text ~ ')
@@ -273,6 +284,7 @@ function! vira#_menu(type) abort " {{{2
   silent! let winnr = bufwinnr(s:vira_root_dir . '/vira_' . type . '$')
   if (winnr > -1)
     " Clean-up existing report buffer
+    call vira#_cursor_load('menu')
     execute winnr . 'wincmd "' . execute("setlocal lazyredraw") . '"'
     execute winnr . 'wincmd "' . execute("setlocal modifiable") . '"'
     autocmd TextChanged,WinEnter vira_menu setlocal modifiable
@@ -288,6 +300,8 @@ function! vira#_menu(type) abort " {{{2
     if g:vira_menu_height != 't' && g:vira_menu_height != 'T' && g:vira_menu_height != 0
       execute 'resize ' . g:vira_menu_height
     endif
+    let s:vira_menu_lnum = 1
+    let s:vira_menu_col = 1
   endif
 
   silent! redraw
@@ -306,10 +320,12 @@ function! vira#_menu(type) abort " {{{2
     silent! 1,2d x
     silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
     silent! normal zCGVzOgg
-  " else | call vira#_report_print() | endif
   endif
 
-  autocmd TextChanged,WinEnter vira_menu,vira_report setlocal nomodifiable
+  execute 'autocmd CursorMoved vira_menu call vira#_cursor_load("menu")'
+
+  call cursor(s:vira_menu_lnum, s:vira_menu_column)
+  autocmd TextChanged,WinEnter vira_menu setlocal nomodifiable
 
   " Ensure wrap and linebreak are enabled
   silent! execute 'set nowrap'
@@ -335,7 +351,8 @@ function! vira#_report() abort " {{{2
   let winnr = bufwinnr(s:vira_root_dir . '/vira_report' . '$')
 
   " Clean-up existing report buffer
-  if winnr >= 0
+  if winnr != -1
+    call vira#_cursor_load('report')
     execute winnr . 'wincmd "' . execute("setlocal lazyredraw") . '"'
     execute winnr . 'wincmd "' . execute("setlocal modifiable") . '"'
     autocmd TextChanged,WinEnter vira_report setlocal modifiable
@@ -357,11 +374,13 @@ function! vira#_report() abort " {{{2
 
     " Current report winnr
     let winnr = bufwinnr(s:vira_root_dir . '/vira_report' . '$')
+    let s:vira_report_winnr = winnr
   endif
 
   " Edit the current window
   execute winnr . 'wincmd "' . execute("setlocal modifiable") . '"'
   autocmd TextChanged,WinEnter vira_report setlocal modifiable
+  execute 'autocmd CursorMoved vira_report call vira#_cursor_load("report")'
 
   " Goto report `window`
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . winnr . ') . ''wincmd w'''
@@ -379,10 +398,17 @@ function! vira#_report() abort " {{{2
   silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
 
   " Close old comments and delete blank lines while moving to the top
-  silent! execute winnr . 'wincmd "' . execute("normal! zCkzCGVzOggVjx") . '"'
+  silent! execute winnr . 'wincmd "' . execute("normal! ggVGzCGVzOggVjx") . '"'
+  call cursor(s:vira_report_lnum, s:vira_report_column)
 
   " Clean-up extra output and remove blank lines
   autocmd TextChanged,WinEnter vira_report setlocal nomodifiable
+endfunction
+
+function! vira#_cursor_load(window) abort "{{{2
+  let pos = getcurpos()
+  call execute('let s:vira_' . a:window . '_lnum = pos[1]')
+  call execute('let s:vira_' . a:window . '_column = pos[2] + pos[3]')
 endfunction
 
 function! vira#_quit() "{{{2
