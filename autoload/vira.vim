@@ -325,6 +325,7 @@ function! vira#_menu(type) abort " {{{2
   execute 'autocmd CursorMoved vira_menu call vira#_cursor_load("menu")'
 
   call cursor(s:vira_menu_lnum, s:vira_menu_column)
+
   autocmd TextChanged,WinEnter vira_menu setlocal nomodifiable
 
   " Ensure wrap and linebreak are enabled
@@ -406,9 +407,12 @@ function! vira#_report() abort " {{{2
 endfunction
 
 function! vira#_cursor_load(window) abort "{{{2
-  let pos = getcurpos()
-  call execute('let s:vira_' . a:window . '_lnum = pos[1]')
-  call execute('let s:vira_' . a:window . '_column = pos[2] + pos[3]')
+  let winnr = bufwinnr(a:window)
+  if winnr != -1
+    let pos = getcurpos(winnr)
+    call execute('let s:vira_' . a:window . '_lnum = pos[1]')
+    call execute('let s:vira_' . a:window . '_column = pos[2] + pos[3]')
+  endif
 endfunction
 
 function! vira#_quit() "{{{2

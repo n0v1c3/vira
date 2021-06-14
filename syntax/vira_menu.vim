@@ -32,10 +32,12 @@ syntax match viraHTML "https://.*"
 highlight default link viraHTML Question
 
 " Style {{{2
+syntax match viraVira "\cJIRA"
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
 
+highlight viraVira ctermfg=4 guifg=#333333
 highlight viraBold cterm=bold gui=bold
 highlight default link viraBullets Identifier
 highlight default link viraCitvtion Title
@@ -143,9 +145,9 @@ highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
 highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white cterm=bold gui=bold
 highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white cterm=bold gui=bold
 highlight viraDetailsStatusInProgress ctermbg=darkblue ctermfg=white guibg=darkblue guifg=white cterm=bold gui=bold
-highlight viraDetailsStatusTodo ctermbg=237 ctermfg=black guibg=grey guifg=black cterm=bold gui=bold
-highlight viraDetailsStatusBacklog ctermbg=237 ctermfg=black guibg=grey guifg=black cterm=bold gui=bold
-highlight viraDetailsStatusSelected ctermbg=237 ctermfg=black guibg=grey guifg=black cterm=bold gui=bold
+highlight viraDetailsStatusTodo ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
+highlight viraDetailsStatusBacklog ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
+highlight viraDetailsStatusSelected ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
 highlight viraDetailsTypeBug ctermfg=red guifg=red cterm=bold gui=bold
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f  cterm=bold gui=bold
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen  cterm=bold gui=bold
