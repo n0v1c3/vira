@@ -21,11 +21,14 @@ highlight default link viraMenuVProj NonText
 
 " Issues {{{2
 syntax match viraIssuesIssue ".*-.* │.*│.*│.*│.*" contains=viraIssuesDescription
-syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus contains=viraIssuesStatus,viraCode,viraUsername contained
-syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
+syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesUsername contains=viraIssuesUsername,viraCode,viraUsername contained
+" syntax region viraIssuesUsername start=' │.*' end='$' nextgroup=viraIssuesStataus contains=viraIssuesStatus contained
+syntax match viraIssuesStatus " │.*" contains=viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraUsername contained
 highlight default link viraIssuesIssue Question
 highlight default link viraIssuesDescription Statement
-highlight default link viraIssuesStatus NonText
+" highlight viraIssuesUsername ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
+highlight viraIssuesStatus ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
+" highlight default link viraIssuesStatus NonText
 
 " Servers {{{2
 syntax match viraHTML "https://.*"
@@ -58,10 +61,10 @@ highlight default link viraCitvtion Title
 syntax match viraDetails "│"
 
 " syntax match viraDetails "│.*Type │"
-syntax match viraDetailsTypeBug "Bug  "he=e-2
-syntax match viraDetailsTypeEpic "Epic  "he=e-2
-syntax match viraDetailsTypeStory "Story  "he=e-2
-syntax match viraDetailsTypeTask "Task  "he=e-2
+syntax match viraDetailsTypeBug "│ Bug "hs=s+2,he=e-1
+syntax match viraDetailsTypeEpic "│ Epic "hs=s+2,he=e-1
+syntax match viraDetailsTypeStory "│ Story "hs=s+2,he=e-1
+syntax match viraDetailsTypeTask "│ Task "hs=s+2,he=e-1
 
 " syntax match viraDetails "│.*Status │"
 syntax match viraDetailsStatusInProgress "In Progress │"he=e-2
@@ -105,8 +108,8 @@ syntax match viraSubscript "\~.*\~"
 " syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
 " syntax match viraTitleComment /.*{{1/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
 " syntax match viraTitleFold /{{.*/hs=s,he=e contained
-syntax match viraUnderline "+.*+"
 syntax match viraUsername "\[\~.*\]\|@\w\+"
+syntax match viraUnderline "+.*+"
 syntax region viraCode start=/`/ end=/`/
 " syntax region viraCode start=/{code.*}/ end=/{code}/
 " syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
@@ -148,6 +151,7 @@ highlight viraDetailsStatusInProgress ctermbg=darkblue ctermfg=white guibg=darkb
 highlight viraDetailsStatusTodo ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
 highlight viraDetailsStatusBacklog ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
 highlight viraDetailsStatusSelected ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
+highlight viraDetailsTypeAssignee ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeBug ctermfg=red guifg=red cterm=bold gui=bold
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f  cterm=bold gui=bold
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen  cterm=bold gui=bold

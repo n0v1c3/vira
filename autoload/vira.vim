@@ -407,12 +407,9 @@ function! vira#_report() abort " {{{2
 endfunction
 
 function! vira#_cursor_load(window) abort "{{{2
-  let winnr = bufwinnr(a:window)
-  if winnr != -1
-    let pos = getcurpos(winnr)
-    call execute('let s:vira_' . a:window . '_lnum = pos[1]')
-    call execute('let s:vira_' . a:window . '_column = pos[2] + pos[3]')
-  endif
+  let pos = getcurpos()
+  call execute('let s:vira_' . a:window . '_lnum = pos[1]')
+  call execute('let s:vira_' . a:window . '_column = pos[2] + pos[3]')
 endfunction
 
 function! vira#_quit() "{{{2
