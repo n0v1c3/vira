@@ -21,13 +21,13 @@ highlight default link viraMenuVProj NonText
 
 " Issues {{{2
 syntax match viraIssuesIssue ".*-.* │.*│.*│.*│.*" contains=viraIssuesDescription
-syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesUsername contains=viraIssuesUsername,viraCode,viraUsername contained
+syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesUsername contains=viraIssuesUsername contained
 " syntax region viraIssuesUsername start=' │.*' end='$' nextgroup=viraIssuesStataus contains=viraIssuesStatus contained
-syntax match viraIssuesStatus " │.*" contains=viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraUsername contained
+syntax match viraIssuesUsername " │.*" contains=viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraUsername contained
 highlight default link viraIssuesIssue Question
 highlight default link viraIssuesDescription Statement
-" highlight viraIssuesUsername ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
-highlight viraIssuesStatus ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
+highlight viraIssuesUsername ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
+" highlight viraIssuesStatus ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 " highlight default link viraIssuesStatus NonText
 
 " Servers {{{2
