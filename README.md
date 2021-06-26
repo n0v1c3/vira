@@ -43,6 +43,7 @@ your Jira development process without leaving your favorite environment.
 | VIRA-213: Added proper message inside `vim` and `nvim` for `q` removal.               |
 | VIRA-283: Added `GV` syntax to `{code}` sections.                                     |
 | VIRA-282: READ-ONLY for `report` and `menu` windows.                                  |
+| VIRA-282: Track cursor position.                                                      |
 
 | <ins>**_Recent Previous Releases:_**</ins>                                                  |
 | ------------------------------------------------------------------------------------------- |

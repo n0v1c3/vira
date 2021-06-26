@@ -11,6 +11,7 @@ let s:vira_connected = 0
 let s:vira_statusline = g:vira_null_issue
 let s:vira_start_time = 0
 let s:vira_end_time = 0
+let s:vira_last_issue = g:vira_null_issue
 
 let s:vira_root_dir = resolve(fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/..')
 
@@ -24,7 +25,6 @@ let s:vira_menu_column = 1
 "}}}
 
 " Report {{{2
-let s:vira_report_winnr = -1
 let s:vira_report_lnum = 1
 let s:vira_report_column = 1
 "}}}
@@ -129,7 +129,9 @@ silent! function! vira#_prompt_start(type, ...) abort "{{{2
 
   let prompt_text = execute('python3 print(Vira.api.get_prompt_text("'.a:type.'", '.comment_id.'))')[1:-1]
   call writefile(split(prompt_text, "\n", 1), s:vira_prompt_file)
-  execute 'sp ' . s:vira_prompt_file
+
+    execute 'sp ' . s:vira_prompt_file
+
   silent! setlocal buftype=
   silent! setlocal spell
   silent! setlocal wrap
@@ -284,8 +286,7 @@ function! vira#_menu(type) abort " {{{2
   silent! let winnr = bufwinnr(s:vira_root_dir . '/vira_' . type . '$')
   if (winnr > -1)
     " Clean-up existing report buffer
-    call vira#_cursor_load('menu')
-    execute winnr . 'wincmd "' . execute("setlocal lazyredraw") . '"'
+    call vira#_cursor_pos('menu')
     execute winnr . 'wincmd "' . execute("setlocal modifiable") . '"'
     autocmd TextChanged,WinEnter vira_menu setlocal modifiable
     call execute(winnr . 'windo e')
@@ -300,10 +301,9 @@ function! vira#_menu(type) abort " {{{2
     if g:vira_menu_height != 't' && g:vira_menu_height != 'T' && g:vira_menu_height != 0
       execute 'resize ' . g:vira_menu_height
     endif
-    let s:vira_menu_lnum = 1
-    let s:vira_menu_col = 1
   endif
 
+  " Clean window `pop-up`
   silent! redraw
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . bufnr('#') . ') . ''wincmd w'''
 
@@ -322,15 +322,11 @@ function! vira#_menu(type) abort " {{{2
     silent! normal zCGVzOgg
   endif
 
-  execute 'autocmd CursorMoved vira_menu call vira#_cursor_load("menu")'
-
+  " Move the `cursor` to the saved position
   call cursor(s:vira_menu_lnum, s:vira_menu_column)
 
+  " Return to `nomodifiable`
   autocmd TextChanged,WinEnter vira_menu setlocal nomodifiable
-
-  " Ensure wrap and linebreak are enabled
-  silent! execute 'set nowrap'
-  silent! execute 'set linebreak'
 
   " Recall the menu for a single server auto conect "HIDE" the server menu
   if a:type == 'servers' && s:vira_serv_count == 1
@@ -349,12 +345,11 @@ function! vira#_report() abort " {{{2
     return
   endif
 
+  " Report `winnr`
   let winnr = bufwinnr(s:vira_root_dir . '/vira_report' . '$')
 
   " Clean-up existing report buffer
   if winnr != -1
-    call vira#_cursor_load('report')
-    execute winnr . 'wincmd "' . execute("setlocal lazyredraw") . '"'
     execute winnr . 'wincmd "' . execute("setlocal modifiable") . '"'
     autocmd TextChanged,WinEnter vira_report setlocal modifiable
     silent! call execute(winnr . 'windo e')
@@ -362,26 +357,24 @@ function! vira#_report() abort " {{{2
   else
     " Open buffer into a window
     if g:vira_report_width == 'l' || g:vira_report_width == 'L'
-      autocmd BufEnter vira_report silent! wincmd L
+      autocmd BufNew vira_report silent! wincmd L
     elseif g:vira_report_width == 'h' || g:vira_report_width == 'H'
-      autocmd BufEnter vira_report silent! wincmd H
+      autocmd BufNew vira_report silent! wincmd H
     elseif g:vira_report_width == 't' || g:vira_report_width == 'T'
-      autocmd BufEnter vira_report silent! wincmd T
+      autocmd BufNew vira_report silent! wincmd T
     elseif g:vira_report_width > 0
-      autocmd BufEnter vira_report setlocal winfixwidth
+      autocmd BufNew vira_report setlocal winfixwidth
       silent! execute 'vertical resize ' . g:vira_report_width
     endif
     silent! execute 'botright vnew ' . fnameescape(s:vira_root_dir . '/vira_report')
 
     " Current report winnr
     let winnr = bufwinnr(s:vira_root_dir . '/vira_report' . '$')
-    let s:vira_report_winnr = winnr
   endif
 
   " Edit the current window
   execute winnr . 'wincmd "' . execute("setlocal modifiable") . '"'
   autocmd TextChanged,WinEnter vira_report setlocal modifiable
-  execute 'autocmd CursorMoved vira_report call vira#_cursor_load("report")'
 
   " Goto report `window`
   silent! execute 'au BufUnload <buffer> execute bufwinnr(' . winnr . ') . ''wincmd w'''
@@ -390,26 +383,48 @@ function! vira#_report() abort " {{{2
   " Write report output into buffer
   call vira#_report_print()
 
-  " Ensure wrap and linebreak are enabled
-  execute winnr . 'wincmd "' . execute("setlocal wrap") . '"'
-  execute winnr . 'wincmd "' . execute("setlocal linebreak") . '"'
-
   " Remove `^M` and replace Triple New Lines with Double (Windows)
   silent! execute '%s/\^M//g' | call histdel("search", -1)
   silent! execute 'g/\n\n\n/\n\n/g' | call histdel("search", -1)
 
   " Close old comments and delete blank lines while moving to the top
   silent! execute winnr . 'wincmd "' . execute("normal! ggVGzCGVzOggVjx") . '"'
-  call cursor(s:vira_report_lnum, s:vira_report_column)
+
+  " DEBUG: ACTIVE ISSUES - display the active issue vs the `last` active issue
+  " echo vira#_get_active_issue() . ' ' . s:vira_last_issue
+
+  if vira#_get_active_issue() == s:vira_last_issue
+    silent! execute winnr . 'wincmd "' . execute("normal! G") . '"'
+
+		" If {curswant} is given it is used to set the preferred column
+    " {lnum}, {col}, {off}, {curswant} (`off` need -1 to work)
+    call cursor([s:vira_report_lnum, s:vira_report_column, 0, 1])
+
+    call vira#_cursor_pos('report')
+  else
+    call vira#_cursor_pos('report', 'reset')
+    " Force reset during loop function call
+    call vira#_cursor_pos('report')
+  endif
+
+  let s:vira_last_issue = vira#_get_active_issue()
 
   " Clean-up extra output and remove blank lines
   autocmd TextChanged,WinEnter vira_report setlocal nomodifiable
 endfunction
 
-function! vira#_cursor_load(window) abort "{{{2
-  let pos = getcurpos()
+function! vira#_cursor_pos(window, ...) abort "{{{2
+  " TODO: VIRA-282 [210623] - `current_pos` change `reset` to a `history`
+  if exists('a:1') && a:1 == 'reset'
+    let pos = [0, 1, 1, 0, 1]
+  else
+    let pos = getcurpos()
+  endif
   call execute('let s:vira_' . a:window . '_lnum = pos[1]')
   call execute('let s:vira_' . a:window . '_column = pos[2] + pos[3]')
+
+  " DEBUG: POSITION - display cursor position in `vira` window
+  " echo a:window . ' ' . string(pos)
 endfunction
 
 function! vira#_quit() "{{{2
@@ -431,7 +446,6 @@ function! vira#_refresh() " {{{2
       if (vira_window == 'report')
         execute 'call vira#_' . vira_window . '()'
       else | call vira#_menu(s:vira_menu_type) | endif
-      execute 'silent! set syntax=vira_' . vira_window
     endif
   endfor
 endfunction
@@ -729,4 +743,10 @@ function! vira#_new(menu, name, project, description) "{{{2
     execute 'python3 Vira.api.new_' . a:menu . '("' . a:name . '","' . a:project . '")'
   else | execute 'python3 Vira.api.new_' . a:menu . '("' . a:name . '","' . a:project . '","' . a:description . '")'
   endif
+endfunction
+
+function! vira#_virtualedit(mode) "{{{2
+  let s:vira_virtualedit_hold = &virtualedit
+  " echo s:vira_virtualedit_hold
+  call execute('setlocal virtualedit=' . a:mode)
 endfunction
