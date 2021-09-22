@@ -118,6 +118,8 @@ one of the options `password` or `password_cmd` will be set depending on a
 - `password` - Enter Jira server password in plain text. This is not
   recommended for security reasons, but we're not going to tell you how to live
   your life.
+- `access_token_cmd` - Run a CLI command to retrieve the Jira server personal access token e.g. [sops -d /home/username/access_token.sops](https://github.com/mozilla/sops) or a password manager ala `pass` or `lpass`.
+- `access_token` - Use a personal access token, not recommended for security reasons. Seriously, just sops encrypt a file with a gpg/aws-kms/gcp-kms/* key or use CLI's offered by _1Password_ or _LastPass_.
 - `skip_cert_verify` - This option can be set in order to connect to a sever
   that is using self-signed TLS certificates.
 
