@@ -580,7 +580,7 @@ function! vira#_select() "{{{2
   else
     call vira#_filter_load()
     if s:vira_highlight != '' && stridx(s:vira_highlight, '|' . value . '|') < 0
-      if s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'epic' || s:vira_menu_type == 'issuetype' || s:vira_menu_type == 'set_status' || s:vira_menu_type == 'priority' || s:vira_menu_type == 'epic' || s:vira_menu_type == 'issues' || s:vira_menu_type == 'servers'
+      if s:vira_menu_type == 'assign_issue' || s:vira_menu_type == 'epic' || s:vira_menu_type == 'issuetype' || s:vira_menu_type == 'set_status' || s:vira_menu_type == 'priority' || s:vira_menu_type == 'epic' || s:vira_menu_type == 'servers'
         let s:vira_highlight = '|' . value . '|'
       else | let s:vira_highlight = s:vira_highlight . value . '|' | endif
     elseif s:vira_highlight == ''
