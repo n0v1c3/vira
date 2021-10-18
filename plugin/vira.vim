@@ -51,13 +51,13 @@ command! -nargs=0 -bang ViraTodo call vira#_todo()
 command! -nargs=0 -bang ViraTodos call vira#_todos()
 
 " Sets
-command! -nargs=0 -bang ViraSetAssignee call vira#_menu('assign_issue');
-command! -nargs=0 -bang ViraSetComponent call vira#_menu('component');
-command! -nargs=0 -bang ViraSetEpic call vira#_menu('epic');
-command! -nargs=0 -bang ViraSetPriority call vira#_menu('priority');
-command! -nargs=0 -bang ViraSetStatus call vira#_menu('set_status');
-command! -nargs=0 -bang ViraSetType call vira#_menu('issuetype');
-command! -nargs=0 -bang ViraSetVersion call vira#_menu('version');
+command! -nargs=0 -bang ViraSetAssignee call vira#_menu('assign_issue')
+command! -nargs=0 -bang ViraSetComponent call vira#_menu('component')
+command! -nargs=0 -bang ViraSetEpic call vira#_menu('epic')
+command! -nargs=0 -bang ViraSetPriority call vira#_menu('priority')
+command! -nargs=0 -bang ViraSetStatus call vira#_menu('set_status')
+command! -nargs=0 -bang ViraSetType call vira#_menu('issuetype')
+command! -nargs=0 -bang ViraSetVersion call vira#_menu('version')
 
 " Edit
 command! -nargs=0 -bang ViraEditDescription call vira#_prompt_start('description')

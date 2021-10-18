@@ -179,6 +179,10 @@ class ViraAPI():
         self.versions = set()
         self.users_type = ''
 
+        # Login arguments
+        auth_kwargs = {}
+        option_kwargs = {}
+
         try:
             # Specify whether the server's TLS certificate needs to be verified
             if self.vira_servers[server].get('skip_cert_verify'):
@@ -188,12 +192,21 @@ class ViraAPI():
                 cert_verify = True
 
             # Get auth for current server
-            username = self.vira_servers[server].get('username')
-            password_cmd = self.vira_servers[server].get('password_cmd')
-            if password_cmd:
-                password = run_command(password_cmd)['stdout'].strip().split('\n')[0]
+            if not self.vira_servers[server].get('access_token_cmd') and not self.vira_servers[server].get('access_token'):
+                username = self.vira_servers[server].get('username')
+                password_cmd = self.vira_servers[server].get('password_cmd')
+                if password_cmd:
+                    password = run_command(password_cmd)['stdout'].strip().split('\n')[0]
+                else:
+                    password = self.vira_servers[server]['password']
+                auth_kwargs['basic_auth'] = (username, password)
             else:
-                password = self.vira_servers[server]['password']
+                token_cmd = self.vira_servers[server].get('access_token_cmd')
+                if token_cmd:
+                    access_token = run_command(token_cmd)['stdout'].strip().split('\n')[0]
+                else:
+                    access_token = self.vira_servers[server]['access_token']
+                option_kwargs = {"headers": {"Authorization": "Bearer %s" % access_token}}
         except:
             self.msg_server_fail()
             raise
