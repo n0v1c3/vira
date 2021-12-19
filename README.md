@@ -1,4 +1,4 @@
-# VIRA 0.4.13
+# VIRA 0.4.14
 
 **Vim JIRA Atlassian: Create, Update and Follow Along Jira Issues Actively
 Without Leaving Vim!**
@@ -35,17 +35,14 @@ your Jira development process without leaving your favorite environment.
     - [vim-fugitive](#fugitive)
 - [Contributors](#contributors)
 
-| <ins>**_VIRA 0.4.13 UPDATES:_**</ins>                                       |
-| --------------------------------------------------------------------------- |
-| Replace manual entry with `vira_projects.json/yaml` warning.                |
-| single server automatic login.                                              |
-| `README.md` create this **UPDATES** list and **Previous Releases** list.    |
-| `README.md` navigation.                                                     |
-| `q` is going to be replaced by `gq` both will only work until `VIRA 0.5.0`. |
-| Removed `airline` support until real it is real.                            |
+| <ins>**_VIRA 0.4.14 UPDATES:_**</ins>                                  |
+| ---------------------------------------------------------------------- |
+| VIRA-296: #78 Fix what should be an f string to make ViraBrowser work. |
+| VIRA-296: Create common menu function for `ViraFilter`/`Set`/`Issues`. |
 
 | <ins>**_Previous Releases:_**</ins>                                                         |
 | ------------------------------------------------------------------------------------------- |
+| 0.4.13 - pip3 update (mattalexander-pantheon)                                               |
 | 0.4.12 - Don't append Null in non-empty server list (Krzysztof Konopko)                     |
 | 0.4.11 - README remove old workarounds (Travis Gall)                                        |
 | 0.4.10 - Handle missing assignee and guess current user correctly (Travis Gall)             |

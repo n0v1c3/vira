@@ -199,8 +199,8 @@ class ViraAPI():
         # Connect to jira server
         try:
             if 'https://' not in server.lower():
-                server = 'https://' + server
-                vim.command('let g:vira_serv = "' + server + '"')
+                server = f'https://{server}'
+                vim.command(f'let g:vira_serv = "{server}"')
 
             # Authorize
             self.jira = JIRA(
@@ -336,52 +336,22 @@ class ViraAPI():
         '''
 
         issues = []
-        key_length = 0
-        summary_length = 0
-        issuetype_length = 0
-        status_length = 4
-        user_length = 0
-
         for issue in self.query_issues():
             fields = issue['fields']
-
             user = str(fields['assignee']['displayName']) if self._has_field(
                 fields, 'assignee') else 'Unassigned'
-            user_length = len(user) if len(user) > user_length else user_length
-
-            key_length = len(
-                issue['key']) if len(issue['key']) > key_length else key_length
-
-            summary = fields['summary']
-            summary_length = len(
-                summary) if len(summary) > summary_length else summary_length
-
-            issuetype = fields['issuetype']['name']
-            issuetype_length = len(
-                issuetype) if len(issuetype) > issuetype_length else issuetype_length
-
-            status = fields['status']['name']
-            status_length = len(status) if len(status) > status_length else status_length
-
-            issues.append(
-                [
-                    issue['key'], fields['summary'], fields['issuetype']['name'],
-                    fields['status']['name'], user
-                ])
+            issues.append([
+                issue['key'], fields['summary'], fields['issuetype']['name'],
+                fields['status']['name'], user
+            ])
+        self.print_menu(issues)
 
         # Add min/max limits on summary length
-        columns = vim.eval("&columns")
-        min_summary_length = 25
-        max_summary_length = int(
-            columns) - key_length - issuetype_length - status_length - 28
-        summary_length = min_summary_length if max_summary_length < min_summary_length else max_summary_length if summary_length > max_summary_length else summary_length
-
-        for issue in issues:
-            print(
-                ('{: <' + str(key_length) + '}').format(issue[0]) + " │ " +
-                ('{: <' + str(summary_length) + '}').format(issue[1][:summary_length]) +
-                "  │ " + ('{: <' + str(issuetype_length) + '}').format(issue[2]) + " │ " +
-                ('{: <' + str(status_length) + '}').format(issue[3]) + ' │ ' + issue[4])
+        # columns = vim.eval("&columns")
+        # min_summary_length = 25
+        # max_summary_length = int(
+            # columns) - key_length - issuetype_length - status_length - 28
+        # summary_length = min_summary_length if max_summary_length < min_summary_length else max_summary_length if summary_length > max_summary_length else summary_length
 
     def get_issuetypes(self):
         '''
@@ -413,14 +383,68 @@ class ViraAPI():
         '''
 
         all_projects = self.get_projects()
-        batch_size = 10
-        project_batches = [all_projects[i:i + batch_size]
-                           for i in range(0, len(all_projects), batch_size)]
+        projects = []
 
-        for batch in project_batches:
-            projects = self.jira.createmeta(
-                projectKeys=','.join(batch), expand='projects')['projects']
-            [print(p['key'] + ' ~ ' + p['name']) for p in projects]
+        for project in all_projects:
+            query = 'project = ' + project
+            issues = self.jira.search_issues(
+                query, fields='project,', json_result='True', maxResults=1)
+
+            fields = issues['issues'][0]['fields']['project']
+            url = fields['self']
+            key = fields['key']
+
+            try:
+                name = fields['name']
+            except KeyError:
+                name = ''
+                pass
+
+            total = (str(issues['total']))
+            project_type_key = fields['projectTypeKey']
+
+            try:
+                category_name = fields['projectCategory']['name']
+            except KeyError:
+                category_name = ''
+                pass
+
+            try:
+                category_description = fields['projectCategory']['description']
+            except KeyError:
+                category_description = ''
+                pass
+
+            projects.append([key, name, total, project_type_key, category_name, category_description, url])
+
+        self.print_menu(projects)
+
+    def print_menu(self, menu):
+        '''
+        General call for all menu printing
+        '''
+
+        batch_size = int(vim.eval('g:vira_menu_height'))
+        menu_batches = [menu[i:i + batch_size]
+                        for i in range(0, len(menu), batch_size)]
+
+        lengths = []
+        for batch in menu_batches:
+            for i, line in enumerate(menu):
+                for i, items in enumerate(line):
+                    items = str(items)
+
+                    try:
+                        lengths[i] = len(items) if len(items) > lengths[i] else lengths[i]
+                    except IndexError:
+                        lengths.append(len(items))
+                        pass
+        #  print(lengths)
+
+        for line in enumerate(menu):
+            for i, items in enumerate(line[1]):
+                print(('{: <' + str(lengths[i]) + '}').format(items) + " │ ", end='')
+            print('')
 
     def get_projects(self):
         '''
@@ -712,7 +736,7 @@ class ViraAPI():
         try:
             if self.vira_servers.keys():
                 count = len(self.vira_servers.keys())
-                vim.command('let s:vira_serv_count = ' + str(count))
+                vim.command(f'let s:vira_serv_count = {count}')
 
                 if count > 1:
                     for server in self.vira_servers.keys():
@@ -826,7 +850,7 @@ class ViraAPI():
 
         issue = issues['issues'][0]['fields']
         if self._has_field(issue, role):
-            return issue[role][self.users_type] 
+            return issue[role][self.users_type]
 
     def print_versions(self):
         '''
