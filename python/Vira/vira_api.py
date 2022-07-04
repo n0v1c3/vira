@@ -515,8 +515,8 @@ class ViraAPI():
             self.prompt_text = self.active_comment.body + self.prompt_text_commented
             return self.prompt_text
 
-        statuses = [x.name for x in self.jira.statuses()]
-        issuetypes = [x.name for x in self.jira.issue_types()]
+        statuses = list({x.name for x in self.jira.statuses()})
+        issuetypes = list({x.name for x in self.jira.issue_types()})
         priorities = [x.name for x in self.jira.priorities()]
         components = [
             x.name
