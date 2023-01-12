@@ -188,12 +188,13 @@ class ViraAPI():
                 cert_verify = True
 
             # Get auth for current server
+            token = self.vira_servers[server].get('token')
             username = self.vira_servers[server].get('username')
             password_cmd = self.vira_servers[server].get('password_cmd')
             if password_cmd:
                 password = run_command(password_cmd)['stdout'].strip().split('\n')[0]
             else:
-                password = self.vira_servers[server]['password']
+                password = self.vira_servers[server].get('password')
         except:
             self.msg_server_fail()
             raise
@@ -205,15 +206,26 @@ class ViraAPI():
                 vim.command('let g:vira_serv = "' + server + '"')
 
             # Authorize
-            self.jira = JIRA(
-                options={
-                    'server': server,
-                    'verify': cert_verify,
-                },
-                basic_auth=(username, password),
-                timeout=2,
-                async_=True,
-                max_retries=2)
+            if token:
+                self.jira = JIRA(
+                    options={
+                        'server': server,
+                        'verify': cert_verify,
+                    },
+                    token_auth=token,
+                    timeout=2,
+                    async_=True,
+                    max_retries=2)
+            else:
+                self.jira = JIRA(
+                    options={
+                        'server': server,
+                        'verify': cert_verify,
+                    },
+                    basic_auth=(username, password),
+                    timeout=2,
+                    async_=True,
+                    max_retries=2)
 
             # Initial list updates
             self.users = self.get_users()
