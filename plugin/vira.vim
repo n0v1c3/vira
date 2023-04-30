@@ -39,6 +39,7 @@ let g:vira_report_position = get(g:, 'vira_report_position', 'L')
 
 " Basics
 command! -nargs=0 -bang ViraBrowse call vira#_browse(g:vira_serv . '/browse/' . vira#_get_active_issue())
+command! -nargs=0 -bang ViraDeleteActiveIssue call vira#_delete_active_issue()
 command! -nargs=0 -bang ViraComment call vira#_prompt_start('add_comment')
 command! -nargs=0 -bang ViraIssue call vira#_prompt_start('issue')
 command! -nargs=0 -bang ViraIssues call vira#_menu("issues")

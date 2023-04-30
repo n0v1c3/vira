@@ -144,6 +144,11 @@ function! vira#_prompt_end() "{{{2
   call vira#_refresh()
 endfunction
 
+function! vira#_delete_active_issue() "{{{2
+  " Delete active issue from jira
+  python3 Vira.api.delete_active_issue()
+endfunction
+
 function! vira#_check_project(type) abort "{{{2
   " Check if project was selected for components and versions
   if a:type != 'components' " && a:type != 'versions'

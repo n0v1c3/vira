@@ -4,13 +4,17 @@ Internals and API functions for vira
 '''
 
 from __future__ import print_function, unicode_literals
-from Vira.helper import load_config, run_command, parse_prompt_text
-from jira import JIRA
-from jira.exceptions import JIRAError
-from datetime import datetime
+
 import json
 import urllib3
 import vim
+
+from Vira.helper import load_config, run_command, parse_prompt_text
+from datetime import datetime
+from jira import JIRA
+from jira.exceptions import JIRAError
+from requests import delete
+from time import sleep
 
 class ViraAPI():
     '''
@@ -214,7 +218,7 @@ class ViraAPI():
                     },
                     token_auth=token,
                     timeout=2,
-                    async_=True,
+                    # async_=True,
                     max_retries=2)
             else:
                 self.jira = JIRA(
@@ -224,7 +228,7 @@ class ViraAPI():
                     },
                     basic_auth=(username, password),
                     timeout=2,
-                    async_=True,
+                    # async_=True,
                     max_retries=2)
 
             # Initial list updates
@@ -1070,6 +1074,14 @@ class ViraAPI():
             self.jira.issue(issue).update(description=input_stripped)
         elif self.prompt_type == 'issue':
             self.create_issue(input_stripped)
+
+    def delete_active_issue(self):
+        '''
+        Delete active issue from jira
+        '''
+
+        issue = self.jira.issue(vim.eval('g:vira_active_issue'))
+        issue.delete()
 
     def versions_hide(self, state):
         '''
