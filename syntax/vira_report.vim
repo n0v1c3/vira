@@ -1,30 +1,37 @@
 " Quit when a syntax file was already loaded.
-if exists('b:current_syntax') | finish|  endif
+if exists('b:vira_version') && b:vira_version == vira#_get_version() | finish | endif
 
 " Syntax matching {{{1
 syntax match viraHTML "https://.*"hs=s,he=e
 syntax match viraIssuesIssue ".*-.* │.*│.*│.*│.*" contains=viraIssuesDescription
-syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus contains=viraIssuesStatus, contained
+syntax match viraIssuesDescription "│.*"hs=s+2 nextgroup=viraIssuesStatus contains=viraIssuesStatus,viraGV,viraGVBar contained
 syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsTypeBug,viraDetailsTypeEpic,viraDetailsTypeStory,viraDetailsTypeTask,viraDetailsStatusInProgress,viraDetailsStatusTodo,viraDetailsStatusSelected,viraDetailsStatusDone,viraDetailsStatusComplete,viraDetailsStatusBacklog,viraIssuesStatus nextgroup=viraIssuesStatus contained
 
+highlight viraDescription ctermfg=108 guifg=#87af87
+
+syntax match viraVira "\cJIRA"
 syntax match viraBold "\*.*\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
 syntax region viraCommentOlder start=/^\d.* Older Comment.* {/ end=/{{\d/
 syntax match viraCommentAuthor /^\w.*\s@\s\d\{4\}.*/hs=s,he=e contains=viraCommentDate
 syntax match viraCommentDate / @ .* {/hs=s,he=e-1 contained contains=viraCommentOpen,viraCommentDateAt
-syntax match viraCommentDateAt /@/hs=s,he=e contained
 syntax match viraCommentOpen /.*{{{.*/hs=e-4 contained
-syntax match viraCommentClose "}}}"
+" syntax match viraCommentClose "}}}"
+syntax region viraCommentClose start="^}}" end="}$"
 
+" syntax match viraCodeBrands '^\cVIRA\s\|^\cVIM\s\|^\cGIT\s\|^\cNEOVIM\s\|^\cNVIM\s\|^\cJIRA\s\|^\cGITHUB\s'he=e-1
+" syntax match viraCodeBrands '\s\cVIRA\s\|\s\cVIM\s\|\s\cGIT\s\|\s\cNEOVIM\s\|\s\cNVIM\s\|\s\cJIRA\s\|\s\cGITHUB\s'he=e-1
+" syntax match viraCodeBrands '\s\cVIRA\.\|\s\cVIM\.\|\s\cGIT\.\|\s\cNEOVIM\.\|\s\cNVIM\.\|\s\cJIRA\.\|\s\cGITHUB\.'he=e-1
 " Report {{{2
+
 syntax match viraDetails "┌.*"
 syntax match viraDetails "│"
 
-syntax match viraDetailsA "│.*│.*│"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsD nextgroup=viraDetailsB
-syntax match viraDetailsB "│.*│"hs=s,he=e-1 nextgroup=viraDetailsC
-syntax match viraDetailsC "│.*"hs=s,he=e-1
-syntax match viraDetailsE "│.*│.*"hs=e,he=e
+" syntax match viraDetailsA "│.*│.*│"he=e-1 contains=viraDetailsB,viraDetailsC,viraDetailsD nextgroup=viraDetailsB
+" syntax match viraDetailsB "│.*│"hs=s,he=e-1 nextgroup=viraDetailsC
+" syntax match viraDetailsC "│.*"hs=s,he=e-1
+" syntax match viraDetailsE "│.*│.*"hs=e,he=e
 syntax match viraDetails "│"
 
 syntax match viraDetails "│.*Created.* │" contains=viraDetailsDates
@@ -94,10 +101,10 @@ syntax match viraListComplete "\[X]\|\[x]\|\[✓]"hs=s+1,he=e-1 contained
 syntax match viraListRemoved "\[-]"hs=s+1,he=e-1 contained
 syntax match viraListForward "\[>]"hs=s+1,he=e-1 contained
 syntax match viraPointer "└──>"
-syntax match viraUsername "\[\~.*\]"
+syntax match viraUsername "\[\~.*\]\|@\w\+"
 
 " Code Wrap {{{2
-" OoO is very important
+" Order of operations is very important
 syntax match viraCodeNumber "\d" contained
 syntax match viraCodeNumber "\d.\d" contained
 syntax match viraCodeComment "//.*\|#.*\|\".*\n" contained
@@ -110,13 +117,21 @@ syntax match viraCodeFunction " \w.*\w(" contained contains=viraCodeSemiFix
 syntax match viraCodeMethod "ASC\|DESC\|desc\|\~\|ORDER \|order \|BY \|by \|or \|OR \|and\|AND\|in\|return\|==\|!=\|<\|>\|def\|for\|in\|true\|True\|false\|False" contained
 syntax match viraCodeFunction "syntax\|string\|int\|echo\|print\|self" contained
 syntax match viraCodeSemiFix "\.\|(\|\[\|=" contained
+syntax region viraCode start="^`" end="`."he=e-1 skip="\\\""
 syntax region viraCode start=" `" end="`."he=e-1 skip="\\\""
 syntax region viraCode start=" `" end="\n\|`" skip="\\\""
+syntax region viraCode start="^`" end="\n\|`" skip="\\\""
 syntax region viraCode start="(`"hs=s+1 end="`)"he=e-1 skip="\\\""
 syntax region viraCode start=/$\n```/ end=/```\n\n\|}}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax region viraCode start=/{code:.*}/ end=/{code}/ contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
 syntax match viraCode "{code:.*}.*{code}" contains=viraCodeFunction,viraCodeQuote,viraCodeSemi,viraCodeComment,viraCodeVariable,viraCodeMethod,viraCodeNumber,viraCodeSemiFix
-
+" Plugin Support {{{3
+syntax region viraCode start=/^{code:.*}\n```GV```/ end=/{code}/ contains=viraGV,viraGVBar
+syntax region viraCode start=/^{code:.*}\n```git```/ end=/{code}/ contains=viraGV,viraGVBar
+syntax region viraCode start=/^{code:.*}\n```glog```/ end=/{code}/ contains=viraGV,viraGVBar
+syntax region viraCode start=/^{code:.*}\n```git-log```/ end=/{code}/ contains=viraGV,viraGVBar
+syntax region viraCode start=/^{code:.*}\n```git-vira```/ end=/{code}/ contains=viraGV,viraGVBar
+" }}}
 " Common Tags {{{2
 syntax match viraTodos "FYI\|TODOs\|TODO"
 
@@ -124,16 +139,16 @@ syntax match viraTodos "FYI\|TODOs\|TODO"
 highlight default link viraBullets Identifier
 highlight default link viraCitvtion Title
 highlight default link viraDetails Identifier
-highlight default link viraDetailsA Identifier
-highlight default link viraDetailsB Identifier
-highlight default link viraDetailsC Identifier
-highlight default link viraDetailsD Normal
+" highlight default link viraDetailsA Identifier
+" highlight default link viraDetailsB Identifier
+" highlight default link viraDetailsC Identifier
+" highlight default link viraDetailsD Normal
 highlight default link viraDetailsDates Statement
 highlight default link viraDetailsE Identifier
 highlight default link viraDetailsF Identifier
 highlight default link viraHTML Title
-highlight default link viraIssuesDescription Question
-highlight default link viraIssuesIssue Title
+" highlight default link viraIssuesDescription Question
+" highlight viraIssuesIssue ctermfg=226 guifg=#ffd7af
 highlight default link viraIssuesStatus Statement
 highlight default link viraMonospaced Question
 highlight default link viraNoformat Normal
@@ -144,8 +159,9 @@ highlight default link viraTheLine Title
 highlight default link viraTitle Title
 highlight default link viraTitleComment Question
 highlight default link viraTitleDescription Question
+syntax match viraTitleFold /{{.*/hs=s,he=e contained
 highlight default link viraTitleFold Statement
-highlight default link viraTitles Title
+highlight viraTitles ctermfg=186 guifg=#d7d785 cterm=bold gui=bold
 highlight viraBold cterm=bold gui=bold
 highlight viraCode ctermfg=3 guifg=#808000
 highlight viraCodeComment ctermfg=245 guifg=#87af00
@@ -155,7 +171,7 @@ highlight viraCodeSemiFix ctermfg=245 guifg=#87af00
 highlight viraCodeSemi ctermfg=245 guifg=#87af00
 highlight viraCodeMethod ctermfg=3 guifg=#808000
 highlight viraCodeNumber ctermfg=39 guifg=#808000
-highlight viraCommentAuthor ctermfg=lightblue guifg=lightblue cterm=bold,underline gui=bold,underline
+highlight viraCommentAuthor ctermfg=lightgreen guifg=lightblue cterm=bold,underline gui=bold,underline
 highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline gui=underline
 highlight viraCommentDateAt ctermfg=blue guifg=blue cterm=underline gui=underline
@@ -168,12 +184,12 @@ highlight viraDetailsHighest ctermfg=darkred guifg=darkred
 highlight viraDetailsLow ctermfg=darkgreen guifg=darkgreen
 highlight viraDetailsLowest ctermfg=green guifg=green
 highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
-highlight viraDetailsStatusBacklog ctermbg=237 ctermfg=white guibg=darkgrey guifg=white
 highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusInProgress ctermbg=darkblue ctermfg=white guibg=darkblue guifg=white
-highlight viraDetailsStatusSelected ctermbg=237 ctermfg=black guibg=grey guifg=black
-highlight viraDetailsStatusTodo ctermbg=237 ctermfg=black guibg=grey guifg=black
+highlight viraDetailsStatusTodo ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
+highlight viraDetailsStatusBacklog ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
+highlight viraDetailsStatusSelected ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
 highlight viraDetailsStoryPoints ctermfg=darkyellow guifg=lightblue
 highlight viraDetailsTypeAssignee ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeBug ctermfg=red guifg=red
@@ -197,4 +213,30 @@ highlight viraTodos cterm=bold,underline gui=bold,underline
 highlight viraUnderline cterm=underline gui=underline
 highlight viraUsername ctermfg=lightblue guifg=lightblue cterm=underline gui=underline
 
-let b:current_syntax = 'vira_report'
+" GV Style {{{2
+syntax match viraGV "^.*\d\{4}-\d\{2}-\d\{2}\s\w\{7}\s.*$" contains=viraGVTag
+syntax match viraGVBar "^|.*\*\s\+$\|^|.*\\\s\+$\|^|.*|\s\+$\||.*/\s\+$"
+syntax match viraGVBar "^|.*\*$\|^|.*\\$\|^|.*|$\||.*/$"
+syntax match viraGVTag "^*.*\||.*" contained contains=viraGVDate
+syntax match viraGVDate " \d\{4}-\d\{2}-\d\{2} " contained nextgroup=viraGVHeader
+syntax match viraGVHeader "\w\{7}\s" contained nextgroup=viraGVMessage contains=viraGVBranch
+syntax match viraGVMessage ".*(.*)$" contained contains=viraGVIssue,viraVGBranch,viraGVCode,viraGVUsername
+syntax match viraGVIssue "\w\+-\d\+:\s\|\w\+-\d\+\s" contained contains=viraGVIssueUnderline
+syntax match viraGVIssue "#\d\+:\s\|#\d\+\s" contained contains=viraGVIssueUnderline
+syntax match viraGVIssueUnderline "\w\+-\d\+\|\d\+" contained
+syntax region viraGVCode start="`" end="`" contained
+syntax match viraGVBranch "\s(.*)\s" contained nextgroup=viraGVMessage
+syntax match viraGVUsername "(.*)$" contained
+highlight viraGVTag ctermfg=4 ctermbg=bg guifg=4 guibg=bg
+highlight viraGVBar ctermfg=4 ctermbg=bg guifg=4 guibg=bg
+highlight viraGVHeader ctermfg=2 ctermbg=bg guifg=2 guibg=bg
+highlight viraGVDate ctermfg=1 ctermbg=bg guifg=1 guibg=bg
+highlight viraGVBranch ctermfg=35 ctermbg=bg guifg=35 guibg=bg cterm=bold gui=bold
+highlight viraGVMessage ctermfg=24 ctermbg=bg guifg=3 guibg=bg
+highlight viraGVCode ctermfg=3 ctermbg=bg guifg=#808000 guibg=bg cterm=bold gui=bold
+highlight viraGVUsername ctermfg=5 ctermbg=bg guifg=5 guibg=bg
+highlight viraGVIssue ctermfg=34 ctermbg=bg guifg=34 guibg=bg cterm=bold gui=bold
+highlight viraGVIssueUnderline ctermfg=34 ctermbg=bg guifg=34 guibg=bg cterm=bold,underline gui=bold,underline
+" }}}
+
+let b:current_syntax = vira#_get_version()

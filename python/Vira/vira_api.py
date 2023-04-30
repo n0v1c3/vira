@@ -4,13 +4,17 @@ Internals and API functions for vira
 '''
 
 from __future__ import print_function, unicode_literals
-from Vira.helper import load_config, run_command, parse_prompt_text
-from jira import JIRA
-from jira.exceptions import JIRAError
-from datetime import datetime
+
 import json
 import urllib3
 import vim
+
+from Vira.helper import load_config, run_command, parse_prompt_text
+from datetime import datetime
+from jira import JIRA
+from jira.exceptions import JIRAError
+from requests import delete
+from time import sleep
 
 class ViraAPI():
     '''
@@ -44,9 +48,8 @@ class ViraAPI():
             'statusCategory': ['To Do', 'In Progress'],
             'text': ''
         }
-        self.reset_filters()
 
-        self.userconfig_newissue = {
+        self.userconfig_newissue_default = {
             'assignee': '',
             'component': '',
             'fixVersion': '',
@@ -55,6 +58,7 @@ class ViraAPI():
             'epics': '',
             'status': '',
         }
+        self.reset_filters()
 
         self.userconfig_issuesort = 'updated DESC'
 
@@ -166,7 +170,9 @@ class ViraAPI():
             started=earlier)
 
     def msg_server_fail(self):
-        print('No `vira_servers.json/yaml` file found or, check the config! See `README.md` for more information.')
+        print(
+            'No `vira_servers.json/yaml` file found or, check the config! See `README.md` for more information.'
+        )
 
     def connect(self, server):
         '''
@@ -186,12 +192,13 @@ class ViraAPI():
                 cert_verify = True
 
             # Get auth for current server
+            token = self.vira_servers[server].get('token')
             username = self.vira_servers[server].get('username')
             password_cmd = self.vira_servers[server].get('password_cmd')
             if password_cmd:
                 password = run_command(password_cmd)['stdout'].strip().split('\n')[0]
             else:
-                password = self.vira_servers[server]['password']
+                password = self.vira_servers[server].get('password')
         except:
             self.msg_server_fail()
             raise
@@ -203,15 +210,26 @@ class ViraAPI():
                 vim.command('let g:vira_serv = "' + server + '"')
 
             # Authorize
-            self.jira = JIRA(
-                options={
-                    'server': server,
-                    'verify': cert_verify,
-                },
-                basic_auth=(username, password),
-                timeout=2,
-                async_=True,
-                max_retries=2)
+            if token:
+                self.jira = JIRA(
+                    options={
+                        'server': server,
+                        'verify': cert_verify,
+                    },
+                    token_auth=token,
+                    timeout=2,
+                    # async_=True,
+                    max_retries=2)
+            else:
+                self.jira = JIRA(
+                    options={
+                        'server': server,
+                        'verify': cert_verify,
+                    },
+                    basic_auth=(username, password),
+                    timeout=2,
+                    # async_=True,
+                    max_retries=2)
 
             # Initial list updates
             self.users = self.get_users()
@@ -414,8 +432,10 @@ class ViraAPI():
 
         all_projects = self.get_projects()
         batch_size = 10
-        project_batches = [all_projects[i:i + batch_size]
-                           for i in range(0, len(all_projects), batch_size)]
+        project_batches = [
+            all_projects[i:i + batch_size]
+            for i in range(0, len(all_projects), batch_size)
+        ]
 
         for batch in project_batches:
             projects = self.jira.createmeta(
@@ -511,8 +531,8 @@ class ViraAPI():
             self.prompt_text = self.active_comment.body + self.prompt_text_commented
             return self.prompt_text
 
-        statuses = [x.name for x in self.jira.statuses()]
-        issuetypes = [x.name for x in self.jira.issue_types()]
+        statuses = list({x.name for x in self.jira.statuses()})
+        issuetypes = list({x.name for x in self.jira.issue_types()})
         priorities = [x.name for x in self.jira.priorities()]
         components = [
             x.name
@@ -593,8 +613,8 @@ class ViraAPI():
 
         # Version percent for single version attacted
         #  if len(issue['fixVersions']) == 1 and version != '':
-            #  version += ' | ' + self.version_percent(
-                #  str(issue['project']['key']), version) + '%'
+        #  version += ' | ' + self.version_percent(
+        #  str(issue['project']['key']), version) + '%'
 
         comments = ''
         idx = 0
@@ -718,12 +738,12 @@ class ViraAPI():
                     for server in self.vira_servers.keys():
                         print(server)
                 elif count == 1:
-                        server = str(list(self.vira_servers.keys())[0])
-                        vim.command('let g:vira_serv = "{server}"')
-                        self.connect(server)
+                    server = str(list(self.vira_servers.keys())[0])
+                    vim.command('let g:vira_serv = "{server}"')
+                    self.connect(server)
             else:
                 print('Null')
-        except AttributeError as e:
+        except AttributeError:
             self.msg_server_fail()
         except:
             self.connect('')
@@ -826,7 +846,7 @@ class ViraAPI():
 
         issue = issues['issues'][0]['fields']
         if self._has_field(issue, role):
-            return issue[role][self.users_type] 
+            return issue[role][self.users_type]
 
     def print_versions(self):
         '''
@@ -849,7 +869,8 @@ class ViraAPI():
     def version_percent(self, project, fixVersion):
         project = str(project)
         fixVersion = str(fixVersion)
-        if str(project) != '[]' and str(project) != '' and str(fixVersion) != '[]' and str(fixVersion) != '':
+        if str(project) != '[]' and str(project) != '' and str(
+                fixVersion) != '[]' and str(fixVersion) != '':
             query = 'fixVersion = ' + fixVersion + ' AND project = "' + project + '"'
             issues = self.jira.search_issues(
                 query, fields='fixVersion', json_result='True', maxResults=1)
@@ -881,8 +902,8 @@ class ViraAPI():
                 pass
 
             version = str(
-                str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' + str(total) +
-                space + '|' + str(percent) + '%')
+                str(name) + ' ~ ' + str(description) + '|' + str(fixed) + '/' +
+                str(total) + space + '|' + str(percent) + '%')
 
             self.versions_hide = vim.eval('g:vira_version_hide')
             if fixed != total or total == 0 or not int(self.versions_hide) == 1:
@@ -903,7 +924,7 @@ class ViraAPI():
             for v in reversed(self.jira.project_versions(vim.eval('s:projects[0]'))):
                 vim.command('let s:versions = add(s:versions,\"' + str(v) + '\")')
         except:
-                vim.command('let s:versions = []')
+            vim.command('let s:versions = []')
 
     def load_project_config(self, repo):
         '''
@@ -984,6 +1005,7 @@ class ViraAPI():
         '''
 
         self.userconfig_filter = dict(self.userconfig_filter_default)
+        self.userconfig_newissue = dict(self.userconfig_newissue_default)
 
     def set_report_lines(self, report, description, issue):
         '''
@@ -1052,6 +1074,14 @@ class ViraAPI():
             self.jira.issue(issue).update(description=input_stripped)
         elif self.prompt_type == 'issue':
             self.create_issue(input_stripped)
+
+    def delete_active_issue(self):
+        '''
+        Delete active issue from jira
+        '''
+
+        issue = self.jira.issue(vim.eval('g:vira_active_issue'))
+        issue.delete()
 
     def versions_hide(self, state):
         '''
