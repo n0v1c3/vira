@@ -739,7 +739,7 @@ class ViraAPI():
                         print(server)
                 elif count == 1:
                     server = str(list(self.vira_servers.keys())[0])
-                    vim.command('let g:vira_serv = "{server}"')
+                    vim.command(f'let g:vira_serv = "{server}"')
                     self.connect(server)
             else:
                 print('Null')
