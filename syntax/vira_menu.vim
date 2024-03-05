@@ -94,7 +94,7 @@ syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
 
 " Highlighting {{{1
 highlight viraCode ctermfg=3 guifg=#808000
-highlight viraCodeBrands ctermfg=darkblue guifg=darkblue
+highlight viraCodeBrands ctermfg=green guifg=green
 " highlight default link viraCommentClose Statement
 " highlight default link viraCommentDate Statement
 " highlight default link viraDetailsA Identifier
@@ -125,7 +125,7 @@ highlight viraDetailsLowest ctermfg=green guifg=green
 highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
 highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white cterm=bold gui=bold
 highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white cterm=bold gui=bold
-highlight viraDetailsStatusInProgress ctermbg=darkblue ctermfg=white guibg=darkblue guifg=white cterm=bold gui=bold
+highlight viraDetailsStatusInProgress ctermbg=green ctermfg=white guibg=green guifg=white cterm=bold gui=bold
 highlight viraDetailsStatusTodo ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
 highlight viraDetailsStatusBacklog ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
 highlight viraDetailsStatusSelected ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
@@ -133,7 +133,7 @@ highlight viraDetailsTypeAssignee ctermfg=lightblue guifg=lightblue cterm=bold g
 highlight viraDetailsTypeBug ctermfg=red guifg=red cterm=bold gui=bold
 highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f  cterm=bold gui=bold
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen  cterm=bold gui=bold
-highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue cterm=bold gui=bold
+highlight viraDetailsTypeTask ctermfg=green guifg=green cterm=bold gui=bold
 highlight viraItalic cterm=italic gui=italic
 highlight viraLink cterm=underline gui=underline
 highlight viraStrikethrough cterm=strikethrough gui=strikethrough

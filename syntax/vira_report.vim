@@ -173,12 +173,12 @@ highlight viraCodeMethod ctermfg=3 guifg=#808000
 highlight viraCodeNumber ctermfg=39 guifg=#808000
 highlight viraCommentAuthor ctermfg=lightgreen guifg=lightblue cterm=bold,underline gui=bold,underline
 highlight viraCommentClose ctermbg=bg ctermfg=bg guibg=bg guifg=bg
-highlight viraCommentDate ctermfg=darkblue guifg=darkblue cterm=underline gui=underline
+highlight viraCommentDate ctermfg=green guifg=green cterm=underline gui=underline
 highlight viraCommentDateAt ctermfg=blue guifg=blue cterm=underline gui=underline
 highlight viraCommentOlder ctermbg=bg ctermfg=bg guifg=bg guibg=bg cterm=bold gui=bold
 highlight viraCommentOpen ctermbg=bg ctermfg=bg guibg=bg guifg=bg
 highlight viraDetailsComponent ctermfg=lightblue guifg=lightblue
-highlight viraDetailsDates ctermfg=darkblue guifg=darkblue
+highlight viraDetailsDates ctermfg=green guifg=green
 highlight viraDetailsHigh ctermfg=red guifg=red
 highlight viraDetailsHighest ctermfg=darkred guifg=darkred
 highlight viraDetailsLow ctermfg=darkgreen guifg=darkgreen
@@ -186,7 +186,7 @@ highlight viraDetailsLowest ctermfg=green guifg=green
 highlight viraDetailsMedium ctermfg=darkyellow guifg=darkyellow
 highlight viraDetailsStatusComplete ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
 highlight viraDetailsStatusDone ctermbg=darkgreen ctermfg=white guibg=darkgreen guifg=white
-highlight viraDetailsStatusInProgress ctermbg=darkblue ctermfg=white guibg=darkblue guifg=white
+highlight viraDetailsStatusInProgress ctermbg=green ctermfg=white guibg=green guifg=white
 highlight viraDetailsStatusTodo ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
 highlight viraDetailsStatusBacklog ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
 highlight viraDetailsStatusSelected ctermbg=251 ctermfg=0 guibg=#c6c6c6 guifg=#000000 cterm=bold gui=bold
@@ -197,8 +197,8 @@ highlight viraDetailsTypeEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsEpic ctermfg=white ctermbg=53 guifg=white guibg=#5b005f
 highlight viraDetailsTypeReporter ctermfg=lightblue guifg=lightblue cterm=bold gui=bold
 highlight viraDetailsTypeStory ctermfg=lightgreen guifg=lightgreen
-highlight viraDetailsTypeTask ctermfg=darkblue guifg=darkblue
-highlight viraDetailsVersion ctermfg=darkblue guifg=darkblue
+highlight viraDetailsTypeTask ctermfg=green guifg=green
+highlight viraDetailsVersion ctermfg=green guifg=green
 highlight viraDetailsVersionN ctermfg=lightblue guifg=lightblue
 highlight viraDetailsVersionP ctermfg=darkyellow guifg=darkyellow
 highlight viraItalic cterm=italic gui=italic
