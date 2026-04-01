@@ -842,7 +842,7 @@ class ViraAPI():
     def get_current_user(self, role):
         query = role + ' = currentUser()'
         issues = self.jira.search_issues(
-            query, fields=role, json_result='True', maxResults=-1, startAt=0)
+            query, fields=role, json_result='True', maxResults=5000, startAt=0)
 
         issue = issues['issues'][0]['fields']
         if self._has_field(issue, role):
