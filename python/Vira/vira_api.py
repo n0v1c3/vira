@@ -820,7 +820,7 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        query = 'ORDER BY updated DESC'
+        query = 'created <= "2025-09-24" ORDER BY updated DESC'
         issues = self.jira.search_issues(
             query, fields='assignee, reporter', json_result='True', maxResults=5000, startAt=0)
 
