@@ -822,7 +822,7 @@ class ViraAPI():
 
         query = 'ORDER BY updated DESC'
         issues = self.jira.search_issues(
-            query, fields='assignee, reporter', json_result='True', maxResults=-1)
+            query, fields='assignee, reporter', json_result='True', maxResults=5000)
 
         # Determine cloud/server jira
         self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get(
