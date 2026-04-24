@@ -297,7 +297,7 @@ class ViraAPI():
 
         # Get the issue requested
         issues = self.jira.search_issues(
-            'issue = "' + issue.key + '"', fields='summary,comment', json_result='True')
+            'issue = "' + issue.key + '"', fields='summary,comment', json_result='True', startAt=0)
 
         # Loop through all of the comments
         comments = ''
@@ -483,7 +483,7 @@ class ViraAPI():
             summary = self.jira.search_issues(
                 'issue = "' + active_issue + '"',
                 fields=','.join(['summary']),
-                json_result='True')['issues'][0]['fields']['summary']
+                json_result='True', startAt=0)['issues'][0]['fields']['summary']
             self.prompt_text = summary + self.prompt_text_commented
             return self.prompt_text
 
@@ -493,7 +493,7 @@ class ViraAPI():
             description = self.jira.search_issues(
                 'issue = "' + active_issue + '"',
                 fields=','.join(['description']),
-                json_result='True')['issues'][0]['fields'].get('description')
+                json_result='True', startAt=0)['issues'][0]['fields'].get('description')
             if description:
                 description = description.replace('\r\n', '\n')
             else:
@@ -589,7 +589,7 @@ class ViraAPI():
                     'issuetype', 'priority', 'status', 'created', 'updated', 'assignee',
                     'reporter', 'fixVersion', 'customfield_10106', 'labels', epicID
                 ]),
-            json_result='True')
+            json_result='True', startAt=0)
         issue = issues['issues'][0]['fields']
 
         # Prepare report data
@@ -820,9 +820,9 @@ class ViraAPI():
         Get my issues with JQL
         '''
 
-        query = 'ORDER BY updated DESC'
+        query = 'created <= now() ORDER BY updated DESC'
         issues = self.jira.search_issues(
-            query, fields='assignee, reporter', json_result='True', maxResults=-1)
+            query, fields='assignee, reporter', json_result='True', maxResults=5000, startAt=0)
 
         # Determine cloud/server jira
         self.users_type = 'accountId' if issues['issues'][0]['fields']['reporter'].get(
@@ -842,7 +842,7 @@ class ViraAPI():
     def get_current_user(self, role):
         query = role + ' = currentUser()'
         issues = self.jira.search_issues(
-            query, fields=role, json_result='True', maxResults=-1)
+            query, fields=role, json_result='True', maxResults=5000, startAt=0)
 
         issue = issues['issues'][0]['fields']
         if self._has_field(issue, role):
@@ -873,7 +873,7 @@ class ViraAPI():
                 fixVersion) != '[]' and str(fixVersion) != '':
             query = 'fixVersion = ' + fixVersion + ' AND project = "' + project + '"'
             issues = self.jira.search_issues(
-                query, fields='fixVersion', json_result='True', maxResults=1)
+                query, fields='fixVersion', json_result='True', maxResults=1, startAt=0)
 
             try:
                 issue = issues['issues'][0]['fields']['fixVersions'][0]
@@ -995,7 +995,8 @@ class ViraAPI():
             query,
             fields='summary,comment,status,statusCategory,issuetype,assignee',
             json_result='True',
-            maxResults=vim.eval('g:vira_issue_limit'))
+            maxResults=vim.eval('g:vira_issue_limit'),
+            startAt=0)
 
         return issues['issues']
 
