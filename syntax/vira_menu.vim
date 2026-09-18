@@ -74,7 +74,7 @@ syntax match viraDetailsMedium "Medium  "he=s+6
 " Comments {{{2
 syntax match viraItalic "_.*_"
 syntax match viraLink "\[.*|.*\]"
-syntax match viraMonospaced "{{.*}}"
+syntax match viraMonospaced "{{.\{-}}}"
 " syntax match viraPhoto "\!.*|.*\!"
 " syntax match viraStory "\v.*" contained
 syntax match viraStrikethrough "-.*-"
