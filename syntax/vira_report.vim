@@ -84,17 +84,17 @@ syntax match viraDetails "├.*"
 syntax match viraDetails "└.*"
 
 " Font Style {{{2
-syntax match viraItalic " _.*_ "hs=s+1,he=e-1
-syntax match viraLink " \[.*|.*\] "hs=s+1,he=e-1
-syntax match viraMonospaced " {{.*}} "hs=s+1,he=e-1
-syntax match viraPhoto " \!.*|.*\! "hs=s+1,he=e-1
+syntax match viraItalic " _.\{-}_ "hs=s+1,he=e-1
+syntax match viraLink " \[.\{-}|.\{-}\] "hs=s+1,he=e-1
+syntax match viraMonospaced " {{.\{-}}} "hs=s+1,he=e-1
+syntax match viraPhoto " \!.\{-}|.\{-}\! "hs=s+1,he=e-1
 syntax match viraStory "\v.*" contained
-syntax match viraStrikethrough " -.*- "hs=s+1,he=e-1
-syntax match viraSubscript " \~.*\~ "hs=s+1,he=e-1
+syntax match viraStrikethrough " -.\{-}- "hs=s+1,he=e-1
+syntax match viraSubscript " \~.\{-}\~ "hs=s+1,he=e-1
 syntax match viraTheLine "----"
 syntax match viraTitles "  .*-.*  \|│.*Summary.*│\|│.*Description.*│\|│.*Comments.*│"hs=s+1,he=e-1 contains=viraDetails
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
-syntax match viraUnderline "+.*+"
+syntax match viraUnderline "+.\{-}+"
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
 syntax match viraList "\[ ]\|\[X]\|\[x]\|\[✓]\|\[-]\|\[>]" contains=viraListComplete,viraListRemoved,viraListForward
 syntax match viraListComplete "\[X]\|\[x]\|\[✓]"hs=s+1,he=e-1 contained
