@@ -10,7 +10,7 @@ syntax match viraIssuesStatus "  │.*" contains=viraIssuesDates,viraDetailsType
 highlight viraDescription ctermfg=108 guifg=#87af87
 
 syntax match viraVira "\cJIRA"
-syntax match viraBold "\*.*\*"
+syntax match viraBold "\*.\{-}\*"
 syntax match viraBullets ".*\* "
 syntax match viraCitvtion "??.*??"
 syntax region viraCommentOlder start=/^\d.* Older Comment.* {/ end=/{{\d/
@@ -84,13 +84,13 @@ syntax match viraDetails "├.*"
 syntax match viraDetails "└.*"
 
 " Font Style {{{2
-syntax match viraItalic " _.*_ "hs=s+1,he=e-1
-syntax match viraLink " \[.*|.*\] "hs=s+1,he=e-1
-syntax match viraMonospaced " {{.*}} "hs=s+1,he=e-1
-syntax match viraPhoto " \!.*|.*\! "hs=s+1,he=e-1
+syntax match viraItalic " _.\{-}_ "hs=s+1,he=e-1
+syntax match viraLink " \[.\{-}|.\{-}\] "hs=s+1,he=e-1
+syntax match viraMonospaced " {{.\{-}}} "hs=s+1,he=e-1
+syntax match viraPhoto " \!.\{-}|.\{-}\! "hs=s+1,he=e-1
 syntax match viraStory "\v.*" contained
-syntax match viraStrikethrough " -.*- "hs=s+1,he=e-1
-syntax match viraSubscript " \~.*\~ "hs=s+1,he=e-1
+syntax match viraStrikethrough " -.\{-}- "hs=s+1,he=e-1
+syntax match viraSubscript " \~.\{-}\~ "hs=s+1,he=e-1
 syntax match viraTheLine "----"
 syntax match viraTitles "  .*-.*  \|│.*Summary.*│\|│.*Description.*│\|│.*Comments.*│"hs=s+1,he=e-1 contains=viraDetails
 syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
