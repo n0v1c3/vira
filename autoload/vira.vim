@@ -205,9 +205,9 @@ endfunction
 
 function! vira#_init_python() "{{{2
   " Load Vira python code and read user-configuration files
-  silent! python3 import sys
-  silent! exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
-  silent! python3 import Vira
+  python3 import sys
+  exe 'python3 sys.path.append(f"' . s:vira_root_dir . '/python")'
+  python3 import Vira
 endfunction
 
 function! vira#_report_print() " {{{2
