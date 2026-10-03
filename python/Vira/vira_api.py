@@ -193,6 +193,7 @@ class ViraAPI():
 
             # Get auth for current server
             token = self.vira_servers[server].get('token')
+            pat = self.vira_servers[server].get('pat')
             username = self.vira_servers[server].get('username')
             password_cmd = self.vira_servers[server].get('password_cmd')
             if password_cmd:
@@ -210,7 +211,18 @@ class ViraAPI():
                 vim.command('let g:vira_serv = "' + server + '"')
 
             # Authorize
-            if token:
+            if pat:
+                self.jira = JIRA(
+                    options={
+                        'server': server,
+                        'verify': cert_verify,
+                        'headers': {
+                            'Authorization': f'Bearer {pat}'
+                        }
+                    },
+                    timeout=2,
+                    max_retries=2)
+            elif token:
                 self.jira = JIRA(
                     options={
                         'server': server,
@@ -430,17 +442,11 @@ class ViraAPI():
         Build a vim pop-up menu for a list of projects
         '''
 
-        all_projects = self.get_projects()
-        batch_size = 10
-        project_batches = [
-            all_projects[i:i + batch_size]
-            for i in range(0, len(all_projects), batch_size)
-        ]
-
-        for batch in project_batches:
-            projects = self.jira.createmeta(
-                projectKeys=','.join(batch), expand='projects')['projects']
-            [print(p['key'] + ' ~ ' + p['name']) for p in projects]
+        for project in self.jira.projects():
+            key = getattr(project, 'key', '')
+            name = getattr(project, 'name', '')
+            if key and name:
+                print(key + ' ~ ' + name)
 
     def get_projects(self):
         '''
