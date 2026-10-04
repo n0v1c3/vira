@@ -72,19 +72,19 @@ syntax match viraDetailsMedium "Medium  "he=s+6
 " }}}
 
 " Comments {{{2
-syntax match viraItalic "_.*_"
-syntax match viraLink "\[.*|.*\]"
-syntax match viraMonospaced "{{.*}}"
+syntax match viraItalic "_.\{-}_"
+syntax match viraLink "\[.\{-}|.\{-}\]"
+syntax match viraMonospaced "{{.\{-}}}"
 " syntax match viraPhoto "\!.*|.*\!"
 " syntax match viraStory "\v.*" contained
-syntax match viraStrikethrough "-.*-"
-syntax match viraSubscript "\~.*\~"
+syntax match viraStrikethrough "-.\{-}-"
+syntax match viraSubscript "\~.\{-}\~"
 " syntax match viraTheLine "----"
 " syntax match viraTitles "  .*-.*  \|Summary\|Description\|Comments\n"hs=s,he=e
 " syntax match viraTitle "\%1l.*:" contained nextgroup=viraStory
 " syntax match viraTitleComment /.*{{1/hs=s,he=e contains=viraTitleFold nextgroup=viraTitleFold
 " syntax match viraTitleFold /{{.*/hs=s,he=e contained
-syntax match viraUnderline "+.*+"
+syntax match viraUnderline "+.\{-}+"
 syntax region viraCode start=/`/ end=/`/
 " syntax region viraCode start=/{code.*}/ end=/{code}/
 syntax region viraNoformat start=/{noformat.*}/ end=/{noformat}/
