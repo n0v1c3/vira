@@ -430,17 +430,8 @@ class ViraAPI():
         Build a vim pop-up menu for a list of projects
         '''
 
-        all_projects = self.get_projects()
-        batch_size = 10
-        project_batches = [
-            all_projects[i:i + batch_size]
-            for i in range(0, len(all_projects), batch_size)
-        ]
-
-        for batch in project_batches:
-            projects = self.jira.createmeta(
-                projectKeys=','.join(batch), expand='projects')['projects']
-            [print(p['key'] + ' ~ ' + p['name']) for p in projects]
+        for project in self.jira.projects():
+            print(str(project.key) + ' ~ ' + str(project.name))
 
     def get_projects(self):
         '''
